@@ -434,31 +434,217 @@ Visual representation of the complete developer workflow orchestration.
 
 ---
 
-## Blocking Gates
+## Blocking Gates with Feedback Loops
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────────┐
-│                               BLOCKING GATES                                             │
+│                         BLOCKING GATES WITH RETRY LOOPS                                  │
 ├─────────────────────────────────────────────────────────────────────────────────────────┤
 │                                                                                          │
 │   Gate 1: USER APPROVAL (after Phase 1)                                                  │
-│   ├── Plan must be reviewed and approved                                                 │
-│   └── If rejected → revise plan                                                          │
+│   ┌─────────────────────────────────────────────────────────────────────────────┐       │
+│   │  Present Plan ──► Approved? ──► YES ──► Proceed to Phase 2                  │       │
+│   │       ▲               │                                                     │       │
+│   │       │              NO                                                     │       │
+│   │       │               │                                                     │       │
+│   │       │               ▼                                                     │       │
+│   │       └────── Revise Plan ◄── Get User Feedback                            │       │
+│   └─────────────────────────────────────────────────────────────────────────────┘       │
 │                                                                                          │
-│   Gate 2: TESTS PASS (after Phase 4)                                                     │
-│   ├── All unit tests must pass                                                           │
-│   ├── All integration tests must pass                                                    │
-│   ├── E2E tests must pass (if UI)                                                        │
-│   ├── Build must succeed                                                                 │
-│   └── If any fail → fix and retry                                                        │
+│   Gate 2: TESTS PASS (after Phase 4) ⚠️ MANDATORY RETRY LOOP                            │
+│   ┌─────────────────────────────────────────────────────────────────────────────┐       │
+│   │  Run All Tests ──► All Pass? ──► YES ──► Proceed to Phase 5                 │       │
+│   │       ▲                │                                                    │       │
+│   │       │               NO                                                    │       │
+│   │       │                │                                                    │       │
+│   │       │                ▼                                                    │       │
+│   │       │       Identify Failures                                             │       │
+│   │       │                │                                                    │       │
+│   │       │                ▼                                                    │       │
+│   │       │         Fix Issues ──► Same failure 3x? ──► Ask User               │       │
+│   │       │                │                                                    │       │
+│   │       └────────────────┘                                                    │       │
+│   │                                                                             │       │
+│   │   Checks: Unit ✓ Integration ✓ E2E ✓ Build ✓                               │       │
+│   └─────────────────────────────────────────────────────────────────────────────┘       │
 │                                                                                          │
-│   Gate 3: VALIDATION (after Phase 5)                                                     │
-│   ├── Linter must pass                                                                   │
-│   ├── Code review must pass                                                              │
-│   ├── Security review must pass                                                          │
-│   └── If any fail → fix and retry                                                        │
+│   Gate 3: VALIDATION (after Phase 5) ⚠️ MANDATORY RETRY LOOP                            │
+│   ┌─────────────────────────────────────────────────────────────────────────────┐       │
+│   │  Run Validations ──► All Pass? ──► YES ──► Proceed to Phase 6              │       │
+│   │       ▲                  │                                                  │       │
+│   │       │                 NO                                                  │       │
+│   │       │                  │                                                  │       │
+│   │       │                  ▼                                                  │       │
+│   │       │         ┌───────┴───────┐                                          │       │
+│   │       │         │               │                                          │       │
+│   │       │      Linter?      Security?                                        │       │
+│   │       │         │               │                                          │       │
+│   │       │         ▼               ▼                                          │       │
+│   │       │     Auto-fix      ⛔ STOP if                                       │       │
+│   │       │     + Manual      vulnerability                                    │       │
+│   │       │         │         (escalate)                                       │       │
+│   │       └─────────┴───────────────┘                                          │       │
+│   │                                                                             │       │
+│   │   Checks: Linter ✓ Build ✓ Code Review ✓ Security ✓                        │       │
+│   └─────────────────────────────────────────────────────────────────────────────┘       │
 │                                                                                          │
-│   ⛔ WORKFLOW STOPS at each gate until all requirements are met                          │
+│   ⛔ WORKFLOW STOPS at each gate until ALL requirements are met                          │
+│   ⚠️ NEVER skip a failing check - ALWAYS fix and retry                                  │
+│                                                                                          │
+└─────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Feedback Loop Logic (Pseudocode)
+
+### Testing Gate Loop (Phase 4)
+
+```
+function runTestingGate():
+    retryCount = 0
+    lastFailure = null
+
+    WHILE true:
+        results = runAllTests()  // unit, integration, e2e, build
+
+        IF results.allPass:
+            return SUCCESS  // Proceed to Phase 5
+
+        failures = results.getFailures()
+
+        IF failures == lastFailure:
+            retryCount++
+            IF retryCount >= 3:
+                askUser("Same failure 3 times. Need guidance.")
+                retryCount = 0
+        ELSE:
+            retryCount = 0
+            lastFailure = failures
+
+        FOR each failure in failures:
+            analyzeFailure(failure)
+            fixCode(failure)  // NOT the test, unless test is wrong
+
+        // Loop continues - re-run all tests
+    END WHILE
+```
+
+### Validation Gate Loop (Phase 5)
+
+```
+function runValidationGate():
+    retryCount = 0
+
+    WHILE true:
+        // Run all validations in parallel
+        lintResult = runLinter()
+        buildResult = runBuild()
+        codeReview = runCodeReview()
+        securityReview = runSecurityReview()
+
+        IF all pass:
+            return SUCCESS  // Proceed to Phase 6
+
+        // Handle each failure type
+        IF lintResult.failed:
+            runAutoFix()  // npm run lint --fix
+            manualFixRemaining()
+
+        IF buildResult.failed:
+            fixCompilationErrors()
+
+        IF securityReview.failed:
+            IF canFix(securityReview.issues):
+                fixVulnerabilities()
+            ELSE:
+                STOP("Security vulnerability cannot be auto-fixed")
+                escalateToUser()
+                WAIT for user decision
+
+        IF codeReview.failed:
+            addressFeedback()
+
+        retryCount++
+        IF retryCount >= 3 AND sameFailures:
+            askUser("Validation failing repeatedly. Need guidance.")
+
+        // Loop continues - re-run all validations
+    END WHILE
+```
+
+### TDD Cycle Loop (Phase 3)
+
+```
+function runTDDCycle(behaviors):
+    FOR each behavior in behaviors:
+        // RED phase
+        test = writeFailingTest(behavior)
+        result = runTest(test)
+
+        WHILE result != FAIL:
+            // Test should fail - if it passes, test is wrong
+            fixTest(test)
+            result = runTest(test)
+        END WHILE
+
+        // GREEN phase
+        WHILE result != PASS:
+            writeMinimumCode()
+            result = runTest(test)
+
+            IF sameFailure 3 times:
+                askUser("Can't make test pass. Need help.")
+        END WHILE
+
+        // REFACTOR phase
+        WHILE canRefactor():
+            refactorCode()
+            result = runAllTests()
+
+            IF result != ALL_PASS:
+                undoRefactor()
+                break
+        END WHILE
+    END FOR
+
+    return SUCCESS
+```
+
+---
+
+## Escalation Decision Tree
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│                            ESCALATION DECISION TREE                                      │
+├─────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                          │
+│   Issue Detected                                                                         │
+│        │                                                                                 │
+│        ▼                                                                                 │
+│   Can auto-fix? ──► YES ──► Auto-fix ──► Re-run ──► Pass? ──► YES ──► Continue         │
+│        │                                              │                                  │
+│       NO                                             NO                                  │
+│        │                                              │                                  │
+│        ▼                                              ▼                                  │
+│   Can manual fix? ──► YES ──► Manual fix ──► Re-run ──► Pass? ──► YES ──► Continue     │
+│        │                                                │                                │
+│       NO                                               NO                                │
+│        │                                                │                                │
+│        ▼                                                ▼                                │
+│   Security issue? ──► YES ──► ⛔ STOP WORKFLOW                                          │
+│        │                      Escalate to user                                          │
+│       NO                      Wait for decision                                         │
+│        │                                                                                 │
+│        ▼                                                                                 │
+│   Retry count >= 3? ──► YES ──► Ask user for guidance                                   │
+│        │                        Reset retry count                                       │
+│       NO                        Continue with user input                                │
+│        │                                                                                 │
+│        ▼                                                                                 │
+│   Increment retry                                                                        │
+│   Try again                                                                              │
 │                                                                                          │
 └─────────────────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -467,16 +653,25 @@ Visual representation of the complete developer workflow orchestration.
 
 ## Quick Reference
 
-| Phase | Skills Used | Parallel? | Gate |
-|-------|-------------|-----------|------|
-| 1. Plan | para, architect | Yes (exploration) | User approval |
-| 2. Branch | - | No | - |
-| 3. Execute | developer, debugging | TDD cycle | - |
-| 4. Testing | testing, Playwright | Yes | Tests pass |
-| 5. Validation | code-reviewer, security-reviewer | Yes | All pass |
-| 6. Commit | git-commits | No | - |
-| 7. PR | - | No | - |
-| 8. Monitor | para, documentation | Yes (docs) | - |
+| Phase | Skills Used | Parallel? | Gate | Retry Loop? |
+|-------|-------------|-----------|------|-------------|
+| 1. Plan | para, architect | Yes (exploration) | User approval | Yes (revise until approved) |
+| 2. Branch | - | No | - | No |
+| 3. Execute | developer, debugging | TDD cycle | - | Yes (TDD cycle per behavior) |
+| 4. Testing | testing, Playwright | Yes | Tests pass | **Yes (MANDATORY)** |
+| 5. Validation | code-reviewer, security-reviewer | Yes | All pass | **Yes (MANDATORY)** |
+| 6. Commit | git-commits | No | - | No |
+| 7. PR | - | No | - | No |
+| 8. Monitor | para, documentation | Yes (docs) | - | No |
+
+### Retry Loop Rules
+
+| Gate | Max Retries | Escalation |
+|------|-------------|------------|
+| User Approval | Unlimited | User provides feedback |
+| TDD Cycle | Unlimited | Ask after 3 same failures |
+| Testing Gate | Unlimited | Ask after 3 same failures |
+| Validation Gate | Unlimited | STOP on unfixable security issue |
 
 ---
 
@@ -487,5 +682,15 @@ Visual representation of the complete developer workflow orchestration.
 | **Workflow** | Pure orchestrator - coordinates skills, doesn't implement |
 | **Developer** | All implementation via TDD (Red-Green-Refactor) |
 | **Gates** | Blocking checkpoints - must pass before proceeding |
+| **Retry Loops** | MANDATORY at gates - fix and re-run until all pass |
+| **Escalation** | Ask user after 3 same failures; STOP on security issues |
 | **Parallel** | Independent tasks run simultaneously |
 | **Sequential** | debugging → refactoring → git-commits must run in order |
+
+### Retry Loop Guarantees
+
+1. **Never skip a failing check** - Always fix and retry
+2. **Never proceed with errors** - Gates are blocking
+3. **Always re-run ALL checks** - Not just the failed one
+4. **Escalate when stuck** - Ask user after 3 same failures
+5. **Document retries** - Log each attempt and fix in summary

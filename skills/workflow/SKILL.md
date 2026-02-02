@@ -245,6 +245,134 @@ These skills depend on previous results and must run **sequentially**:
 
 ---
 
+## Feedback Loops (MANDATORY)
+
+**⚠️ CRITICAL:** The workflow enforces retry loops at each gate. You MUST NOT proceed until all checks pass.
+
+### Loop 1: TDD Cycle (Phase 3)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    TDD FEEDBACK LOOP                        │
+│                                                             │
+│   Write Test ──► Run Test ──► FAIL? ──► Write Code ──┐     │
+│       ▲                                              │     │
+│       │                                              ▼     │
+│       │                                         Run Test   │
+│       │                                              │     │
+│       │                        ┌─────────────────────┤     │
+│       │                        │                     │     │
+│       │                     PASS?                 FAIL?    │
+│       │                        │                     │     │
+│       │                        ▼                     ▼     │
+│       │                   Refactor            Fix Code     │
+│       │                        │                     │     │
+│       │                        ▼                     │     │
+│       └──── More behaviors? ◄──┴─────────────────────┘     │
+│                    │                                        │
+│                   Done                                      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Retry until:** All tests pass for current behavior before moving to next.
+
+### Loop 2: Testing Gate (Phase 4)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                  TESTING FEEDBACK LOOP                      │
+│                                                             │
+│   Run All Tests ──► All Pass? ──► YES ──► Proceed          │
+│        ▲                │                                   │
+│        │               NO                                   │
+│        │                │                                   │
+│        │                ▼                                   │
+│        │         Identify Failures                          │
+│        │                │                                   │
+│        │                ▼                                   │
+│        │           Fix Issues                               │
+│        │                │                                   │
+│        └────────────────┘                                   │
+│                                                             │
+│   Max retries: Until all pass (no limit)                    │
+│   Escalate: If stuck after 3 attempts, ask user            │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Checks (ALL must pass):**
+- [ ] Unit tests pass
+- [ ] Integration tests pass
+- [ ] E2E tests pass (if UI)
+- [ ] Build succeeds
+
+**On failure:**
+1. Identify which test(s) failed
+2. Analyze failure reason
+3. Fix the code (not the test, unless test is wrong)
+4. Re-run ALL tests
+5. Repeat until all pass
+
+### Loop 3: Validation Gate (Phase 5)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                 VALIDATION FEEDBACK LOOP                    │
+│                                                             │
+│   Run Validations ──► All Pass? ──► YES ──► Proceed        │
+│        ▲                  │                                 │
+│        │                 NO                                 │
+│        │                  │                                 │
+│        │                  ▼                                 │
+│        │         ┌────────┴────────┐                       │
+│        │         │                 │                       │
+│        │      Linter?          Review?                     │
+│        │         │                 │                       │
+│        │         ▼                 ▼                       │
+│        │    Auto-fix or      Address                       │
+│        │    Manual fix       feedback                      │
+│        │         │                 │                       │
+│        └─────────┴─────────────────┘                       │
+│                                                             │
+│   Max retries: Until all pass (no limit)                    │
+│   Escalate: If security issue can't be resolved, STOP      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Checks (ALL must pass):**
+- [ ] Linter passes (auto-fix allowed)
+- [ ] Build succeeds
+- [ ] Code review passed
+- [ ] Security review passed
+
+**On failure:**
+1. **Linter fails:** Run auto-fix, then manual fix remaining
+2. **Build fails:** Fix compilation/bundling errors
+3. **Code review fails:** Address feedback, improve code
+4. **Security review fails:** Fix vulnerability (NEVER skip)
+5. Re-run ALL validations
+6. Repeat until all pass
+
+### Escalation Rules
+
+| Situation | Action |
+|-----------|--------|
+| Test fails 3+ times for same reason | Ask user for guidance |
+| Security vulnerability found | STOP workflow, require user decision |
+| Conflicting requirements | Ask user to clarify |
+| External dependency blocking | Document blocker, ask user |
+| Flaky test detected | Fix flakiness before proceeding |
+
+### Loop Enforcement
+
+**The workflow MUST:**
+1. Track retry count for each gate
+2. Log each failure and fix attempt
+3. Never proceed with failing checks
+4. Ask user if stuck (after reasonable attempts)
+5. Document all retries in commit message or summary
+
+---
+
 ## Protocol: PARA-Driven Development Workflow
 
 **BLOCKING REQUIREMENT:** Follow phases in order. Do NOT skip phases or make assumptions about what needs to be done.
@@ -444,6 +572,21 @@ When the plan involves architecture or tech design, also structure content using
 - [ ] No regressions in existing tests
 - [ ] Tests are deterministic (not flaky)
 - [ ] **Frontend: Build succeeds** (mandatory for JS/TS/Node projects)
+
+**⚠️ RETRY LOOP (MANDATORY):**
+
+```
+WHILE any test fails:
+    1. Identify failed test(s)
+    2. Analyze failure reason
+    3. Fix code (or test if test is wrong)
+    4. Re-run ALL tests
+    5. IF same failure 3+ times: Ask user for guidance
+END WHILE
+→ Only proceed when ALL tests pass
+```
+
+**DO NOT proceed to Phase 5 until this loop completes successfully.**
 - [ ] **UI: E2E tests via Playwright MCP** (mandatory if UI exists)
 
 **⚡ PARALLEL SUBAGENTS (launch in single message):**
@@ -510,6 +653,30 @@ Wait for all subagents to complete, then consolidate and fix any failures. **Do 
 - [ ] All tests pass
 - [ ] Security review complete (no vulnerabilities)
 - [ ] Code review complete (acceptable quality)
+
+**⚠️ RETRY LOOP (MANDATORY):**
+
+```
+WHILE any validation fails:
+    1. Identify which check(s) failed
+    2. FOR linter errors:
+       - Run auto-fix (e.g., npm run lint --fix)
+       - Manually fix remaining issues
+    3. FOR build errors:
+       - Fix compilation/type errors
+    4. FOR security issues:
+       - Fix vulnerability (NEVER skip or ignore)
+       - If unfixable, STOP and escalate to user
+    5. FOR code review issues:
+       - Address feedback
+       - Improve code quality
+    6. Re-run ALL validations
+    7. IF same failure 3+ times: Ask user for guidance
+END WHILE
+→ Only proceed when ALL validations pass
+```
+
+**DO NOT proceed to Phase 6 until this loop completes successfully.**
 
 **⚡ PARALLEL SUBAGENTS (launch ALL in single message):**
 
