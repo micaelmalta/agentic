@@ -71,7 +71,7 @@ Run **/setup** before using Jira, Confluence, Datadog, or Playwright in the work
 | ----------------------------------------------------------- | ---------------------------------------- |
 | `/test`                                                     | Trigger testing workflow                 |
 | "add tests", "write tests", "run tests", "improve coverage" | Add or run tests                         |
-| `npm test` / `pytest` / `go test ./...` / `cargo test`      | Run test suite (match project ecosystem) |
+| `npm test` / `pytest` / `go test -race ./...` / `cargo test`      | Run test suite (match project ecosystem) |
 | **Playwright MCP** (browser_navigate, browser_click, etc.)  | UI/E2E testing (MANDATORY if UI exists)  |
 
 **MANDATORY:** Testing is required before any PR. For UI/frontend work, Playwright MCP must be used for E2E testing.
@@ -229,6 +229,13 @@ These skills depend on previous results and must run **sequentially**:
 
 **BLOCKING REQUIREMENT:** Follow phases in order. Do NOT skip phases or make assumptions about what needs to be done.
 
+**⛔ MANDATORY TESTING:** Testing is NOT optional. The workflow MUST include:
+- Writing and passing tests (Phase 4)
+- Build verification (Phase 4/5)
+- For UI: E2E tests via Playwright MCP
+- **NEVER suggest tests as "optional" or "next steps"**
+- **STOP and write tests before proceeding to commit**
+
 **OUTCOME FOCUS:** Work continues until PR is merged or explicitly stopped by user. Track progress visibly at each phase.
 
 **PARALLEL EXECUTION:** Launch multiple subagents simultaneously for independent tasks within the same phase. Track all parallel work with TodoWrite tool.
@@ -373,7 +380,7 @@ When the plan involves architecture or tech design, also structure content using
 | **Frontend (JS/TS)** | Tests pass AND build succeeds | `npm test && npm run build` |
 | **Node.js** | Tests pass AND build succeeds (if applicable) | `npm test` / `npm run build` |
 | **Python** | Tests pass | `pytest` or `python -m pytest` |
-| **Go** | Tests pass | `go test ./...` |
+| **Go** | Tests pass | `go test -race ./...` |
 | **Ruby** | Tests pass | `bundle exec rspec` or `rake test` |
 | **Rust** | Tests pass | `cargo test` |
 | **Java** | Tests pass AND build succeeds | `mvn test` / `gradle test` |
@@ -441,7 +448,7 @@ Wait for all subagents to complete, then consolidate and fix any failures. **Do 
 | **Frontend (JS/TS)** | Lint + Build + Tests | `npm run lint && npm run build && npm test` |
 | **Node.js** | Lint + Build (if applicable) + Tests | `npm run lint && npm run build && npm test` |
 | **Python** | Lint + Tests | `ruff check . && pytest` or `flake8 && pytest` |
-| **Go** | Lint + Build + Tests | `golangci-lint run && go build ./... && go test ./...` |
+| **Go** | Lint + Build + Tests | `golangci-lint run && go build ./... && go test -race ./...` |
 | **Ruby** | Lint + Tests | `rubocop && bundle exec rspec` |
 | **Rust** | Lint + Build + Tests | `cargo clippy && cargo build && cargo test` |
 | **Java** | Lint + Build + Tests | `mvn checkstyle:check && mvn compile && mvn test` |
@@ -678,10 +685,40 @@ When working with large repositories (100+ files):
 
 ---
 
+## ⛔ BLOCKING GATES (Workflow MUST STOP if not met)
+
+**The workflow CANNOT proceed to Phase 6 (Commit) until ALL of these pass:**
+
+| Gate | Requirement | What Happens if Not Met |
+|------|-------------|-------------------------|
+| **Tests** | All tests must pass | STOP. Write tests. Do not proceed. |
+| **Build** | Build must succeed (frontend/compiled) | STOP. Fix build errors. Do not proceed. |
+| **Lint** | Linter must pass | STOP. Fix lint errors. Do not proceed. |
+| **UI Tests** | Playwright MCP E2E tests (if UI exists) | STOP. Add E2E tests via Playwright. Do not proceed. |
+
+**NEVER output "Optional next steps" for testing.** Testing is NOT optional. If tests are missing:
+1. STOP the workflow
+2. Write the required tests
+3. Run tests until they pass
+4. Only then proceed to commit
+
+**For frontend projects specifically:**
+- `npm test` (or equivalent) MUST pass
+- `npm run build` MUST succeed
+- If UI exists, E2E tests via Playwright MCP MUST pass
+
+**For backend projects (Go, Python, Ruby, Rust, Java):**
+- Test command MUST pass (`go test -race ./...`, `pytest`, `rspec`, `cargo test`, `mvn test`)
+- Build command MUST succeed (if applicable)
+
+---
+
 ## Output
 
-When complete:
+When complete (ONLY after all gates pass):
 
 - Merged PR URL
 - Summary of what was accomplished
 - Link to summary document in `context/summaries/`
+- **Confirmation that all tests pass**
+- **Confirmation that build succeeds**

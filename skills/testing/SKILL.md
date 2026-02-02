@@ -27,6 +27,22 @@ triggers:
 
 Design and run tests that are fast, deterministic, and focused. Prefer testing behavior over implementation.
 
+**⛔ TESTING IS MANDATORY - NOT OPTIONAL**
+
+When working within the workflow skill:
+- **NEVER** present tests as "optional" or "next steps"
+- **NEVER** complete a workflow without tests passing
+- **ALWAYS** write and run tests before commit
+- **STOP** the workflow if tests are missing and write them first
+
+For frontend/UI projects:
+- Tests (`npm test` or equivalent) MUST pass
+- Build (`npm run build` or equivalent) MUST succeed
+- E2E tests via Playwright MCP MUST pass (if UI exists)
+
+For backend projects (Go, Python, Ruby, etc.):
+- Tests MUST pass before any commit
+
 ---
 
 ## Protocol
@@ -55,7 +71,7 @@ One logical assertion per test when possible. Name tests by behavior: `it("retur
 | ---------- | ----------------------------------------------------------- | --------------------------- |
 | Node/JS/TS | `npm test` or `npx vitest` / `jest`                         | Run test suite              |
 | Python     | `pytest` or `python -m pytest`                              | Run tests                   |
-| Go         | `go test ./...`                                             | Run all packages            |
+| Go         | `go test -race ./...`                                       | Run all packages with race detection |
 | Rust       | `cargo test`                                                | Run tests                   |
 | Generic    | Run the project’s test script from README or `package.json` | Respect project conventions |
 
@@ -65,7 +81,7 @@ Run tests after changes. Fix or skip failing tests before adding new ones.
 
 - Use coverage only to find gaps, not as a target by itself.
 - Prefer: critical paths, edge cases, and error handling.
-- Report coverage when asked: `pytest --cov`, `npm run test:coverage`, `go test -cover`, etc.
+- Report coverage when asked: `pytest --cov`, `npm run test:coverage`, `go test -race -cover ./...`, etc.
 
 ### 5. UI Testing with Playwright MCP (MANDATORY for UI)
 
@@ -196,11 +212,19 @@ When adding or updating tests, provide:
 
 ## Checklist
 
+**⛔ MANDATORY (workflow cannot proceed without these):**
+- [ ] Tests written for new/changed code
+- [ ] All tests pass
+- [ ] Build succeeds (frontend/compiled languages)
+- [ ] **UI: E2E tests via Playwright MCP pass** (mandatory if UI exists)
+
+**Quality checks:**
 - [ ] Tests are deterministic (no flake from time/random/network).
 - [ ] No tests that only assert implementation details.
 - [ ] Failures give clear messages (assertions describe expected vs actual).
 - [ ] Test file/names follow project layout and naming.
-- [ ] **UI testing uses Playwright MCP** (mandatory if application has UI).
 - [ ] Accessibility tests pass (axe-core or equivalent); keyboard navigation works.
 - [ ] i18n tested: no hardcoded strings, locale formatting correct, RTL supported (if applicable).
 - [ ] Database migrations tested: up, down, and data integrity verified.
+
+**⚠️ NEVER output "Optional: Add tests" - testing is MANDATORY.**
