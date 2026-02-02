@@ -1,0 +1,2 @@
+# For running scripts/quick_validate.py and scripts/package_skill.py
+PyYAML>=6.0
