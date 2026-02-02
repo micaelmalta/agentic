@@ -25,7 +25,7 @@ Decide based on the nature of the data:
 | Engine | Use Case | Tool |
 |--------|----------|------|
 | **Native Mode** | General codebase traversal, finding files, structure. | `find`, `grep`, `bash` |
-| **Strict Mode** | Dense data analysis (logs, CSVs, massive single files). | `python3 ~/.claude/skills/rlm/rlm.py` |
+| **Strict Mode** | Dense data analysis (logs, CSVs, massive single files). | `python3 skills/rlm/rlm.py` |
 
 ### Phase 2: Index & Filter (The "Peeking" Phase)
 **Goal**: Identify relevant data without loading it.

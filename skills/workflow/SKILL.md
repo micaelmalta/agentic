@@ -3,7 +3,6 @@ name: workflow
 description: Complete development workflow from planning to GitHub PR using PARA methodology and RLM for large codebases. Use when implementing a feature, fixing a bug, refactoring, or taking work from plan to GitHub PR.
 triggers:
   - "/workflow"
-  - "/setup"
   - "implement a feature"
   - "fix this bug"
   - "refactor code"
@@ -29,13 +28,13 @@ Complete development workflow that guides work from initial planning through Git
 
 This workflow **must use** the **para**, **rlm**, **architect**, **testing**, **code-reviewer**, **security-reviewer**, **documentation**, **git-commits**, **refactoring**, **debugging**, **dependencies**, **performance**, **ci-cd**, and **setup** skills. **Invoke them by reading and following** their skill files: e.g. read `skills/para/SKILL.md` for plan/execute/summarize/archive, and read `skills/architect/SKILL.md` plus `skills/architect/tech_proposal_template.md` when writing plans that need technical design. Details below.
 
-### Setup skill (MCP: Atlassian, Atlassian Tech, Datadog)
+### Setup skill (MCP: Atlassian, Atlassian Tech, Datadog, Playwright)
 
 | Command   | Purpose                                                                 |
 | --------- | ----------------------------------------------------------------------- |
-| `/setup`  | Configure Atlassian (`atlassian`, `atlassian-tech`) and Datadog MCP for Claude or Cursor; prompt for keys and write config. |
+| `/setup`  | Configure Atlassian (`atlassian`, `atlassian-tech`), Datadog, and Playwright MCP for Claude or Cursor; prompt for keys and write config. |
 
-Run **/setup** before using Jira, Confluence, or Datadog in the workflow. After setup, use **Atlassian MCP** (atlassian or atlassian-tech) for tickets and Confluence, and **Datadog MCP** for logs, metrics, and monitors (see MCP integration below).
+Run **/setup** before using Jira, Confluence, Datadog, or Playwright in the workflow. After setup, use **Atlassian MCP** (atlassian or atlassian-tech) for tickets and Confluence, **Datadog MCP** for logs, metrics, and monitors, and **Playwright MCP** for UI testing (see MCP integration below).
 
 ### PARA skill (planning and execution phases)
 
@@ -66,13 +65,16 @@ Run **/setup** before using Jira, Confluence, or Datadog in the workflow. After 
 | `/architect`                                                           | Trigger architect workflow                                                    |
 | "tech spec", "technical design", "architecture doc", "design document" | Write tech spec: goals, scope, architecture, APIs, data model, risks, rollout |
 
-### Testing skill (test design and execution)
+### Testing skill (test design and execution) - MANDATORY
 
 | Command / trigger                                           | Purpose                                  |
 | ----------------------------------------------------------- | ---------------------------------------- |
 | `/test`                                                     | Trigger testing workflow                 |
 | "add tests", "write tests", "run tests", "improve coverage" | Add or run tests                         |
 | `npm test` / `pytest` / `go test ./...` / `cargo test`      | Run test suite (match project ecosystem) |
+| **Playwright MCP** (browser_navigate, browser_click, etc.)  | UI/E2E testing (MANDATORY if UI exists)  |
+
+**MANDATORY:** Testing is required before any PR. For UI/frontend work, Playwright MCP must be used for E2E testing.
 
 ### Code reviewer skill (review before merge)
 
@@ -137,11 +139,11 @@ Run **/setup** before using Jira, Confluence, or Datadog in the workflow. After 
 | `/ci`                                       | Trigger CI/CD workflow                               |
 | "CI", "pipeline", "fix the build", "deploy" | Configure or fix build, test, lint, deploy pipelines |
 
-Use **PARA** for plan → execute → summarize → archive. Use **RLM** when the codebase is large (>100 files) or when you need to find usage/patterns across many files. Use **architect** when writing a tech spec or design document before implementation. Use **testing** when adding or running tests. Use **code-reviewer** when reviewing PRs or diffs. Use **security-reviewer** when auditing for vulnerabilities or before release. Use **documentation** when writing or updating docs. Use **git-commits** when writing commit messages or changelogs. Use **refactoring** when changing structure without behavior. Use **debugging** when investigating or fixing bugs. Use **dependencies** when upgrading or resolving deps. Use **performance** when profiling or optimizing. Use **ci-cd** when configuring or fixing pipelines and deploy. Use **setup** when the user wants to add or reconfigure Atlassian or Datadog MCP for Claude or Cursor.
+Use **PARA** for plan → execute → summarize → archive. Use **RLM** when the codebase is large (>100 files) or when you need to find usage/patterns across many files. Use **architect** when writing a tech spec or design document before implementation. Use **testing** (MANDATORY) when adding or running tests—all tests must pass before PR; use **Playwright MCP** for UI/E2E testing. Use **code-reviewer** when reviewing PRs or diffs. Use **security-reviewer** when auditing for vulnerabilities or before release. Use **documentation** when writing or updating docs. Use **git-commits** when writing commit messages or changelogs. Use **refactoring** when changing structure without behavior. Use **debugging** when investigating or fixing bugs. Use **dependencies** when upgrading or resolving deps. Use **performance** when profiling or optimizing. Use **ci-cd** when configuring or fixing pipelines and deploy. Use **setup** when the user wants to add or reconfigure Atlassian, Datadog, or Playwright MCP for Claude or Cursor.
 
 ---
 
-## MCP Integration (Atlassian, Atlassian Tech, Datadog)
+## MCP Integration (Atlassian, Atlassian Tech, Datadog, Playwright)
 
 After **/setup** has been run and MCPs are configured, use these tools when relevant:
 
@@ -150,8 +152,9 @@ After **/setup** has been run and MCPs are configured, use these tools when rele
 | **atlassian**     | Jira: get issue details, search JQL, transitions, link to PR. Confluence: get page, search CQL, spaces. Use in **Phase 1 (Plan)** for ticket context and in **Phase 7 (PR)** to link PR to Jira. |
 | **atlassian-tech** | Same capabilities as atlassian; use when the context is tech-specific (e.g. engineering Jira/Confluence). |
 | **Datadog**       | Logs: search_logs, get_log_details. Metrics: query_metrics, list_metrics. Monitors: list_monitors, get_monitor_status. Traces: query_traces. Use in **debugging**, **ci-cd** (monitoring/alerts), and **Phase 8 (Monitor)**. |
+| **Playwright**    | Browser automation for UI testing. **MANDATORY for any UI/frontend work.** Use in **Phase 4 (Testing)** for E2E and visual testing. |
 
-Skills that should use these MCPs when the task involves tickets or observability: **workflow** (Jira/Confluence in plan and PR), **ci-cd** (Datadog for monitoring/observability), **debugging** (Datadog logs/traces), **documentation** (Confluence for docs). Use **atlassian** or **atlassian-tech** as appropriate for the context.
+Skills that should use these MCPs when the task involves tickets or observability: **workflow** (Jira/Confluence in plan and PR), **ci-cd** (Datadog for monitoring/observability), **debugging** (Datadog logs/traces), **documentation** (Confluence for docs), **testing** (Playwright for UI tests). Use **atlassian** or **atlassian-tech** as appropriate for the context.
 
 ---
 
@@ -355,18 +358,33 @@ When the plan involves architecture or tech design, also structure content using
 
 ---
 
-## Phase 4: Testing
+## Phase 4: Testing (MANDATORY)
 
 **Goal:** Verify implementation works and prevent regressions.
 
-**Skill:** Use the **testing** skill protocol.
+**⚠️ BLOCKING REQUIREMENT:** Testing is MANDATORY. Do NOT proceed to Phase 5 until all tests pass.
+
+**Skill:** Use the **testing** skill protocol. **For UI/frontend work, Playwright MCP is MANDATORY.**
+
+**Language-Specific Requirements:**
+
+| Stack | Mandatory Checks | Commands |
+|-------|------------------|----------|
+| **Frontend (JS/TS)** | Tests pass AND build succeeds | `npm test && npm run build` |
+| **Node.js** | Tests pass AND build succeeds (if applicable) | `npm test` / `npm run build` |
+| **Python** | Tests pass | `pytest` or `python -m pytest` |
+| **Go** | Tests pass | `go test ./...` |
+| **Ruby** | Tests pass | `bundle exec rspec` or `rake test` |
+| **Rust** | Tests pass | `cargo test` |
+| **Java** | Tests pass AND build succeeds | `mvn test` / `gradle test` |
 
 **Actions:**
 
 1. Write tests for new functionality using parallel subagents:
-   - **Bash agent:** Run test suite, execute npm/build commands
+   - **Bash agent:** Run test suite, execute build commands
    - **General-purpose agent:** Write test cases for complex scenarios
    - **Explore agent:** Find existing test patterns and files to emulate
+   - **Playwright MCP:** For UI testing (mandatory if frontend)
 2. Test coverage requirements:
    - Happy path (primary use case)
    - Edge cases (boundary conditions, empty data)
@@ -375,62 +393,95 @@ When the plan involves architecture or tech design, also structure content using
 3. Parallel test execution:
    - Run unit tests
    - Run integration tests (if applicable)
-   - Run E2E tests (if applicable)
-4. Fix any test failures or regressions
-5. Validate test coverage is reasonable
+   - Run E2E tests via Playwright MCP (if UI exists)
+4. **For frontend/UI projects:** Verify build succeeds
+5. Fix any test failures or regressions
+6. Validate test coverage is reasonable
 
-**Required Coverage:**
+**Required Coverage (ALL must pass to proceed):**
 
 - [ ] New code is tested
 - [ ] Edge cases covered
 - [ ] No regressions in existing tests
 - [ ] Tests are deterministic (not flaky)
+- [ ] **Frontend: Build succeeds** (mandatory for JS/TS/Node projects)
+- [ ] **UI: E2E tests via Playwright MCP** (mandatory if UI exists)
 
 **⚡ PARALLEL SUBAGENTS (launch in single message):**
 
 ```
 Task(subagent_type="Bash", prompt="Run existing test suite to establish baseline")
+Task(subagent_type="Bash", prompt="Run build to verify compilation: npm run build (or equivalent)")
 Task(subagent_type="general-purpose", prompt="Write unit tests for [component A] following testing skill")
 Task(subagent_type="general-purpose", prompt="Write unit tests for [component B] following testing skill")
 Task(subagent_type="Explore", prompt="Find existing test patterns in codebase to emulate")
 ```
 
-Wait for all subagents to complete, then consolidate and fix any failures.
+**For UI projects, also use Playwright MCP:**
+```
+Use Playwright MCP tools (browser_navigate, browser_click, browser_type, browser_screenshot) for E2E testing
+```
+
+Wait for all subagents to complete, then consolidate and fix any failures. **Do NOT proceed until ALL tests pass and build succeeds.**
 
 ---
 
-## Phase 5: Validation
+## Phase 5: Validation (MANDATORY)
 
 **Goal:** Ensure quality and security.
 
+**⚠️ BLOCKING REQUIREMENT:** All validation checks are MANDATORY. Do NOT proceed to Phase 6 until all checks pass.
+
 **Skills:** Use **code-reviewer**, **security-reviewer**, and **ci-cd** skills.
+
+**Language-Specific Validation:**
+
+| Stack | Mandatory Validation | Commands |
+|-------|---------------------|----------|
+| **Frontend (JS/TS)** | Lint + Build + Tests | `npm run lint && npm run build && npm test` |
+| **Node.js** | Lint + Build (if applicable) + Tests | `npm run lint && npm run build && npm test` |
+| **Python** | Lint + Tests | `ruff check . && pytest` or `flake8 && pytest` |
+| **Go** | Lint + Build + Tests | `golangci-lint run && go build ./... && go test ./...` |
+| **Ruby** | Lint + Tests | `rubocop && bundle exec rspec` |
+| **Rust** | Lint + Build + Tests | `cargo clippy && cargo build && cargo test` |
+| **Java** | Lint + Build + Tests | `mvn checkstyle:check && mvn compile && mvn test` |
 
 **Actions:**
 
 1. Run linter/formatter: `npm run lint` or equivalent
-2. Run build: `npm run build` or equivalent
-3. Security review (security-reviewer skill):
+2. Run build: `npm run build` or equivalent (MANDATORY for compiled languages and frontend)
+3. Run tests: Verify all tests still pass after any fixes
+4. Security review (security-reviewer skill):
    - No hardcoded secrets or credentials
    - No expanded data access
    - No common vulnerabilities (injection, XSS, etc.)
-4. Code review (code-reviewer skill):
+5. Code review (code-reviewer skill):
    - Clear variable names
    - Logical flow is obvious
    - Tests are meaningful
-5. Performance check (if applicable):
+6. Performance check (if applicable):
    - No N+1 queries
    - No significant performance degradation
+
+**Required Validation (ALL must pass to proceed):**
+
+- [ ] Linter passes with no errors
+- [ ] Build succeeds (mandatory for frontend, compiled languages)
+- [ ] All tests pass
+- [ ] Security review complete (no vulnerabilities)
+- [ ] Code review complete (acceptable quality)
 
 **⚡ PARALLEL SUBAGENTS (launch ALL in single message):**
 
 ```
 Task(subagent_type="Bash", prompt="Run linter: npm run lint (or project equivalent)")
 Task(subagent_type="Bash", prompt="Run build: npm run build (or project equivalent)")
+Task(subagent_type="Bash", prompt="Run tests: npm test (or project equivalent)")
 Task(subagent_type="general-purpose", prompt="Run code-reviewer skill on all changed files. Review for correctness, readability, maintainability.")
 Task(subagent_type="general-purpose", prompt="Run security-reviewer skill on all changed files. Check for injection, XSS, auth issues, sensitive data exposure.")
 ```
 
-Wait for all 4 subagents to complete, then consolidate findings and fix any issues before proceeding.
+Wait for all 5 subagents to complete, then consolidate findings and fix any issues before proceeding. **Do NOT proceed until ALL validation checks pass.**
 
 ---
 
@@ -610,8 +661,17 @@ When working with large repositories (100+ files):
 - [ ] Phase 1: Plan created and approved
 - [ ] Phase 2: Feature branch created
 - [ ] Phase 3: Implementation complete
-- [ ] Phase 4: Tests written and passing
-- [ ] Phase 5: Code passes linting, build, security checks
+- [ ] Phase 4: **Tests written and passing (MANDATORY)**
+  - [ ] Unit tests pass
+  - [ ] Integration tests pass (if applicable)
+  - [ ] E2E tests via Playwright MCP pass (if UI exists)
+  - [ ] Build succeeds (mandatory for frontend/compiled languages)
+- [ ] Phase 5: **Validation complete (MANDATORY)**
+  - [ ] Linter passes
+  - [ ] Build succeeds
+  - [ ] All tests pass
+  - [ ] Security review passed
+  - [ ] Code review passed
 - [ ] Phase 6: Changes committed and pushed
 - [ ] Phase 7: PR created with clear description
 - [ ] Phase 8: Summary documented after merge

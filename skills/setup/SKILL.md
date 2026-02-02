@@ -1,21 +1,23 @@
 ---
 name: setup
-description: Configure MCP (Model Context Protocol) servers for Claude or Cursor. Use when the user runs /setup, wants to add Atlassian or Datadog MCP, or set up API keys for MCP connections.
+description: Configure MCP (Model Context Protocol) servers for Claude or Cursor. Use when the user runs /setup, wants to add Atlassian, Datadog, or Playwright MCP, or set up API keys for MCP connections.
 triggers:
   - "/setup"
   - "setup MCP"
   - "configure Atlassian MCP"
   - "configure Datadog MCP"
+  - "configure Playwright MCP"
   - "add MCP servers"
   - "connect to Atlassian"
   - "connect to Datadog"
+  - "setup Playwright"
 ---
 
 # Setup Skill (MCP Configuration)
 
 ## Purpose
 
-Configure **Atlassian** (two servers: `atlassian`, `atlassian-tech`), and **Datadog** MCP servers for **Claude** or **Cursor** so the agent can use Jira, Confluence, and Datadog (logs, metrics, monitors) during workflows.
+Configure **Atlassian** (two servers: `atlassian`, `atlassian-tech`), **Datadog**, and **Playwright** MCP servers for **Claude** or **Cursor** so the agent can use Jira, Confluence, Datadog (logs, metrics, monitors), and browser automation for UI testing during workflows.
 
 ## Official MCP docs
 
@@ -68,11 +70,17 @@ Prompt for credentials. Prefer environment variables for security; accept one-ti
 - **ATLASSIAN_API_TOKEN** – from [Atlassian API Tokens](https://id.atlassian.com/manage-profile/security/api-tokens) (for API-token auth; some setups use OAuth in browser instead)
 - **ATLASSIAN_EMAIL** – Atlassian account email (if using API token)
 
-If the user already has Cursor MCP configured (e.g. OAuth for Atlassian), keep existing `mcpServers` and only add or update **atlassian** and **datadog** entries.
+**Playwright (no keys required):**
+
+- No API keys needed – Playwright MCP runs locally via npx
+- Optional: `--headless` flag for headless mode (useful in CI)
+- Optional: `--browser` flag to specify browser (chrome, firefox, webkit, msedge)
+
+If the user already has Cursor MCP configured (e.g. OAuth for Atlassian), keep existing `mcpServers` and only add or update **atlassian**, **datadog**, and **playwright** entries.
 
 ### 4. Paths to Use
 
-- **Datadog MCP (stdio):** Use the user’s local path for the Node server. Default from snippet:
+- **Datadog MCP (stdio):** Use the user's local path for the Node server. Default from snippet:
   - `command`: `node`
   - `args`: `["/Users/mmalta/projects/poc/mcp_datadog/src/index.js"]`
   If the user has a different path (e.g. `MCP_DATADOG_PATH`), use that in `args`.
@@ -80,6 +88,10 @@ If the user already has Cursor MCP configured (e.g. OAuth for Atlassian), keep e
   - **atlassian:** `url`: `https://mcp.atlassian.com/v1/mcp`, `type`: `http`
   - **atlassian-tech:** same URL by default; override with `ATLASSIAN_TECH_URL` in env when running the setup script if the tech endpoint differs
   Add `env` (e.g. `ATLASSIAN_API_TOKEN`, `ATLASSIAN_EMAIL`) only if the user provides them and the client supports env-based auth for HTTP MCP.
+- **Playwright MCP (stdio):** Uses npx to run the latest version:
+  - `command`: `npx`
+  - `args`: `["@playwright/mcp@latest"]`
+  Optional args: `--headless`, `--browser <browser>`, `--viewport-size <WxH>`, `--config <path>`
 
 ### 5. Write Config
 
@@ -91,11 +103,12 @@ If the user already has Cursor MCP configured (e.g. OAuth for Atlassian), keep e
   - `mcpServers.atlassian`: `{ "url": "https://mcp.atlassian.com/v1/mcp", "type": "http" }` (and optional `env` if provided).
   - `mcpServers["atlassian-tech"]`: same structure; URL from `ATLASSIAN_TECH_URL` if set.
   - `mcpServers.datadog`: `{ "type": "stdio", "command": "node", "args": ["<path-to-mcp_datadog/src/index.js>"], "env": { "DATADOG_API_KEY": "<user-key>", "DATADOG_APP_KEY": "<user-app-key>" } }`.
+  - `mcpServers.playwright`: `{ "command": "npx", "args": ["@playwright/mcp@latest"] }` (add `--headless` to args for CI environments).
 - Write back valid JSON; preserve any other servers (e.g. `atlas`, `cursor-ide-browser`).
 
 **Claude Code (`~/.claude.json`):**
 
-- Same structure under `mcpServers`: add or update **atlassian** and **datadog**. This is the correct config for the **Claude Code CLI** (`claude`). Preserve existing `mcpServers` and other top-level keys.
+- Same structure under `mcpServers`: add or update **atlassian**, **datadog**, and **playwright**. This is the correct config for the **Claude Code CLI** (`claude`). Preserve existing `mcpServers` and other top-level keys.
 
 **Claude Desktop** (optional; `~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
 
@@ -162,14 +175,40 @@ Override **atlassian-tech** URL with `ATLASSIAN_TECH_URL` when running the setup
 }
 ```
 
-Use the user’s actual path for `args[0]` and their keys in `env`. Do not commit real keys.
+Use the user's actual path for `args[0]` and their keys in `env`. Do not commit real keys.
+
+**Playwright (stdio):**
+
+```json
+"playwright": {
+  "command": "npx",
+  "args": ["@playwright/mcp@latest"]
+}
+```
+
+For headless mode (recommended for CI):
+
+```json
+"playwright": {
+  "command": "npx",
+  "args": ["@playwright/mcp@latest", "--headless"]
+}
+```
+
+Optional arguments:
+- `--browser <chrome|firefox|webkit|msedge>` – specify browser
+- `--viewport-size <WxH>` – e.g., `1280x720`
+- `--user-data-dir <path>` – persistent browser profile
+- `--isolated` – ephemeral session mode
+- `--storage-state <path>` – load auth cookies/localStorage
+- `--config <path>` – JSON config file for advanced settings
 
 ---
 
 ## When to Use This Skill
 
 - User runs **/setup** or asks to set up MCP.
-- User wants to **add** or **reconfigure** Atlassian (atlassian, atlassian-tech) or Datadog MCP for Claude or Cursor.
-- User asks to **connect to Atlassian** or **connect to Datadog** in the IDE.
+- User wants to **add** or **reconfigure** Atlassian (atlassian, atlassian-tech), Datadog, or Playwright MCP for Claude or Cursor.
+- User asks to **connect to Atlassian**, **connect to Datadog**, or **setup Playwright** in the IDE.
 
-After setup, the **workflow**, **ci-cd**, **debugging**, and **documentation** skills can use these MCPs (see those skills for when to call Atlassian/Datadog tools). Use **atlassian** or **atlassian-tech** tools as appropriate (e.g. atlassian-tech for tech-specific Jira/Confluence use).
+After setup, the **workflow**, **ci-cd**, **debugging**, **documentation**, and **testing** skills can use these MCPs (see those skills for when to call Atlassian/Datadog/Playwright tools). Use **atlassian** or **atlassian-tech** tools as appropriate (e.g. atlassian-tech for tech-specific Jira/Confluence use). Use **playwright** for UI testing and browser automation.

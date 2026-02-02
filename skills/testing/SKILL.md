@@ -39,6 +39,8 @@ Design and run tests that are fast, deterministic, and focused. Prefer testing b
 
 Choose the right level; avoid testing implementation details in unit tests.
 
+**MANDATORY: For any UI-related testing, you MUST use the Playwright MCP server.** If the Playwright MCP is not configured, run `/setup` first to add it before proceeding with UI tests.
+
 ### 2. Test Design
 
 - **Arrange** – Set up inputs and dependencies.
@@ -65,7 +67,48 @@ Run tests after changes. Fix or skip failing tests before adding new ones.
 - Prefer: critical paths, edge cases, and error handling.
 - Report coverage when asked: `pytest --cov`, `npm run test:coverage`, `go test -cover`, etc.
 
-### 5. Accessibility (a11y) Testing
+### 5. UI Testing with Playwright MCP (MANDATORY for UI)
+
+**When the application has a UI, Playwright MCP is MANDATORY for E2E and UI testing.**
+
+**Prerequisites:**
+1. Ensure Playwright MCP is configured via `/setup`
+2. The MCP provides browser automation tools directly to the agent
+
+**Playwright MCP Capabilities:**
+
+| Tool | Purpose |
+|------|---------|
+| `browser_navigate` | Navigate to URLs |
+| `browser_click` | Click elements |
+| `browser_type` | Type text into inputs |
+| `browser_screenshot` | Capture screenshots for visual verification |
+| `browser_snapshot` | Get accessibility tree snapshot |
+| `browser_wait` | Wait for conditions |
+| `browser_select_option` | Select dropdown options |
+| `browser_hover` | Hover over elements |
+| `browser_drag` | Drag and drop |
+| `browser_press_key` | Press keyboard keys |
+
+**When to Use Playwright MCP:**
+
+- Testing user flows (login, checkout, forms)
+- Visual regression testing (screenshots)
+- Accessibility tree inspection
+- Interactive debugging of UI issues
+- Cross-browser testing (Chrome, Firefox, WebKit, Edge)
+
+**Example UI Test Flow:**
+
+1. Use `browser_navigate` to go to the page
+2. Use `browser_snapshot` to understand the page structure
+3. Use `browser_click`, `browser_type` to interact
+4. Use `browser_screenshot` to capture results
+5. Verify outcomes via assertions or visual inspection
+
+**Configuration:** If Playwright MCP is not available, stop and run `/setup` to configure it before proceeding with any UI testing.
+
+### 6. Accessibility (a11y) Testing
 
 Test that the application is usable by people with disabilities:
 
@@ -94,7 +137,7 @@ it('has no accessibility violations', async () => {
 - Understandable: Readable, predictable, input assistance
 - Robust: Compatible with assistive technologies
 
-### 6. Internationalization (i18n) Testing
+### 7. Internationalization (i18n) Testing
 
 Test that the application works correctly across languages and locales:
 
@@ -123,7 +166,7 @@ expect(document.dir).toBe('rtl');
 
 **Tools:** i18next, FormatJS, pseudo-localization libraries, Crowdin/Lokalise for translation management.
 
-### 7. Database Migration Testing
+### 8. Database Migration Testing
 
 Test that migrations work correctly and are reversible:
 
@@ -141,7 +184,7 @@ Test that migrations work correctly and are reversible:
 4. Run latest migration down, then up again
 5. Verify data integrity
 
-### 8. Output
+### 9. Output
 
 When adding or updating tests, provide:
 
@@ -157,6 +200,7 @@ When adding or updating tests, provide:
 - [ ] No tests that only assert implementation details.
 - [ ] Failures give clear messages (assertions describe expected vs actual).
 - [ ] Test file/names follow project layout and naming.
+- [ ] **UI testing uses Playwright MCP** (mandatory if application has UI).
 - [ ] Accessibility tests pass (axe-core or equivalent); keyboard navigation works.
 - [ ] i18n tested: no hardcoded strings, locale formatting correct, RTL supported (if applicable).
 - [ ] Database migrations tested: up, down, and data integrity verified.

@@ -33,10 +33,10 @@ Each skill lives in `skills/<name>/SKILL.md` with YAML frontmatter defining:
 
 **Core Skills:**
 - **para** - PARA methodology (`/plan`, `/execute`, `/summarize`, `/archive`, `/check`, `/status`, `/help`, `/init`)
-- **workflow** - Complete development workflow from planning to GitHub PR
+- **workflow** - Complete development workflow from planning to GitHub PR (`/workflow`)
 - **rlm** - Recursive Language Model for large codebases (100+ files)
 - **architect** - Technical specifications and design documents
-- **testing** - Test design and execution (unit, integration, e2e, a11y, i18n)
+- **testing** - Test design and execution (unit, integration, e2e via Playwright MCP, a11y, i18n)
 - **code-reviewer** - Code review for correctness, readability, maintainability
 - **security-reviewer** - Security auditing and vulnerability detection
 - **documentation** - README, API docs, ADRs, runbooks
@@ -46,7 +46,7 @@ Each skill lives in `skills/<name>/SKILL.md` with YAML frontmatter defining:
 - **dependencies** - Dependency management and conflict resolution
 - **performance** - Profiling and optimization
 - **ci-cd** - CI/CD pipeline configuration and fixes
-- **setup** - MCP server configuration (Atlassian, Datadog)
+- **setup** - MCP server configuration (Atlassian, Datadog, Playwright)
 
 ## Workflow Methodology
 
@@ -122,6 +122,7 @@ Task(Bash, "Run linter and build...")
 Configure MCP servers for Claude Code or Cursor:
 - **Atlassian** (atlassian, atlassian-tech) - Jira, Confluence
 - **Datadog** - Logs, metrics, monitors, traces
+- **Playwright** - Browser automation for UI testing (MANDATORY for UI)
 
 Config locations:
 - Cursor: `~/.cursor/mcp.json`
@@ -134,6 +135,7 @@ Config locations:
 - **ci-cd** - Datadog for monitoring/observability
 - **debugging** - Datadog logs/traces
 - **documentation** - Confluence for docs
+- **testing** - Playwright for UI/E2E testing (mandatory if UI exists)
 
 ## Common Patterns
 
