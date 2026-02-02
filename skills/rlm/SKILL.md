@@ -1,6 +1,6 @@
 ---
 name: rlm
-description: Process large codebases (>100 files) using the Recursive Language Model pattern. Treats code as an external environment, using parallel background agents to map-reduce complex tasks without context rot.
+description: "Process large codebases (100+ files) using the Recursive Language Model pattern. Treats code as an external environment, using parallel background agents to map-reduce complex tasks without context rot."
 triggers:
   - "/rlm"
   - "analyze codebase"
@@ -13,6 +13,7 @@ triggers:
 # Recursive Language Model (RLM) Skill
 
 ## Core Philosophy
+
 **"Context is an external resource, not a local variable."**
 
 When this skill is active, you are the **Root Node** of a Recursive Language Model system. Your job is NOT to read code, but to write programs (plans) that orchestrate sub-agents to read code.
@@ -20,30 +21,37 @@ When this skill is active, you are the **Root Node** of a Recursive Language Mod
 ## Protocol: The RLM Loop
 
 ### Phase 1: Choose Your Engine
+
 Decide based on the nature of the data:
 
-| Engine | Use Case | Tool |
-|--------|----------|------|
-| **Native Mode** | General codebase traversal, finding files, structure. | `find`, `grep`, `bash` |
+| Engine          | Use Case                                                | Tool                        |
+| --------------- | ------------------------------------------------------- | --------------------------- |
+| **Native Mode** | General codebase traversal, finding files, structure.   | `find`, `grep`, `bash`      |
 | **Strict Mode** | Dense data analysis (logs, CSVs, massive single files). | `python3 skills/rlm/rlm.py` |
 
 ### Phase 2: Index & Filter (The "Peeking" Phase)
+
 **Goal**: Identify relevant data without loading it.
+
 1.  **Native**: Use `find` or `grep -l`.
 2.  **Strict**: Use `python3 .../rlm.py peek "query"`.
-    *   *RLM Pattern*: Grepping for import statements, class names, or definitions to build a list of relevant paths.
+    - _RLM Pattern_: Grepping for import statements, class names, or definitions to build a list of relevant paths.
 
 ### Phase 3: Parallel Map (The "Sub-Query" Phase)
+
 **Goal**: Process chunks in parallel using fresh contexts.
+
 1.  **Divide**: Split the work into atomic units.
     - **Strict Mode**: `python3 .../rlm.py chunk --pattern "*.log"` -> Returns JSON chunks.
 2.  **Spawn**: Use `background_task` to launch parallel agents.
-    *   *Constraint*: Launch at least 3-5 agents in parallel for broad tasks.
-    *   *Prompting*: Give each background agent ONE specific chunk or file path.
-    *   *Format*: `background_task(agent="explore", prompt="Analyze chunk #5 of big.log: {content}...")`
+    - _Constraint_: Launch at least 3-5 agents in parallel for broad tasks.
+    - _Prompting_: Give each background agent ONE specific chunk or file path.
+    - _Format_: `background_task(agent="explore", prompt="Analyze chunk #5 of big.log: {content}...")`
 
 ### Phase 4: Reduce & Synthesize (The "Aggregation" Phase)
+
 **Goal**: Combine results into a coherent answer.
+
 1.  **Collect**: Read the outputs from `background_task` (via `background_output`).
 2.  **Synthesize**: Look for patterns, consensus, or specific answers in the aggregated data.
 3.  **Refine**: If the answer is incomplete, perform a second RLM recursion on the specific missing pieces.
@@ -58,23 +66,27 @@ Decide based on the nature of the data:
 ## Example Workflow: "Find all API endpoints and check for Auth"
 
 **Wrong Way (Monolithic)**:
+
 - `read src/api/routes.ts`
 - `read src/api/users.ts`
 - ... (Context fills up, reasoning degrades)
 
 **RLM Way (Recursive)**:
+
 1.  **Filter**: `grep -l "@Controller" src/**/*.ts` -> Returns 20 files.
-2.  **Map**: 
+2.  **Map**:
     - `background_task(prompt="Read src/api/routes.ts. Extract all endpoints and their @Auth decorators.")`
     - `background_task(prompt="Read src/api/users.ts. Extract all endpoints and their @Auth decorators.")`
     - ... (Launch all 20)
-3.  **Reduce**: 
+3.  **Reduce**:
     - Collect all 20 outputs.
     - Compile into a single table.
     - Identify missing auth.
 
 ## Recovery Mode
+
 If `background_task` is unavailable or fails:
+
 1.  Fall back to **Iterative Python Scripting**.
 2.  Write a Python script that loads each file, runs a regex/AST check, and prints the result to stdout.
 3.  Read the script's stdout.

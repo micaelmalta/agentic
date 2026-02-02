@@ -1,6 +1,6 @@
 ---
 name: refactoring
-description: Refactor code safely: extract, rename, simplify, and reorganize without changing behavior. Use when the user asks to refactor, extract function, rename, simplify, or clean up this code.
+description: "Refactor code safely: extract, rename, simplify, and reorganize without changing behavior. Use when the user asks to refactor, extract function, rename, simplify, or clean up this code."
 triggers:
   - "/refactor"
   - "refactor this"

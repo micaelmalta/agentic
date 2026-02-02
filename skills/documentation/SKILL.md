@@ -1,6 +1,6 @@
 ---
 name: documentation
-description: Write and update documentation: README, API docs, ADRs, inline docs, and runbooks. Use when the user asks to document this, update README, write API docs, write ADR, or add inline documentation.
+description: "Write and update documentation: README, API docs, ADRs, inline docs, and runbooks. Use when the user asks to document this, update README, write API docs, write ADR, or add inline documentation."
 triggers:
   - "/docs"
   - "document this"

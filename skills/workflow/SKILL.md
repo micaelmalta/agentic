@@ -1,6 +1,6 @@
 ---
 name: workflow
-description: Complete development workflow from planning to GitHub PR using PARA methodology and RLM for large codebases. Use when implementing a feature, fixing a bug, refactoring, or taking work from plan to GitHub PR.
+description: "Complete development workflow from planning to GitHub PR using PARA methodology and RLM for large codebases. Use when implementing a feature, fixing a bug, refactoring, or taking work from plan to GitHub PR."
 triggers:
   - "/workflow"
   - "implement a feature"
@@ -30,9 +30,9 @@ This workflow **must use** the **para**, **rlm**, **architect**, **testing**, **
 
 ### Setup skill (MCP: Atlassian, Atlassian Tech, Datadog, Playwright)
 
-| Command   | Purpose                                                                 |
-| --------- | ----------------------------------------------------------------------- |
-| `/setup`  | Configure Atlassian (`atlassian`, `atlassian-tech`), Datadog, and Playwright MCP for Claude or Cursor; prompt for keys and write config. |
+| Command  | Purpose                                                                                                                                  |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `/setup` | Configure Atlassian (`atlassian`, `atlassian-tech`), Datadog, and Playwright MCP for Claude or Cursor; prompt for keys and write config. |
 
 Run **/setup** before using Jira, Confluence, Datadog, or Playwright in the workflow. After setup, use **Atlassian MCP** (atlassian or atlassian-tech) for tickets and Confluence, **Datadog MCP** for logs, metrics, and monitors, and **Playwright MCP** for UI testing (see MCP integration below).
 
@@ -67,12 +67,12 @@ Run **/setup** before using Jira, Confluence, Datadog, or Playwright in the work
 
 ### Testing skill (test design and execution) - MANDATORY
 
-| Command / trigger                                           | Purpose                                  |
-| ----------------------------------------------------------- | ---------------------------------------- |
-| `/test`                                                     | Trigger testing workflow                 |
-| "add tests", "write tests", "run tests", "improve coverage" | Add or run tests                         |
-| `npm test` / `pytest` / `go test -race ./...` / `cargo test`      | Run test suite (match project ecosystem) |
-| **Playwright MCP** (browser_navigate, browser_click, etc.)  | UI/E2E testing (MANDATORY if UI exists)  |
+| Command / trigger                                            | Purpose                                  |
+| ------------------------------------------------------------ | ---------------------------------------- |
+| `/test`                                                      | Trigger testing workflow                 |
+| "add tests", "write tests", "run tests", "improve coverage"  | Add or run tests                         |
+| `npm test` / `pytest` / `go test -race ./...` / `cargo test` | Run test suite (match project ecosystem) |
+| **Playwright MCP** (browser_navigate, browser_click, etc.)   | UI/E2E testing (MANDATORY if UI exists)  |
 
 **MANDATORY:** Testing is required before any PR. For UI/frontend work, Playwright MCP must be used for E2E testing.
 
@@ -147,12 +147,12 @@ Use **PARA** for plan → execute → summarize → archive. Use **RLM** when th
 
 After **/setup** has been run and MCPs are configured, use these tools when relevant:
 
-| MCP               | When to use |
-| ----------------- | --------------------------------------------------------------------------- |
-| **atlassian**     | Jira: get issue details, search JQL, transitions, link to PR. Confluence: get page, search CQL, spaces. Use in **Phase 1 (Plan)** for ticket context and in **Phase 7 (PR)** to link PR to Jira. |
-| **atlassian-tech** | Same capabilities as atlassian; use when the context is tech-specific (e.g. engineering Jira/Confluence). |
-| **Datadog**       | Logs: search_logs, get_log_details. Metrics: query_metrics, list_metrics. Monitors: list_monitors, get_monitor_status. Traces: query_traces. Use in **debugging**, **ci-cd** (monitoring/alerts), and **Phase 8 (Monitor)**. |
-| **Playwright**    | Browser automation for UI testing. **MANDATORY for any UI/frontend work.** Use in **Phase 4 (Testing)** for E2E and visual testing. |
+| MCP                | When to use                                                                                                                                                                                                                  |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **atlassian**      | Jira: get issue details, search JQL, transitions, link to PR. Confluence: get page, search CQL, spaces. Use in **Phase 1 (Plan)** for ticket context and in **Phase 7 (PR)** to link PR to Jira.                             |
+| **atlassian-tech** | Same capabilities as atlassian; use when the context is tech-specific (e.g. engineering Jira/Confluence).                                                                                                                    |
+| **Datadog**        | Logs: search_logs, get_log_details. Metrics: query_metrics, list_metrics. Monitors: list_monitors, get_monitor_status. Traces: query_traces. Use in **debugging**, **ci-cd** (monitoring/alerts), and **Phase 8 (Monitor)**. |
+| **Playwright**     | Browser automation for UI testing. **MANDATORY for any UI/frontend work.** Use in **Phase 4 (Testing)** for E2E and visual testing.                                                                                          |
 
 Skills that should use these MCPs when the task involves tickets or observability: **workflow** (Jira/Confluence in plan and PR), **ci-cd** (Datadog for monitoring/observability), **debugging** (Datadog logs/traces), **documentation** (Confluence for docs), **testing** (Playwright for UI tests). Use **atlassian** or **atlassian-tech** as appropriate for the context.
 
@@ -166,14 +166,15 @@ Skills that should use these MCPs when the task involves tickets or observabilit
 
 These skills are independent and should run as **parallel subagents**:
 
-| Skill | Subagent Type | Why Parallel |
-|-------|---------------|--------------|
-| **code-reviewer** | `general-purpose` | Reviews correctness/readability independently |
-| **security-reviewer** | `general-purpose` | Reviews security independently |
-| **testing** (run suite) | `Bash` | Test execution is independent |
-| **ci-cd** (lint/build) | `Bash` | Lint and build are independent |
+| Skill                   | Subagent Type     | Why Parallel                                  |
+| ----------------------- | ----------------- | --------------------------------------------- |
+| **code-reviewer**       | `general-purpose` | Reviews correctness/readability independently |
+| **security-reviewer**   | `general-purpose` | Reviews security independently                |
+| **testing** (run suite) | `Bash`            | Test execution is independent                 |
+| **ci-cd** (lint/build)  | `Bash`            | Lint and build are independent                |
 
 **Example parallel launch:**
+
 ```
 Task(subagent_type="general-purpose", prompt="Run code-reviewer skill on changed files...")
 Task(subagent_type="general-purpose", prompt="Run security-reviewer skill on changed files...")
@@ -185,33 +186,33 @@ Task(subagent_type="Bash", prompt="Run linter and build: npm run lint && npm run
 
 When exploring the codebase, launch **parallel Explore subagents**:
 
-| Task | Subagent Type | Why Parallel |
-|------|---------------|--------------|
-| Find affected files | `Explore` | Independent search |
-| Understand architecture | `Explore` | Independent search |
-| Check existing patterns | `Explore` | Independent search |
-| Review git history | `Bash` | Independent lookup |
+| Task                    | Subagent Type | Why Parallel       |
+| ----------------------- | ------------- | ------------------ |
+| Find affected files     | `Explore`     | Independent search |
+| Understand architecture | `Explore`     | Independent search |
+| Check existing patterns | `Explore`     | Independent search |
+| Review git history      | `Bash`        | Independent lookup |
 
 ### Group 3: Test Writing (Phase 4)
 
 When writing tests for multiple components:
 
-| Task | Subagent Type | Why Parallel |
-|------|---------------|--------------|
-| Write unit tests for component A | `general-purpose` | Independent |
-| Write unit tests for component B | `general-purpose` | Independent |
-| Write integration tests | `general-purpose` | Independent |
-| Run existing test suite | `Bash` | Independent |
+| Task                             | Subagent Type     | Why Parallel |
+| -------------------------------- | ----------------- | ------------ |
+| Write unit tests for component A | `general-purpose` | Independent  |
+| Write unit tests for component B | `general-purpose` | Independent  |
+| Write integration tests          | `general-purpose` | Independent  |
+| Run existing test suite          | `Bash`            | Independent  |
 
 ### Group 4: Documentation (Phase 8)
 
 After implementation, documentation tasks can parallelize:
 
-| Task | Subagent Type | Why Parallel |
-|------|---------------|--------------|
-| Update README | `general-purpose` | Independent |
-| Write/update API docs | `general-purpose` | Independent |
-| Write ADR (if needed) | `general-purpose` | Independent |
+| Task                  | Subagent Type     | Why Parallel |
+| --------------------- | ----------------- | ------------ |
+| Update README         | `general-purpose` | Independent  |
+| Write/update API docs | `general-purpose` | Independent  |
+| Write ADR (if needed) | `general-purpose` | Independent  |
 
 ### Sequential Skills (Do NOT Parallelize)
 
@@ -230,6 +231,7 @@ These skills depend on previous results and must run **sequentially**:
 **BLOCKING REQUIREMENT:** Follow phases in order. Do NOT skip phases or make assumptions about what needs to be done.
 
 **⛔ MANDATORY TESTING:** Testing is NOT optional. The workflow MUST include:
+
 - Writing and passing tests (Phase 4)
 - Build verification (Phase 4/5)
 - For UI: E2E tests via Playwright MCP
@@ -241,6 +243,7 @@ These skills depend on previous results and must run **sequentially**:
 **PARALLEL EXECUTION:** Launch multiple subagents simultaneously for independent tasks within the same phase. Track all parallel work with TodoWrite tool.
 
 **PARA SKILL INVOCATION:** This workflow **must** use the **para** skill. At the start of any workflow run, **read** `skills/para/SKILL.md` and follow it for:
+
 - **Plan phase:** Use PARA's `/plan` semantics: create `context/plans/YYYY-MM-DD-<task-name>.md`, document objectives/approach/steps, and follow PARA's Plan and Review phases.
 - **Execute phase:** Use PARA's `/execute` semantics: track progress, reference the plan, document deviations.
 - **Summarize phase:** Use PARA's `/summarize` semantics: create `context/summaries/YYYY-MM-DD-<task-name>.md` with outcomes and learnings.
@@ -276,6 +279,7 @@ This workflow uses multiple specialized subagents working in parallel:
 **PARA command:** Use `/plan <task>` to create the plan. **Follow the para skill** (`skills/para/SKILL.md`) for plan creation, file location (`context/plans/YYYY-MM-DD-<task-name>.md`), and Review phase (present plan for approval).
 
 **Plan skills and tech proposal:** When the plan involves technical design, architecture, new features, or system changes:
+
 - **Read and follow the architect skill** (`skills/architect/SKILL.md`).
 - **Use the tech proposal template** (`skills/architect/tech_proposal_template.md`): read it first, then structure the plan (or a separate tech spec) using its sections (Metadata, Architecture Considerations, API Changes, Data Models, Domain Architecture, Additional Considerations, Estimation & Implementation Plan). Output a tech spec to `docs/tech-specs/YYYY-MM-DD-<feature>.md` or `context/tech-specs/` when appropriate, and reference it from the plan.
 
@@ -375,15 +379,15 @@ When the plan involves architecture or tech design, also structure content using
 
 **Language-Specific Requirements:**
 
-| Stack | Mandatory Checks | Commands |
-|-------|------------------|----------|
-| **Frontend (JS/TS)** | Tests pass AND build succeeds | `npm test && npm run build` |
-| **Node.js** | Tests pass AND build succeeds (if applicable) | `npm test` / `npm run build` |
-| **Python** | Tests pass | `pytest` or `python -m pytest` |
-| **Go** | Tests pass | `go test -race ./...` |
-| **Ruby** | Tests pass | `bundle exec rspec` or `rake test` |
-| **Rust** | Tests pass | `cargo test` |
-| **Java** | Tests pass AND build succeeds | `mvn test` / `gradle test` |
+| Stack                | Mandatory Checks                              | Commands                           |
+| -------------------- | --------------------------------------------- | ---------------------------------- |
+| **Frontend (JS/TS)** | Tests pass AND build succeeds                 | `npm test && npm run build`        |
+| **Node.js**          | Tests pass AND build succeeds (if applicable) | `npm test` / `npm run build`       |
+| **Python**           | Tests pass                                    | `pytest` or `python -m pytest`     |
+| **Go**               | Tests pass                                    | `go test -race ./...`              |
+| **Ruby**             | Tests pass                                    | `bundle exec rspec` or `rake test` |
+| **Rust**             | Tests pass                                    | `cargo test`                       |
+| **Java**             | Tests pass AND build succeeds                 | `mvn test` / `gradle test`         |
 
 **Actions:**
 
@@ -425,6 +429,7 @@ Task(subagent_type="Explore", prompt="Find existing test patterns in codebase to
 ```
 
 **For UI projects, also use Playwright MCP:**
+
 ```
 Use Playwright MCP tools (browser_navigate, browser_click, browser_type, browser_screenshot) for E2E testing
 ```
@@ -443,15 +448,15 @@ Wait for all subagents to complete, then consolidate and fix any failures. **Do 
 
 **Language-Specific Validation:**
 
-| Stack | Mandatory Validation | Commands |
-|-------|---------------------|----------|
-| **Frontend (JS/TS)** | Lint + Build + Tests | `npm run lint && npm run build && npm test` |
-| **Node.js** | Lint + Build (if applicable) + Tests | `npm run lint && npm run build && npm test` |
-| **Python** | Lint + Tests | `ruff check . && pytest` or `flake8 && pytest` |
-| **Go** | Lint + Build + Tests | `golangci-lint run && go build ./... && go test -race ./...` |
-| **Ruby** | Lint + Tests | `rubocop && bundle exec rspec` |
-| **Rust** | Lint + Build + Tests | `cargo clippy && cargo build && cargo test` |
-| **Java** | Lint + Build + Tests | `mvn checkstyle:check && mvn compile && mvn test` |
+| Stack                | Mandatory Validation                 | Commands                                                     |
+| -------------------- | ------------------------------------ | ------------------------------------------------------------ |
+| **Frontend (JS/TS)** | Lint + Build + Tests                 | `npm run lint && npm run build && npm test`                  |
+| **Node.js**          | Lint + Build (if applicable) + Tests | `npm run lint && npm run build && npm test`                  |
+| **Python**           | Lint + Tests                         | `ruff check . && pytest` or `flake8 && pytest`               |
+| **Go**               | Lint + Build + Tests                 | `golangci-lint run && go build ./... && go test -race ./...` |
+| **Ruby**             | Lint + Tests                         | `rubocop && bundle exec rspec`                               |
+| **Rust**             | Lint + Build + Tests                 | `cargo clippy && cargo build && cargo test`                  |
+| **Java**             | Lint + Build + Tests                 | `mvn checkstyle:check && mvn compile && mvn test`            |
 
 **Actions:**
 
@@ -689,25 +694,28 @@ When working with large repositories (100+ files):
 
 **The workflow CANNOT proceed to Phase 6 (Commit) until ALL of these pass:**
 
-| Gate | Requirement | What Happens if Not Met |
-|------|-------------|-------------------------|
-| **Tests** | All tests must pass | STOP. Write tests. Do not proceed. |
-| **Build** | Build must succeed (frontend/compiled) | STOP. Fix build errors. Do not proceed. |
-| **Lint** | Linter must pass | STOP. Fix lint errors. Do not proceed. |
+| Gate         | Requirement                             | What Happens if Not Met                             |
+| ------------ | --------------------------------------- | --------------------------------------------------- |
+| **Tests**    | All tests must pass                     | STOP. Write tests. Do not proceed.                  |
+| **Build**    | Build must succeed (frontend/compiled)  | STOP. Fix build errors. Do not proceed.             |
+| **Lint**     | Linter must pass                        | STOP. Fix lint errors. Do not proceed.              |
 | **UI Tests** | Playwright MCP E2E tests (if UI exists) | STOP. Add E2E tests via Playwright. Do not proceed. |
 
 **NEVER output "Optional next steps" for testing.** Testing is NOT optional. If tests are missing:
+
 1. STOP the workflow
 2. Write the required tests
 3. Run tests until they pass
 4. Only then proceed to commit
 
 **For frontend projects specifically:**
+
 - `npm test` (or equivalent) MUST pass
 - `npm run build` MUST succeed
 - If UI exists, E2E tests via Playwright MCP MUST pass
 
 **For backend projects (Go, Python, Ruby, Rust, Java):**
+
 - Test command MUST pass (`go test -race ./...`, `pytest`, `rspec`, `cargo test`, `mvn test`)
 - Build command MUST succeed (if applicable)
 

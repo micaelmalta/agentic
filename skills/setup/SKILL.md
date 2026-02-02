@@ -1,6 +1,6 @@
 ---
 name: setup
-description: Configure MCP (Model Context Protocol) servers for Claude or Cursor. Use when the user runs /setup, wants to add Atlassian, Datadog, or Playwright MCP, or set up API keys for MCP connections.
+description: "Configure MCP (Model Context Protocol) servers for Claude or Cursor. Use when the user runs /setup, wants to add Atlassian, Datadog, or Playwright MCP, or set up API keys for MCP connections."
 triggers:
   - "/setup"
   - "setup MCP"
@@ -23,10 +23,10 @@ Configure **Atlassian** (two servers: `atlassian`, `atlassian-tech`), **Datadog*
 
 For full MCP management (add, remove, list, auth, scopes), use the official docs:
 
-| Client  | Docs |
-| ------- | ---- |
-| **Claude** (Claude Code) | [Connect Claude Code to tools via MCP](https://code.claude.com/docs/en/mcp) — `claude mcp add/list/remove`, HTTP/stdio/SSE, scopes (local/project/user), OAuth via `/mcp`. |
-| **Cursor** | [Model Context Protocol (MCP)](https://cursor.com/docs/context/mcp) — `mcp.json` (project: `.cursor/mcp.json`, global: `~/.cursor/mcp.json`), stdio/HTTP/SSE, config interpolation, OAuth. |
+| Client                   | Docs                                                                                                                                                                                       |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Claude** (Claude Code) | [Connect Claude Code to tools via MCP](https://code.claude.com/docs/en/mcp) — `claude mcp add/list/remove`, HTTP/stdio/SSE, scopes (local/project/user), OAuth via `/mcp`.                 |
+| **Cursor**               | [Model Context Protocol (MCP)](https://cursor.com/docs/context/mcp) — `mcp.json` (project: `.cursor/mcp.json`, global: `~/.cursor/mcp.json`), stdio/HTTP/SSE, config interpolation, OAuth. |
 
 Refer to these when the user asks how to manage MCP in general, add other servers, or troubleshoot.
 
@@ -47,12 +47,12 @@ If the structure already exists, skip or only add missing pieces. Then proceed w
 
 Ask the user which client(s) to configure. Use the **official config locations**:
 
-| Option   | Config location | Notes |
-| -------- | ----------------- | ----- |
-| **Cursor** | `~/.cursor/mcp.json` | [Cursor MCP docs](https://cursor.com/docs/context/mcp) |
-| **Claude** (Claude Code CLI) | `~/.claude.json` | [Claude Code MCP docs](https://code.claude.com/docs/en/mcp); use `claude mcp add` or merge into this file |
-| **Claude Desktop** (app) | `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) | Set `CLAUDE_DESKTOP=1` when running the setup script |
-| **Both**   | Cursor + Claude Code paths | Write to both `~/.cursor/mcp.json` and `~/.claude.json` |
+| Option                       | Config location                                                           | Notes                                                                                                     |
+| ---------------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| **Cursor**                   | `~/.cursor/mcp.json`                                                      | [Cursor MCP docs](https://cursor.com/docs/context/mcp)                                                    |
+| **Claude** (Claude Code CLI) | `~/.claude.json`                                                          | [Claude Code MCP docs](https://code.claude.com/docs/en/mcp); use `claude mcp add` or merge into this file |
+| **Claude Desktop** (app)     | `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) | Set `CLAUDE_DESKTOP=1` when running the setup script                                                      |
+| **Both**                     | Cursor + Claude Code paths                                                | Write to both `~/.cursor/mcp.json` and `~/.claude.json`                                                   |
 
 If the user doesn’t specify, offer **Cursor** and **Claude** and default to **both** (Cursor + Claude Code) unless they say otherwise.
 
@@ -83,15 +83,15 @@ If the user already has Cursor MCP configured (e.g. OAuth for Atlassian), keep e
 - **Datadog MCP (stdio):** Use the user's local path for the Node server. Default from snippet:
   - `command`: `node`
   - `args`: `["/Users/mmalta/projects/poc/mcp_datadog/src/index.js"]`
-  If the user has a different path (e.g. `MCP_DATADOG_PATH`), use that in `args`.
+    If the user has a different path (e.g. `MCP_DATADOG_PATH`), use that in `args`.
 - **Atlassian MCP (HTTP)** – two servers:
   - **atlassian:** `url`: `https://mcp.atlassian.com/v1/mcp`, `type`: `http`
   - **atlassian-tech:** same URL by default; override with `ATLASSIAN_TECH_URL` in env when running the setup script if the tech endpoint differs
-  Add `env` (e.g. `ATLASSIAN_API_TOKEN`, `ATLASSIAN_EMAIL`) only if the user provides them and the client supports env-based auth for HTTP MCP.
+    Add `env` (e.g. `ATLASSIAN_API_TOKEN`, `ATLASSIAN_EMAIL`) only if the user provides them and the client supports env-based auth for HTTP MCP.
 - **Playwright MCP (stdio):** Uses npx to run the latest version:
   - `command`: `npx`
   - `args`: `["@playwright/mcp@latest"]`
-  Optional args: `--headless`, `--browser <browser>`, `--viewport-size <WxH>`, `--config <path>`
+    Optional args: `--headless`, `--browser <browser>`, `--viewport-size <WxH>`, `--config <path>`
 
 ### 5. Write Config
 
@@ -196,6 +196,7 @@ For headless mode (recommended for CI):
 ```
 
 Optional arguments:
+
 - `--browser <chrome|firefox|webkit|msedge>` – specify browser
 - `--viewport-size <WxH>` – e.g., `1280x720`
 - `--user-data-dir <path>` – persistent browser profile

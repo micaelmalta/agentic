@@ -1,6 +1,6 @@
 ---
 name: dependencies
-description: Upgrade and manage dependencies: resolve conflicts, update lockfiles, and check compatibility. Use when the user asks to upgrade deps, update packages, fix dependency conflict, or update lockfile.
+description: "Upgrade and manage dependencies: resolve conflicts, update lockfiles, and check compatibility. Use when the user asks to upgrade deps, update packages, fix dependency conflict, or update lockfile."
 triggers:
   - "/deps"
   - "upgrade dependencies"

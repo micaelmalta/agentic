@@ -1,6 +1,6 @@
 ---
 name: architect
-description: Write technical specifications (tech specs): goals, scope, architecture, components, APIs, data models, database migrations, feature flags, risks, and rollout. Use when the user asks for a tech spec, technical design, architecture doc, design document, or when planning database changes or rollout strategies.
+description: "Write technical specifications (tech specs): goals, scope, architecture, components, APIs, data models, database migrations, feature flags, risks, and rollout. Use when the user asks for a tech spec, technical design, architecture doc, design document, or when planning database changes or rollout strategies."
 triggers:
   - "/architect"
   - "tech spec"
@@ -49,15 +49,16 @@ The template covers: metadata (PRD link, priority, timing, owner, status), archi
 
 When the feature involves schema changes, include a **Database Migration Plan**:
 
-| Aspect | Document |
-|--------|----------|
-| **Schema changes** | New tables, columns, indexes, constraints; use migration tool syntax (e.g., Prisma, Alembic, Flyway, goose) |
-| **Data migrations** | Backfills, transformations, default values for existing rows |
-| **Rollback strategy** | How to reverse the migration if deployment fails; what data loss is acceptable |
-| **Deployment order** | Whether migration runs before, during, or after code deploy; zero-downtime considerations |
-| **Testing** | How to test migration locally and in staging; seed data requirements |
+| Aspect                | Document                                                                                                    |
+| --------------------- | ----------------------------------------------------------------------------------------------------------- |
+| **Schema changes**    | New tables, columns, indexes, constraints; use migration tool syntax (e.g., Prisma, Alembic, Flyway, goose) |
+| **Data migrations**   | Backfills, transformations, default values for existing rows                                                |
+| **Rollback strategy** | How to reverse the migration if deployment fails; what data loss is acceptable                              |
+| **Deployment order**  | Whether migration runs before, during, or after code deploy; zero-downtime considerations                   |
+| **Testing**           | How to test migration locally and in staging; seed data requirements                                        |
 
 **Zero-downtime migrations**: For high-availability systems, plan migrations in phases:
+
 1. Add new column/table (nullable or with default)
 2. Deploy code that writes to both old and new
 3. Backfill existing data
@@ -68,14 +69,14 @@ When the feature involves schema changes, include a **Database Migration Plan**:
 
 When gradual rollout is needed, include a **Feature Flag Plan**:
 
-| Aspect | Document |
-|--------|----------|
-| **Flag name** | Descriptive, consistent with project naming (e.g., `enable_new_checkout_flow`) |
-| **Flag type** | Boolean, percentage, user segment, or variant (A/B) |
-| **Default state** | Off in production initially; on in dev/staging |
-| **Rollout stages** | Internal → beta users → percentage ramp → 100% |
-| **Kill switch** | How to disable quickly if issues arise |
-| **Cleanup** | When and how to remove the flag after full rollout |
+| Aspect             | Document                                                                       |
+| ------------------ | ------------------------------------------------------------------------------ |
+| **Flag name**      | Descriptive, consistent with project naming (e.g., `enable_new_checkout_flow`) |
+| **Flag type**      | Boolean, percentage, user segment, or variant (A/B)                            |
+| **Default state**  | Off in production initially; on in dev/staging                                 |
+| **Rollout stages** | Internal → beta users → percentage ramp → 100%                                 |
+| **Kill switch**    | How to disable quickly if issues arise                                         |
+| **Cleanup**        | When and how to remove the flag after full rollout                             |
 
 **Flag placement**: Identify where in code the flag check goes (API layer, service layer, UI) and what behavior changes per state.
 

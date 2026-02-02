@@ -1,6 +1,6 @@
 ---
 name: para-programming
-description: Structured workflow for AI-assisted development (Plan → Review → Execute → Summarize → Archive). Use when the user invokes /plan, /execute, /summarize, /archive, /check, /help, /init, /status, or when adding features, fixing non-trivial bugs, refactoring, or doing any task that will result in git changes. Skip for read-only queries, explanations, or quick fixes.
+description: "Structured workflow for AI-assisted development (Plan → Review → Execute → Summarize → Archive). Use when the user invokes /plan, /execute, /summarize, /archive, /check, /help, /init, /status, or when adding features, fixing non-trivial bugs, refactoring, or doing any task that will result in git changes. Skip for read-only queries, explanations, or quick fixes."
 triggers:
   - "/plan"
   - "/execute"

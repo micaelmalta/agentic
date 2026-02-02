@@ -1,6 +1,6 @@
 ---
 name: debugging
-description: Debug failures systematically: reproduce, hypothesize, bisect, and fix. Use when the user reports a bug, asks why something fails, or wants to find the root cause.
+description: "Debug failures systematically: reproduce, hypothesize, bisect, and fix. Use when the user reports a bug, asks why something fails, or wants to find the root cause."
 triggers:
   - "/debug"
   - "fix this bug"

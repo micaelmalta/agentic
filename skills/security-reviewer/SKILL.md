@@ -1,6 +1,6 @@
 ---
 name: security-reviewer
-description: Review code and design for security vulnerabilities and insecure patterns. Use when the user asks for a security review, security audit, find vulnerabilities, or when assessing auth, crypto, input handling, or exposure of sensitive data.
+description: "Review code and design for security vulnerabilities and insecure patterns. Use when the user asks for a security review, security audit, find vulnerabilities, or when assessing auth, crypto, input handling, or exposure of sensitive data."
 triggers:
   - "/security"
   - "security review"
