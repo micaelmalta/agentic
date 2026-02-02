@@ -33,6 +33,7 @@ Each skill lives in `skills/<name>/SKILL.md` with YAML frontmatter defining:
 
 **Core Skills:**
 - **para** - PARA methodology (`/plan`, `/execute`, `/summarize`, `/archive`, `/check`, `/status`, `/help`, `/init`)
+- **developer** - TDD implementation (`/dev`) - write tests first, Red-Green-Refactor cycle
 - **workflow** - Complete development workflow from planning to GitHub PR (`/workflow`)
 - **rlm** - Recursive Language Model for large codebases (100+ files)
 - **architect** - Technical specifications and design documents
@@ -42,7 +43,7 @@ Each skill lives in `skills/<name>/SKILL.md` with YAML frontmatter defining:
 - **documentation** - README, API docs, ADRs, runbooks
 - **git-commits** - Commit messages, changelogs, release notes
 - **refactoring** - Safe structural changes without behavior modification
-- **debugging** - Bug reproduction, diagnosis, and fixing
+- **debugging** - Bug reproduction with test, diagnosis, and fixing (TDD)
 - **dependencies** - Dependency management and conflict resolution
 - **performance** - Profiling and optimization
 - **ci-cd** - CI/CD pipeline configuration and fixes
@@ -202,8 +203,8 @@ Searchable knowledge base:
 ## Skill Invocation
 
 When a task matches a skill's domain, **read the skill file first** and follow its protocol. Skills are invoked via:
-- Commands: `/plan`, `/execute`, `/test`, `/review`, `/security`, `/commit`, etc.
-- Natural language triggers: "add tests", "code review", "fix this bug"
-- Explicit requests: "use the testing skill"
+- Commands: `/plan`, `/execute`, `/dev`, `/test`, `/review`, `/security`, `/commit`, etc.
+- Natural language triggers: "add tests", "code review", "fix this bug", "implement this", "TDD"
+- Explicit requests: "use the testing skill", "use the developer skill"
 
 The skill system provides specialized knowledge and structured approaches for each development activity.

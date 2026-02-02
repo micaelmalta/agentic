@@ -20,13 +20,20 @@ triggers:
 
 **"Structure + Execution = Reproducible Results."**
 
-Complete development workflow that guides work from initial planning through GitHub PR creation. Uses PARA methodology (Plan → Review → Execute → Summarize → Archive) and integrates RLM for efficient large codebase handling.
+This workflow is a **pure orchestrator** that coordinates specialized skills through phases. It does not implement functionality directly—it delegates to the appropriate skill for each task.
+
+**Orchestration Model:**
+```
+Plan (para) → Branch → Execute (developer) → Test (testing) → Validate (reviewers) → Commit (git-commits) → PR → Monitor
+```
+
+Each phase invokes one or more specialized skills. The workflow ensures proper sequencing, gates, and parallel execution.
 
 ---
 
 ## Required Skills
 
-This workflow **must use** the **para**, **rlm**, **architect**, **testing**, **code-reviewer**, **security-reviewer**, **documentation**, **git-commits**, **refactoring**, **debugging**, **dependencies**, **performance**, **ci-cd**, and **setup** skills. **Invoke them by reading and following** their skill files: e.g. read `skills/para/SKILL.md` for plan/execute/summarize/archive, and read `skills/architect/SKILL.md` plus `skills/architect/tech_proposal_template.md` when writing plans that need technical design. Details below.
+This workflow **must use** the **para**, **developer**, **rlm**, **architect**, **testing**, **code-reviewer**, **security-reviewer**, **documentation**, **git-commits**, **refactoring**, **debugging**, **dependencies**, **performance**, **ci-cd**, and **setup** skills. **Invoke them by reading and following** their skill files: e.g. read `skills/para/SKILL.md` for plan/execute/summarize/archive, read `skills/developer/SKILL.md` for TDD implementation, and read `skills/architect/SKILL.md` plus `skills/architect/tech_proposal_template.md` when writing plans that need technical design. Details below.
 
 ### Setup skill (MCP: Atlassian, Atlassian Tech, Datadog, Playwright)
 
@@ -64,6 +71,18 @@ Run **/setup** before using Jira, Confluence, Datadog, or Playwright in the work
 | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
 | `/architect`                                                           | Trigger architect workflow                                                    |
 | "tech spec", "technical design", "architecture doc", "design document" | Write tech spec: goals, scope, architecture, APIs, data model, risks, rollout |
+
+### Developer skill (TDD implementation) - MANDATORY
+
+| Command / trigger                                             | Purpose                                                      |
+| ------------------------------------------------------------- | ------------------------------------------------------------ |
+| `/dev`, `/developer`                                          | Trigger TDD development workflow                             |
+| "implement this", "write the code", "TDD", "red green refactor" | Write tests first, then code using Red-Green-Refactor cycle |
+
+**MANDATORY:** All implementation uses TDD. Read `skills/developer/SKILL.md` for the full protocol. The developer skill handles:
+- Feature implementation (tests define behavior first)
+- Bug fixes (reproduction test first)
+- Refactoring (tests as safety net)
 
 ### Testing skill (test design and execution) - MANDATORY
 
@@ -113,10 +132,10 @@ Run **/setup** before using Jira, Confluence, Datadog, or Playwright in the work
 
 ### Debugging skill (repro and fix)
 
-| Command / trigger                                  | Purpose                             |
-| -------------------------------------------------- | ----------------------------------- |
-| `/debug`                                           | Trigger debugging workflow          |
-| "fix this bug", "why does this fail", "root cause" | Reproduce, hypothesize, bisect, fix |
+| Command / trigger                                  | Purpose                                                   |
+| -------------------------------------------------- | --------------------------------------------------------- |
+| `/debug`                                           | Trigger debugging workflow                                |
+| "fix this bug", "why does this fail", "root cause" | Reproduce with test, hypothesize, bisect, fix (uses TDD)  |
 
 ### Dependencies skill (upgrade and lockfile)
 
@@ -139,7 +158,7 @@ Run **/setup** before using Jira, Confluence, Datadog, or Playwright in the work
 | `/ci`                                       | Trigger CI/CD workflow                               |
 | "CI", "pipeline", "fix the build", "deploy" | Configure or fix build, test, lint, deploy pipelines |
 
-Use **PARA** for plan → execute → summarize → archive. Use **RLM** when the codebase is large (>100 files) or when you need to find usage/patterns across many files. Use **architect** when writing a tech spec or design document before implementation. Use **testing** (MANDATORY) when adding or running tests—all tests must pass before PR; use **Playwright MCP** for UI/E2E testing. Use **code-reviewer** when reviewing PRs or diffs. Use **security-reviewer** when auditing for vulnerabilities or before release. Use **documentation** when writing or updating docs. Use **git-commits** when writing commit messages or changelogs. Use **refactoring** when changing structure without behavior. Use **debugging** when investigating or fixing bugs. Use **dependencies** when upgrading or resolving deps. Use **performance** when profiling or optimizing. Use **ci-cd** when configuring or fixing pipelines and deploy. Use **setup** when the user wants to add or reconfigure Atlassian, Datadog, or Playwright MCP for Claude or Cursor.
+Use **PARA** for plan → execute → summarize → archive. Use **developer** (MANDATORY) for all implementation—enforces TDD (tests before code) for features, bug fixes, and refactoring. Use **RLM** when the codebase is large (>100 files) or when you need to find usage/patterns across many files. Use **architect** when writing a tech spec or design document before implementation. Use **testing** (MANDATORY) when adding or running tests—all tests must pass before PR; use **Playwright MCP** for UI/E2E testing. Use **code-reviewer** when reviewing PRs or diffs. Use **security-reviewer** when auditing for vulnerabilities or before release. Use **documentation** when writing or updating docs. Use **git-commits** when writing commit messages or changelogs. Use **refactoring** when changing structure without behavior. Use **debugging** when investigating or fixing bugs (with TDD reproduction test). Use **dependencies** when upgrading or resolving deps. Use **performance** when profiling or optimizing. Use **ci-cd** when configuring or fixing pipelines and deploy. Use **setup** when the user wants to add or reconfigure Atlassian, Datadog, or Playwright MCP for Claude or Cursor.
 
 ---
 
@@ -340,15 +359,20 @@ When the plan involves architecture or tech design, also structure content using
 
 **PARA command:** Use `/execute` to implement with tracking and context.
 
+**Skill:** Use the **developer** skill (`skills/developer/SKILL.md`) for all implementation. The developer skill enforces TDD (Test-Driven Development).
+
 **Actions:**
 
 1. Start execution with `/execute`; track progress with TodoWrite tool
-2. Use parallel subagents for efficient execution:
+2. **Read and follow the developer skill** for implementation:
+   - **Features:** Red-Green-Refactor cycle (tests first)
+   - **Bug fixes:** Write reproduction test first, then fix
+   - **Refactoring:** Tests as safety net
+3. Use parallel subagents for efficient execution:
    - **Bash agent:** Git operations, command execution, builds
    - **Explore agent:** Code navigation, pattern discovery
-   - **General-purpose agent:** Research, complex analysis
+   - **General-purpose agent:** Research, complex analysis, test writing
    - **RLM skill:** Parallel implementation on multiple independent files/components
-3. Implement changes file by file
 4. Reference plan document during execution
 5. Commit changes atomically with clear messages
 6. Document deviations from plan in commit messages
@@ -360,22 +384,25 @@ When the plan involves architecture or tech design, also structure content using
 - Different agents can work on different components simultaneously
 - Merge results after all subtasks complete
 
-**Quality Gates:**
+**Quality Gates (from developer skill):**
 
-- Code follows project conventions
-- No security vulnerabilities introduced
-- Changes are minimal and focused
-- Comments only on non-obvious logic
+- [ ] TDD followed (tests before code)
+- [ ] All tests pass
+- [ ] Code follows project conventions
+- [ ] No security vulnerabilities
+- [ ] Changes are minimal and focused
 
 ---
 
-## Phase 4: Testing (MANDATORY)
+## Phase 4: Testing Validation (MANDATORY)
 
-**Goal:** Verify implementation works and prevent regressions.
+**Goal:** Verify all tests pass and coverage is adequate.
 
 **⚠️ BLOCKING REQUIREMENT:** Testing is MANDATORY. Do NOT proceed to Phase 5 until all tests pass.
 
-**Skill:** Use the **testing** skill protocol. **For UI/frontend work, Playwright MCP is MANDATORY.**
+**Skills:** Use the **testing** skill for test execution and the **developer** skill for TDD validation. **For UI/frontend work, Playwright MCP is MANDATORY.**
+
+**NOTE:** If following the developer skill (TDD) correctly, tests should already exist from Phase 3. This phase validates and extends coverage.
 
 **Language-Specific Requirements:**
 
@@ -391,23 +418,24 @@ When the plan involves architecture or tech design, also structure content using
 
 **Actions:**
 
-1. Write tests for new functionality using parallel subagents:
+1. Verify tests from Phase 3 (developer skill TDD) are passing
+2. Add additional test coverage using parallel subagents:
    - **Bash agent:** Run test suite, execute build commands
-   - **General-purpose agent:** Write test cases for complex scenarios
+   - **General-purpose agent:** Write additional edge case tests
    - **Explore agent:** Find existing test patterns and files to emulate
    - **Playwright MCP:** For UI testing (mandatory if frontend)
-2. Test coverage requirements:
+3. Test coverage requirements:
    - Happy path (primary use case)
    - Edge cases (boundary conditions, empty data)
    - Error handling (invalid inputs)
    - Regression tests (existing scenarios still work)
-3. Parallel test execution:
+4. Parallel test execution:
    - Run unit tests
    - Run integration tests (if applicable)
    - Run E2E tests via Playwright MCP (if UI exists)
-4. **For frontend/UI projects:** Verify build succeeds
-5. Fix any test failures or regressions
-6. Validate test coverage is reasonable
+5. **For frontend/UI projects:** Verify build succeeds
+6. Fix any test failures or regressions
+7. Validate test coverage is reasonable
 
 **Required Coverage (ALL must pass to proceed):**
 
@@ -670,11 +698,14 @@ When working with large repositories (100+ files):
 
 ## Workflow Checklist
 
-- [ ] Phase 1: Plan created and approved
+- [ ] Phase 1: Plan created and approved (para skill)
 - [ ] Phase 2: Feature branch created
-- [ ] Phase 3: Implementation complete
-- [ ] Phase 4: **Tests written and passing (MANDATORY)**
-  - [ ] Unit tests pass
+- [ ] Phase 3: **Implementation complete** (developer skill)
+  - [ ] TDD followed (tests before code)
+  - [ ] All developer skill quality gates met
+- [ ] Phase 4: **Test validation complete** (testing skill)
+  - [ ] All tests pass
+  - [ ] Additional edge case tests added
   - [ ] Integration tests pass (if applicable)
   - [ ] E2E tests via Playwright MCP pass (if UI exists)
   - [ ] Build succeeds (mandatory for frontend/compiled languages)

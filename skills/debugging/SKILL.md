@@ -17,19 +17,40 @@ triggers:
 
 **"Reproduce first; then narrow down."**
 
+**"Write a failing test before fixing."** (TDD for Bug Fixes)
+
 Get a reliable repro, form a hypothesis, test it, then fix. Avoid changing code until the cause is understood.
+
+**⚠️ MANDATORY:** Always write a failing test that reproduces the bug BEFORE attempting to fix it. This ensures:
+- The bug is truly understood and reproducible
+- The fix can be verified automatically
+- The bug cannot regress in the future
 
 ---
 
 ## Protocol
 
-### 1. Reproduce
+### 1. Reproduce (with Test)
 
 - **Steps**: Minimal steps to see the failure (code path, input, env).
-- **Environment**: Runtime, OS, versions, config, env vars. Note if it’s intermittent.
+- **Environment**: Runtime, OS, versions, config, env vars. Note if it's intermittent.
 - **Output**: Exact error message, stack trace, logs, or observable misbehavior.
 
-If the user didn’t provide steps, ask or infer and state assumptions. If you can’t reproduce, say so and suggest what’s needed (e.g. logs, repro repo).
+**⚠️ MANDATORY: Write a Failing Test**
+
+Once you understand the reproduction steps, **write a test that reproduces the bug**:
+
+1. Create a test case that exercises the buggy code path
+2. Assert the expected (correct) behavior
+3. Run the test and verify it FAILS (reproducing the bug)
+4. This test becomes your verification that the fix works
+
+```
+# TDD Bug Fix Flow
+1. Write test → 2. Verify test fails → 3. Fix code → 4. Verify test passes
+```
+
+If the user didn't provide steps, ask or infer and state assumptions. If you can't reproduce, say so and suggest what's needed (e.g. logs, repro repo).
 
 ### 2. Hypothesize
 
@@ -46,8 +67,11 @@ If the user didn’t provide steps, ask or infer and state assumptions. If you c
 ### 4. Fix and Verify
 
 - **Fix**: Minimal change that addresses the root cause (not only the symptom).
-- **Verify**: Reproduce scenario passes; run existing tests; check for regressions.
-- **Document**: If the fix is non-obvious, add a short comment or test that captures the bug.
+- **Verify**:
+  - **Reproduction test now passes** (the bug is fixed)
+  - Run all existing tests; check for regressions
+  - The reproduction test serves as permanent regression protection
+- **Document**: The reproduction test itself documents the bug. Add a comment in the test explaining what bug it prevents.
 
 ### 5. Commands
 
@@ -67,6 +91,8 @@ When the failure involves production or staged environments, use the **Datadog M
 ## Checklist
 
 - [ ] Reproducible (steps and environment clear).
+- [ ] **Failing reproduction test written** (TDD - MANDATORY).
 - [ ] Hypothesis tested (log/assert/bisect) before coding the fix.
-- [ ] Fix targets root cause; tests or manual check confirm the bug is gone.
+- [ ] Fix targets root cause; **reproduction test now passes**.
+- [ ] All existing tests still pass (no regressions).
 - [ ] No unrelated changes in the fix.
