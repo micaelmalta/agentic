@@ -23,6 +23,7 @@ triggers:
 This workflow is a **pure orchestrator** that coordinates specialized skills through phases. It does not implement functionality directly—it delegates to the appropriate skill for each task.
 
 **Orchestration Model:**
+
 ```
 Plan (para) → Branch → Execute (developer) → Test (testing) → Validate (reviewers) → Commit (git-commits) → PR → Monitor
 ```
@@ -74,12 +75,13 @@ Run **/setup** before using Jira, Confluence, Datadog, or Playwright in the work
 
 ### Developer skill (TDD implementation) - MANDATORY
 
-| Command / trigger                                             | Purpose                                                      |
-| ------------------------------------------------------------- | ------------------------------------------------------------ |
-| `/dev`, `/developer`                                          | Trigger TDD development workflow                             |
+| Command / trigger                                               | Purpose                                                     |
+| --------------------------------------------------------------- | ----------------------------------------------------------- |
+| `/dev`, `/developer`                                            | Trigger TDD development workflow                            |
 | "implement this", "write the code", "TDD", "red green refactor" | Write tests first, then code using Red-Green-Refactor cycle |
 
 **MANDATORY:** All implementation uses TDD. Read `skills/developer/SKILL.md` for the full protocol. The developer skill handles:
+
 - Feature implementation (tests define behavior first)
 - Bug fixes (reproduction test first)
 - Refactoring (tests as safety net)
@@ -132,10 +134,10 @@ Run **/setup** before using Jira, Confluence, Datadog, or Playwright in the work
 
 ### Debugging skill (repro and fix)
 
-| Command / trigger                                  | Purpose                                                   |
-| -------------------------------------------------- | --------------------------------------------------------- |
-| `/debug`                                           | Trigger debugging workflow                                |
-| "fix this bug", "why does this fail", "root cause" | Reproduce with test, hypothesize, bisect, fix (uses TDD)  |
+| Command / trigger                                  | Purpose                                                  |
+| -------------------------------------------------- | -------------------------------------------------------- |
+| `/debug`                                           | Trigger debugging workflow                               |
+| "fix this bug", "why does this fail", "root cause" | Reproduce with test, hypothesize, bisect, fix (uses TDD) |
 
 ### Dependencies skill (upgrade and lockfile)
 
@@ -300,12 +302,14 @@ These skills depend on previous results and must run **sequentially**:
 ```
 
 **Checks (ALL must pass):**
+
 - [ ] Unit tests pass
 - [ ] Integration tests pass
 - [ ] E2E tests pass (if UI)
 - [ ] Build succeeds
 
 **On failure:**
+
 1. Identify which test(s) failed
 2. Analyze failure reason
 3. Fix the code (not the test, unless test is wrong)
@@ -339,12 +343,14 @@ These skills depend on previous results and must run **sequentially**:
 ```
 
 **Checks (ALL must pass):**
+
 - [ ] Linter passes (auto-fix allowed)
 - [ ] Build succeeds
 - [ ] Code review passed
 - [ ] Security review passed
 
 **On failure:**
+
 1. **Linter fails:** Run auto-fix, then manual fix remaining
 2. **Build fails:** Fix compilation/bundling errors
 3. **Code review fails:** Address feedback, improve code
@@ -354,17 +360,18 @@ These skills depend on previous results and must run **sequentially**:
 
 ### Escalation Rules
 
-| Situation | Action |
-|-----------|--------|
-| Test fails 3+ times for same reason | Ask user for guidance |
-| Security vulnerability found | STOP workflow, require user decision |
-| Conflicting requirements | Ask user to clarify |
-| External dependency blocking | Document blocker, ask user |
-| Flaky test detected | Fix flakiness before proceeding |
+| Situation                           | Action                               |
+| ----------------------------------- | ------------------------------------ |
+| Test fails 3+ times for same reason | Ask user for guidance                |
+| Security vulnerability found        | STOP workflow, require user decision |
+| Conflicting requirements            | Ask user to clarify                  |
+| External dependency blocking        | Document blocker, ask user           |
+| Flaky test detected                 | Fix flakiness before proceeding      |
 
 ### Loop Enforcement
 
 **The workflow MUST:**
+
 1. Track retry count for each gate
 2. Log each failure and fix attempt
 3. Never proceed with failing checks
@@ -471,6 +478,7 @@ When the plan involves architecture or tech design, also structure content using
 **Commit Plan to Git:**
 
 After plan approval, commit it to git:
+
 ```bash
 git add context/plans/<plan-file>.md
 git commit -m "docs: add plan for <task>"
@@ -595,6 +603,7 @@ END WHILE
 ```
 
 **DO NOT proceed to Phase 5 until this loop completes successfully.**
+
 - [ ] **UI: E2E tests via Playwright MCP** (mandatory if UI exists)
 
 **⚡ PARALLEL SUBAGENTS (launch in single message):**
@@ -783,6 +792,7 @@ Wait for all 5 subagents to complete, then consolidate findings and fix any issu
 **Commit Summary to Git:**
 
 After creating the summary, commit it to git:
+
 ```bash
 git add context/summaries/<summary-file>.md
 git commit -m "docs: add summary for <task>"
