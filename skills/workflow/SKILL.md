@@ -468,6 +468,14 @@ When the plan involves architecture or tech design, also structure content using
 - User can approve, request changes, or provide clarification
 - Do NOT proceed to execution without approval
 
+**Commit Plan to Git:**
+
+After plan approval, commit it to git:
+```bash
+git add context/plans/<plan-file>.md
+git commit -m "docs: add plan for <task>"
+```
+
 ---
 
 ## Phase 2: Create Feature Branch
@@ -771,6 +779,14 @@ Wait for all 5 subagents to complete, then consolidate findings and fix any issu
 - Known limitations
 - Future improvements
 - Link to merged PR and commits
+
+**Commit Summary to Git:**
+
+After creating the summary, commit it to git:
+```bash
+git add context/summaries/<summary-file>.md
+git commit -m "docs: add summary for <task>"
+```
 
 **⚡ PARALLEL SUBAGENTS for documentation (if docs need updating):**
 
