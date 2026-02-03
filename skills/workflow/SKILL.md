@@ -30,6 +30,8 @@ Plan (para) → Branch → Execute (developer) → Test (testing) → Validate (
 
 Each phase invokes one or more specialized skills. The workflow ensures proper sequencing, gates, and parallel execution.
 
+**⚠️ ENFORCEMENT:** Phase gates are MANDATORY. Read `skills/workflow/ENFORCEMENT.md` for validation enforcement mechanisms, scripts, and pre-commit hooks to prevent skipping critical phases (especially Phase 5: code review + security review).
+
 ---
 
 ## Required Skills
@@ -392,6 +394,14 @@ These skills depend on previous results and must run **sequentially**:
 - **NEVER suggest tests as "optional" or "next steps"**
 - **STOP and write tests before proceeding to commit**
 
+**⛔ MANDATORY VALIDATION:** Phase 5 validation is NOT optional. The workflow MUST include:
+
+- Code review via code-reviewer subagent (Phase 5)
+- Security review via security-reviewer subagent (Phase 5)
+- **NEVER skip or suggest reviews as "optional" or "next steps"**
+- **STOP and run ALL 5 validations before proceeding to commit**
+- **Use validation script to verify:** `python3 skills/workflow/scripts/validate_phase.py --phase 5`
+
 **OUTCOME FOCUS:** Work continues until PR is merged or explicitly stopped by user. Track progress visibly at each phase.
 
 **PARALLEL EXECUTION:** Launch multiple subagents simultaneously for independent tasks within the same phase. Track all parallel work with TodoWrite tool.
@@ -697,13 +707,29 @@ END WHILE
 
 **⚡ PARALLEL SUBAGENTS (launch ALL in single message):**
 
+**⛔ CRITICAL ENFORCEMENT:** You MUST launch ALL 5 subagents below. DO NOT skip code-reviewer or security-reviewer. They are NOT optional.
+
 ```
 Task(subagent_type="Bash", prompt="Run linter: npm run lint (or project equivalent)")
 Task(subagent_type="Bash", prompt="Run build: npm run build (or project equivalent)")
 Task(subagent_type="Bash", prompt="Run tests: npm test (or project equivalent)")
-Task(subagent_type="general-purpose", prompt="Run code-reviewer skill on all changed files. Review for correctness, readability, maintainability.")
-Task(subagent_type="general-purpose", prompt="Run security-reviewer skill on all changed files. Check for injection, XSS, auth issues, sensitive data exposure.")
+Task(subagent_type="general-purpose", prompt="Read skills/code-reviewer/SKILL.md and run code review on all changed files. Review for correctness, readability, maintainability, accessibility, i18n.")
+Task(subagent_type="general-purpose", prompt="Read skills/security-reviewer/SKILL.md and run security review on all changed files. Check for injection, XSS, auth issues, sensitive data exposure, crypto vulnerabilities.")
 ```
+
+**VERIFICATION CHECKLIST (Complete BEFORE proceeding to Phase 6):**
+
+Before moving to Phase 6 (Commit), you MUST verify completion of ALL 5 tasks:
+
+1. [ ] Linter subagent completed - Result: PASS/FAIL
+2. [ ] Build subagent completed - Result: PASS/FAIL
+3. [ ] Tests subagent completed - Result: PASS/FAIL
+4. [ ] **Code review subagent completed** - Result: PASS/FAIL (with findings documented)
+5. [ ] **Security review subagent completed** - Result: PASS/FAIL (with findings documented)
+
+**IF any subagent was not launched:** STOP. Go back and launch it now. This is a blocking requirement.
+
+**IF any check failed:** Fix issues and re-run ALL validations until all pass.
 
 Wait for all 5 subagents to complete, then consolidate findings and fix any issues before proceeding. **Do NOT proceed until ALL validation checks pass.**
 
@@ -713,13 +739,35 @@ Wait for all 5 subagents to complete, then consolidate findings and fix any issu
 
 **Goal:** Stage work for PR creation.
 
+**⛔ PHASE 5 GATE ENFORCEMENT:**
+
+Before executing ANY action in Phase 6, you MUST verify Phase 5 completion:
+
+```
+PHASE 5 COMPLETION CHECKLIST:
+✓ [ ] Linter executed and passed
+✓ [ ] Build executed and passed
+✓ [ ] Tests executed and passed
+✓ [ ] Code review subagent launched AND completed
+✓ [ ] Security review subagent launched AND completed
+✓ [ ] All findings from reviews addressed
+✓ [ ] Re-validation completed after fixes
+
+IF ANY item above is unchecked:
+  → STOP immediately
+  → Go back to Phase 5
+  → Complete missing steps
+  → Do NOT commit until ALL checks pass
+```
+
 **Skill:** Use **git-commits** skill for commit message conventions.
 
 **Actions:**
 
-1. Stage all relevant files: `git add <files>`
-2. Create commit with clear message (follow git-commits skill / project conventions)
-3. Push to remote: `git push -u origin <branch-name>`
+1. **FIRST:** Verify Phase 5 gate (checklist above) is complete
+2. Stage all relevant files: `git add <files>`
+3. Create commit with clear message (follow git-commits skill / project conventions)
+4. Push to remote: `git push -u origin <branch-name>`
 
 **Commit Message Format (Conventional Commits):**
 
