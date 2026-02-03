@@ -170,14 +170,14 @@ Use **PARA** for plan → execute → summarize → archive. Use **developer** (
 
 After **/setup** has been run and MCPs are configured, use these tools when relevant:
 
-| MCP                | When to use                                                                                                                                                                                                                  |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **atlassian**      | Jira: get issue details, search JQL, transitions, link to PR. Confluence: get page, search CQL, spaces. Use in **Phase 1 (Plan)** for ticket context and in **Phase 7 (PR)** to link PR to Jira.                             |
-| **atlassian-tech** | Same capabilities as atlassian; use when the context is tech-specific (e.g. engineering Jira/Confluence).                                                                                                                    |
-| **Datadog**        | Logs: search_logs, get_log_details. Metrics: query_metrics, list_metrics. Monitors: list_monitors, get_monitor_status. Traces: query_traces. Use in **debugging**, **ci-cd** (monitoring/alerts), and **Phase 8 (Monitor)**. |
-| **Playwright**     | Browser automation for UI testing. **MANDATORY for any UI/frontend work.** Use in **Phase 4 (Testing)** for E2E and visual testing.                                                                                          |
+| MCP                | When to use                                                                                                                                                                                                                                                                                 |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **atlassian**      | Jira: get issue details, search JQL, transitions, link to PR. Confluence: get page, search CQL, spaces. Use in **Phase 1 (Plan)** for ticket context; in **Phase 2** transition ticket to **In Progress**; in **Phase 7 (PR)** link PR to Jira and transition ticket to **In Code Review**. |
+| **atlassian-tech** | Same capabilities as atlassian; use when the context is tech-specific (e.g. engineering Jira/Confluence).                                                                                                                                                                                   |
+| **Datadog**        | Logs: search_logs, get_log_details. Metrics: query_metrics, list_metrics. Monitors: list_monitors, get_monitor_status. Traces: query_traces. Use in **debugging**, **ci-cd** (monitoring/alerts), and **Phase 8 (Monitor)**.                                                                |
+| **Playwright**     | Browser automation for UI testing. **MANDATORY for any UI/frontend work.** Use in **Phase 4 (Testing)** for E2E and visual testing.                                                                                                                                                         |
 
-Skills that should use these MCPs when the task involves tickets or observability: **workflow** (Jira/Confluence in plan and PR), **ci-cd** (Datadog for monitoring/observability), **debugging** (Datadog logs/traces), **documentation** (Confluence for docs), **testing** (Playwright for UI tests). Use **atlassian** or **atlassian-tech** as appropriate for the context.
+Skills that should use these MCPs when the task involves tickets or observability: **workflow** (Jira/Confluence in plan and PR; Jira transitions: In Progress at Phase 2, In Code Review at Phase 7), **ci-cd** (Datadog for monitoring/observability), **debugging** (Datadog logs/traces), **documentation** (Confluence for docs), **testing** (Playwright for UI tests). Use **atlassian** or **atlassian-tech** as appropriate for the context.
 
 ---
 
@@ -502,8 +502,9 @@ git commit -m "docs: add plan for <task>"
 
 **Actions:**
 
-1. Create feature branch: `git checkout -b feature/<description>` or `fix/<description>`
-2. Confirm branch creation with `git status`
+1. **If a Jira ticket key is provided:** Use **Atlassian MCP** to transition the issue to **In Progress**. Call `jira_get_transitions` with the issue key, find the transition whose name matches "In Progress" (or "In progress"; names vary by project), then call `jira_transition_issue` with that transition ID. This marks the ticket as in progress before implementation starts.
+2. Create feature branch: `git checkout -b feature/<description>` or `fix/<description>`
+3. Confirm branch creation with `git status`
 
 ---
 
@@ -794,6 +795,7 @@ IF ANY item above is unchecked:
    - Test plan or validation steps
    - Any breaking changes or migration notes
 3. **Mark PR ready for review only after all commits are pushed:** run `gh pr ready` (or `gh pr ready <number>`) when the branch is complete and no further commits are expected for this round.
+4. **If a Jira ticket key was provided:** After the PR is created (and optionally after marking it ready), use **Atlassian MCP** to transition the issue to **In Code Review**. Call `jira_get_transitions` for the issue, find the transition whose name matches "In Code Review" or "Code Review" (names vary by project), then call `jira_transition_issue` with that transition ID.
 
 **PR Description Template:**
 

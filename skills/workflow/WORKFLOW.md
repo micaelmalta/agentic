@@ -46,6 +46,7 @@ Visual representation of the complete developer workflow orchestration.
 ┌─────────────────────────────────────────────────────────────────────────────────────────┐
 │ PHASE 2: BRANCH                                                                          │
 ├─────────────────────────────────────────────────────────────────────────────────────────┤
+│   If Jira ticket: transition to In Progress (Atlassian MCP)                             │
 │   git checkout -b feature/<name> or fix/<name>                                          │
 └─────────────────────────────────────────────────────────────────────────────────────────┘
                                           │
@@ -140,8 +141,8 @@ Visual representation of the complete developer workflow orchestration.
 ┌─────────────────────────────────────────────────────────────────────────────────────────┐
 │ PHASE 7: PR                                                                              │
 ├─────────────────────────────────────────────────────────────────────────────────────────┤
-│   gh pr create --draft --title "..." --body "## Summary\n## Changes\n## Test Plan"     │
-│   After all commits pushed: gh pr ready   Link to Jira (Atlassian MCP)                  │
+│   gh pr create --draft --title "..." --body "..."  After all commits: gh pr ready       │
+│   Jira: link PR; transition ticket to In Code Review (Atlassian MCP)                   │
 └─────────────────────────────────────────────────────────────────────────┘
                                           │
                                           ▼

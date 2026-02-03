@@ -208,7 +208,7 @@ Task(subagent_type="general-purpose",
 
 The workflow integrates with MCP servers:
 
-- **Atlassian / Atlassian-Tech**: Jira tickets, Confluence docs (Phase 1, 7)
+- **Atlassian / Atlassian-Tech**: Jira tickets, Confluence docs. Phase 1: ticket context; Phase 2: transition ticket to **In Progress**; Phase 7: link PR, transition ticket to **In Code Review**.
 - **Datadog**: Logs, metrics, monitors (Phase 5, 8)
 - **Playwright**: Browser automation for E2E tests (Phase 4)
 
