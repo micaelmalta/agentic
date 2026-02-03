@@ -189,12 +189,12 @@ Skills that should use these MCPs when the task involves tickets or observabilit
 
 These skills are independent and should run as **parallel subagents**:
 
-| Skill                   | Subagent Type     | Why Parallel                                  |
-| ----------------------- | ----------------- | --------------------------------------------- |
-| **code-reviewer**       | `general-purpose` | Reviews correctness/readability independently |
-| **security-reviewer**   | `general-purpose` | Reviews security independently                |
-| **testing** (run suite) | `Bash`            | Test execution is independent                 |
-| **ci-cd** (lint/build)  | `Bash`            | Lint and build are independent                |
+| Skill                         | Subagent Type     | Why Parallel                                  |
+| ----------------------------- | ----------------- | --------------------------------------------- |
+| **code-reviewer**             | `general-purpose` | Reviews correctness/readability independently |
+| **security-reviewer**         | `general-purpose` | Reviews security independently                |
+| **testing** (run suite)       | `Bash`            | Test execution is independent                 |
+| **ci-cd** (lint/format/build) | `Bash`            | Lint, format, and build are independent       |
 
 **Example parallel launch:**
 
@@ -202,7 +202,7 @@ These skills are independent and should run as **parallel subagents**:
 Task(subagent_type="general-purpose", prompt="Run code-reviewer skill on changed files...")
 Task(subagent_type="general-purpose", prompt="Run security-reviewer skill on changed files...")
 Task(subagent_type="Bash", prompt="Run test suite: npm test")
-Task(subagent_type="Bash", prompt="Run linter and build: npm run lint && npm run build")
+Task(subagent_type="Bash", prompt="Run formatter and linter and build: npm run format && npm run lint && npm run build")
 ```
 
 ### Group 2: Exploration (Phase 1)
@@ -331,11 +331,11 @@ These skills depend on previous results and must run **sequentially**:
 │        │                  ▼                                 │
 │        │         ┌────────┴────────┐                       │
 │        │         │                 │                       │
-│        │      Linter?          Review?                     │
+│        │   Linter/Format?       Review?                    │
 │        │         │                 │                       │
 │        │         ▼                 ▼                       │
-│        │    Auto-fix or      Address                       │
-│        │    Manual fix       feedback                      │
+│        │    Run format,       Address                     │
+│        │    auto-fix lint,    feedback                    │
 │        │         │                 │                       │
 │        └─────────┴─────────────────┘                       │
 │                                                             │
@@ -346,6 +346,7 @@ These skills depend on previous results and must run **sequentially**:
 
 **Checks (ALL must pass):**
 
+- [ ] Formatter run and code formatted (project style)
 - [ ] Linter passes (auto-fix allowed)
 - [ ] Build succeeds
 - [ ] Code review passed
@@ -353,7 +354,7 @@ These skills depend on previous results and must run **sequentially**:
 
 **On failure:**
 
-1. **Linter fails:** Run auto-fix, then manual fix remaining
+1. **Formatting/Linter fails:** Run formatter (e.g. `npm run format`), then linter with auto-fix, then manual fix remaining
 2. **Build fails:** Fix compilation/bundling errors
 3. **Code review fails:** Address feedback, improve code
 4. **Security review fails:** Fix vulnerability (NEVER skip)
@@ -647,35 +648,37 @@ Wait for all subagents to complete, then consolidate and fix any failures. **Do 
 
 **Language-Specific Validation:**
 
-| Stack                | Mandatory Validation                 | Commands                                                     |
-| -------------------- | ------------------------------------ | ------------------------------------------------------------ |
-| **Frontend (JS/TS)** | Lint + Build + Tests                 | `npm run lint && npm run build && npm test`                  |
-| **Node.js**          | Lint + Build (if applicable) + Tests | `npm run lint && npm run build && npm test`                  |
-| **Python**           | Lint + Tests                         | `ruff check . && pytest` or `flake8 && pytest`               |
-| **Go**               | Lint + Build + Tests                 | `golangci-lint run && go build ./... && go test -race ./...` |
-| **Ruby**             | Lint + Tests                         | `rubocop && bundle exec rspec`                               |
-| **Rust**             | Lint + Build + Tests                 | `cargo clippy && cargo build && cargo test`                  |
-| **Java**             | Lint + Build + Tests                 | `mvn checkstyle:check && mvn compile && mvn test`            |
+| Stack                | Mandatory Validation                          | Commands                                                                                      |
+| -------------------- | --------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| **Frontend (JS/TS)** | Format + Lint + Build + Tests                 | `npm run format && npm run lint && npm run build && npm test`                                 |
+| **Node.js**          | Format + Lint + Build (if applicable) + Tests | `npm run format && npm run lint && npm run build && npm test`                                 |
+| **Python**           | Format + Lint + Tests                         | `black . && ruff check . && pytest` or `ruff format . && ruff check . && pytest`              |
+| **Go**               | Format + Lint + Build + Tests                 | `gofmt -s -w . && golangci-lint run && go build ./... && go test -race ./...`                 |
+| **Ruby**             | Format + Lint + Tests                         | `bundle exec rubocop -a && bundle exec rspec` (or `standardrb --fix`)                         |
+| **Rust**             | Format + Lint + Build + Tests                 | `cargo fmt && cargo clippy && cargo build && cargo test`                                      |
+| **Java**             | Format + Lint + Build + Tests                 | `mvn formatter:format && mvn checkstyle:check && mvn compile && mvn test` (or spotless:apply) |
 
 **Actions:**
 
-1. Run linter/formatter: `npm run lint` or equivalent
-2. Run build: `npm run build` or equivalent (MANDATORY for compiled languages and frontend)
-3. Run tests: Verify all tests still pass after any fixes
-4. Security review (security-reviewer skill):
+1. Run formatter: `npm run format` or equivalent (Prettier, Black, gofmt, cargo fmt, etc.)
+2. Run linter: `npm run lint` or equivalent (ESLint, ruff, golangci-lint, etc.)
+3. Run build: `npm run build` or equivalent (MANDATORY for compiled languages and frontend)
+4. Run tests: Verify all tests still pass after any fixes
+5. Security review (security-reviewer skill):
    - No hardcoded secrets or credentials
    - No expanded data access
    - No common vulnerabilities (injection, XSS, etc.)
-5. Code review (code-reviewer skill):
+6. Code review (code-reviewer skill):
    - Clear variable names
    - Logical flow is obvious
    - Tests are meaningful
-6. Performance check (if applicable):
+7. Performance check (if applicable):
    - No N+1 queries
    - No significant performance degradation
 
 **Required Validation (ALL must pass to proceed):**
 
+- [ ] Formatter run and code formatted (no style-only diffs left)
 - [ ] Linter passes with no errors
 - [ ] Build succeeds (mandatory for frontend, compiled languages)
 - [ ] All tests pass
@@ -687,8 +690,9 @@ Wait for all subagents to complete, then consolidate and fix any failures. **Do 
 ```
 WHILE any validation fails:
     1. Identify which check(s) failed
-    2. FOR linter errors:
-       - Run auto-fix (e.g., npm run lint --fix)
+    2. FOR format/linter errors:
+       - Run formatter (e.g., npm run format, black ., gofmt -w .)
+       - Run linter with auto-fix (e.g., npm run lint --fix)
        - Manually fix remaining issues
     3. FOR build errors:
        - Fix compilation/type errors
@@ -711,7 +715,7 @@ END WHILE
 **⛔ CRITICAL ENFORCEMENT:** You MUST launch ALL 5 subagents below. DO NOT skip code-reviewer or security-reviewer. They are NOT optional.
 
 ```
-Task(subagent_type="Bash", prompt="Run linter: npm run lint (or project equivalent)")
+Task(subagent_type="Bash", prompt="Run formatter and linter: npm run format && npm run lint (or project equivalent: black . && ruff check ., gofmt -s -w . && golangci-lint run, etc.)")
 Task(subagent_type="Bash", prompt="Run build: npm run build (or project equivalent)")
 Task(subagent_type="Bash", prompt="Run tests: npm test (or project equivalent)")
 Task(subagent_type="general-purpose", prompt="Read skills/code-reviewer/SKILL.md and run code review on all changed files. Review for correctness, readability, maintainability, accessibility, i18n.")
@@ -722,7 +726,7 @@ Task(subagent_type="general-purpose", prompt="Read skills/security-reviewer/SKIL
 
 Before moving to Phase 6 (Commit), you MUST verify completion of ALL 5 tasks:
 
-1. [ ] Linter subagent completed - Result: PASS/FAIL
+1. [ ] Formatter and linter subagent completed - Result: PASS/FAIL
 2. [ ] Build subagent completed - Result: PASS/FAIL
 3. [ ] Tests subagent completed - Result: PASS/FAIL
 4. [ ] **Code review subagent completed** - Result: PASS/FAIL (with findings documented)
@@ -746,6 +750,7 @@ Before executing ANY action in Phase 6, you MUST verify Phase 5 completion:
 
 ```
 PHASE 5 COMPLETION CHECKLIST:
+✓ [ ] Formatter executed and code formatted
 ✓ [ ] Linter executed and passed
 ✓ [ ] Build executed and passed
 ✓ [ ] Tests executed and passed
@@ -954,6 +959,7 @@ When working with large repositories (100+ files):
   - [ ] E2E tests via Playwright MCP pass (if UI exists)
   - [ ] Build succeeds (mandatory for frontend/compiled languages)
 - [ ] Phase 5: **Validation complete (MANDATORY)**
+  - [ ] Formatter run and code formatted
   - [ ] Linter passes
   - [ ] Build succeeds
   - [ ] All tests pass
@@ -969,12 +975,13 @@ When working with large repositories (100+ files):
 
 **The workflow CANNOT proceed to Phase 6 (Commit) until ALL of these pass:**
 
-| Gate         | Requirement                             | What Happens if Not Met                             |
-| ------------ | --------------------------------------- | --------------------------------------------------- |
-| **Tests**    | All tests must pass                     | STOP. Write tests. Do not proceed.                  |
-| **Build**    | Build must succeed (frontend/compiled)  | STOP. Fix build errors. Do not proceed.             |
-| **Lint**     | Linter must pass                        | STOP. Fix lint errors. Do not proceed.              |
-| **UI Tests** | Playwright MCP E2E tests (if UI exists) | STOP. Add E2E tests via Playwright. Do not proceed. |
+| Gate         | Requirement                              | What Happens if Not Met                                    |
+| ------------ | ---------------------------------------- | ---------------------------------------------------------- |
+| **Tests**    | All tests must pass                      | STOP. Write tests. Do not proceed.                         |
+| **Build**    | Build must succeed (frontend/compiled)   | STOP. Fix build errors. Do not proceed.                    |
+| **Format**   | Formatter must be run and code formatted | STOP. Run formatter (e.g. npm run format). Do not proceed. |
+| **Lint**     | Linter must pass                         | STOP. Fix lint errors. Do not proceed.                     |
+| **UI Tests** | Playwright MCP E2E tests (if UI exists)  | STOP. Add E2E tests via Playwright. Do not proceed.        |
 
 **NEVER output "Optional next steps" for testing.** Testing is NOT optional. If tests are missing:
 

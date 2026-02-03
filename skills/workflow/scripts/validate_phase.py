@@ -19,6 +19,7 @@ class PhaseValidator:
     """Validates workflow phase completion."""
 
     PHASE_5_REQUIREMENTS = {
+        "formatter": "Formatter execution and code formatted",
         "linter": "Linter execution and pass",
         "build": "Build execution and pass",
         "tests": "Test execution and pass",
@@ -46,6 +47,7 @@ class PhaseValidator:
         Validate Phase 5 (Validation) completion.
 
         Checks:
+        - Formatter executed and code formatted
         - Linter executed
         - Build executed
         - Tests executed

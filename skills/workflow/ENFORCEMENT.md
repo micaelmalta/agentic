@@ -6,7 +6,7 @@ This document explains how to ensure all mandatory workflow phases are executed,
 
 In the RNA-363 workflow execution, **Phase 5 validation was incomplete**:
 
-- ✅ Linter ran
+- ✅ Formatter and linter ran
 - ✅ Build ran
 - ✅ Tests ran
 - ❌ **Code review subagent was NOT launched**
@@ -180,7 +180,7 @@ To ensure proper enforcement in your projects:
 
 # Bash subagents
 Task(subagent_type="Bash",
-     prompt="Run linter: npm run lint")
+     prompt="Run formatter and linter: npm run format && npm run lint")
 Task(subagent_type="Bash",
      prompt="Run build: npm run build")
 Task(subagent_type="Bash",
@@ -244,6 +244,7 @@ Before proceeding to Phase 6 (Commit):
 
 ### Automated Checks
 
+- [ ] Formatter run and code formatted: `npm run format` (or equivalent: black ., gofmt -w ., etc.)
 - [ ] Linter passed: `npm run lint` (or equivalent)
 - [ ] Build passed: `npm run build` (or equivalent)
 - [ ] Tests passed: `npm test` (or equivalent)
@@ -346,7 +347,7 @@ This enforcement system will evolve. Suggest improvements:
 
 **Key Takeaways:**
 
-1. **Phase 5 has 5 checks** - Linter, Build, Tests, Code Review, Security Review
+1. **Phase 5 has 6 checks** - Formatter, Linter, Build, Tests, Code Review, Security Review
 2. **ALL are mandatory** - No exceptions for security-sensitive changes
 3. **Verification required** - Use checklist or validation script
 4. **Phase 6 gate** - Cannot commit without Phase 5 complete
