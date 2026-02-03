@@ -140,9 +140,9 @@ Visual representation of the complete developer workflow orchestration.
 ┌─────────────────────────────────────────────────────────────────────────────────────────┐
 │ PHASE 7: PR                                                                              │
 ├─────────────────────────────────────────────────────────────────────────────────────────┤
-│   gh pr create --title "..." --body "## Summary\n## Changes\n## Test Plan"              │
-│   Link to Jira ticket (Atlassian MCP)                                                   │
-└─────────────────────────────────────────────────────────────────────────────────────────┘
+│   gh pr create --draft --title "..." --body "## Summary\n## Changes\n## Test Plan"     │
+│   After all commits pushed: gh pr ready   Link to Jira (Atlassian MCP)                  │
+└─────────────────────────────────────────────────────────────────────────┘
                                           │
                                           ▼
 ┌─────────────────────────────────────────────────────────────────────────────────────────┐
@@ -653,39 +653,39 @@ function runTDDCycle(behaviors):
 
 ## Quick Reference
 
-| Phase | Skills Used | Parallel? | Gate | Retry Loop? |
-|-------|-------------|-----------|------|-------------|
-| 1. Plan | para, architect | Yes (exploration) | User approval | Yes (revise until approved) |
-| 2. Branch | - | No | - | No |
-| 3. Execute | developer, debugging | TDD cycle | - | Yes (TDD cycle per behavior) |
-| 4. Testing | testing, Playwright | Yes | Tests pass | **Yes (MANDATORY)** |
-| 5. Validation | code-reviewer, security-reviewer | Yes | All pass | **Yes (MANDATORY)** |
-| 6. Commit | git-commits | No | - | No |
-| 7. PR | - | No | - | No |
-| 8. Monitor | para, documentation | Yes (docs) | - | No |
+| Phase         | Skills Used                      | Parallel?         | Gate          | Retry Loop?                  |
+| ------------- | -------------------------------- | ----------------- | ------------- | ---------------------------- |
+| 1. Plan       | para, architect                  | Yes (exploration) | User approval | Yes (revise until approved)  |
+| 2. Branch     | -                                | No                | -             | No                           |
+| 3. Execute    | developer, debugging             | TDD cycle         | -             | Yes (TDD cycle per behavior) |
+| 4. Testing    | testing, Playwright              | Yes               | Tests pass    | **Yes (MANDATORY)**          |
+| 5. Validation | code-reviewer, security-reviewer | Yes               | All pass      | **Yes (MANDATORY)**          |
+| 6. Commit     | git-commits                      | No                | -             | No                           |
+| 7. PR         | -                                | No                | -             | No                           |
+| 8. Monitor    | para, documentation              | Yes (docs)        | -             | No                           |
 
 ### Retry Loop Rules
 
-| Gate | Max Retries | Escalation |
-|------|-------------|------------|
-| User Approval | Unlimited | User provides feedback |
-| TDD Cycle | Unlimited | Ask after 3 same failures |
-| Testing Gate | Unlimited | Ask after 3 same failures |
-| Validation Gate | Unlimited | STOP on unfixable security issue |
+| Gate            | Max Retries | Escalation                       |
+| --------------- | ----------- | -------------------------------- |
+| User Approval   | Unlimited   | User provides feedback           |
+| TDD Cycle       | Unlimited   | Ask after 3 same failures        |
+| Testing Gate    | Unlimited   | Ask after 3 same failures        |
+| Validation Gate | Unlimited   | STOP on unfixable security issue |
 
 ---
 
 ## Key Principles
 
-| Concept | Description |
-|---------|-------------|
-| **Workflow** | Pure orchestrator - coordinates skills, doesn't implement |
-| **Developer** | All implementation via TDD (Red-Green-Refactor) |
-| **Gates** | Blocking checkpoints - must pass before proceeding |
-| **Retry Loops** | MANDATORY at gates - fix and re-run until all pass |
-| **Escalation** | Ask user after 3 same failures; STOP on security issues |
-| **Parallel** | Independent tasks run simultaneously |
-| **Sequential** | debugging → refactoring → git-commits must run in order |
+| Concept         | Description                                               |
+| --------------- | --------------------------------------------------------- |
+| **Workflow**    | Pure orchestrator - coordinates skills, doesn't implement |
+| **Developer**   | All implementation via TDD (Red-Green-Refactor)           |
+| **Gates**       | Blocking checkpoints - must pass before proceeding        |
+| **Retry Loops** | MANDATORY at gates - fix and re-run until all pass        |
+| **Escalation**  | Ask user after 3 same failures; STOP on security issues   |
+| **Parallel**    | Independent tasks run simultaneously                      |
+| **Sequential**  | debugging → refactoring → git-commits must run in order   |
 
 ### Retry Loop Guarantees
 

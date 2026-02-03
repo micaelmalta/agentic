@@ -294,6 +294,7 @@ During rapid iteration, you may want to commit frequently:
 - **Mark commits as WIP** - `git commit -m "wip: working on feature"`
 - **Full validation required** before PR creation
 - **Run validation script** before `gh pr create`
+- **Create PR as draft** with `gh pr create --draft`; run `gh pr ready` only after all commits are pushed
 
 ## FAQ
 

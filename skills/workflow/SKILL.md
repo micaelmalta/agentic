@@ -786,13 +786,14 @@ IF ANY item above is unchecked:
 
 **Actions:**
 
-1. Create PR with `gh pr create`
-2. Include:
+1. **Create PR as draft** with `gh pr create --draft` so the PR is not ready for review until all work is pushed.
+2. Include in the PR:
    - Clear title summarizing change
    - Description with context and reasoning
    - Link to related issue/ticket
    - Test plan or validation steps
    - Any breaking changes or migration notes
+3. **Mark PR ready for review only after all commits are pushed:** run `gh pr ready` (or `gh pr ready <number>`) when the branch is complete and no further commits are expected for this round.
 
 **PR Description Template:**
 
@@ -957,7 +958,7 @@ When working with large repositories (100+ files):
   - [ ] Security review passed
   - [ ] Code review passed
 - [ ] Phase 6: Changes committed and pushed
-- [ ] Phase 7: PR created with clear description
+- [ ] Phase 7: PR created as draft; marked ready with `gh pr ready` after all commits pushed
 - [ ] Phase 8: Summary documented after merge
 
 ---
