@@ -49,6 +49,63 @@ Each skill lives in `skills/<name>/SKILL.md` with YAML frontmatter defining:
 - **ci-cd** - CI/CD pipeline configuration and fixes
 - **setup** - MCP server configuration (Atlassian, Datadog, Playwright)
 
+### Phase Agent System
+
+**Phase agents** are autonomous, encapsulated workers used by the workflow skill for specific phases. They run in background mode by default and have structured JSON input/output for programmatic integration.
+
+**Architecture:**
+```
+Workflow Skill (Orchestrator)
+├── Phase 1-3: Direct orchestration (planning, branching, implementing)
+├── Phase 4: Testing → phase-testing-agent (background)
+├── Phase 5: Validation → phase-validation-agent (background)
+├── Phase 6: Commit & Push (direct orchestration)
+├── Phase 7: PR Creation → phase-pr-agent (background)
+└── Phase 8: Monitor & Summarize (direct orchestration)
+```
+
+**Phase Agents:**
+
+1. **phase-testing-agent** (`skills/agents/phase-testing-agent/`)
+   - Auto-detects language (JS/TS, Python, Go, Rust, Ruby, Java)
+   - Runs tests with build step if needed
+   - Retry logic: 5s, 10s, 15s backoff (max 3 attempts)
+   - Returns structured JSON with failing test details
+   - User escalation after max retries
+
+2. **phase-validation-agent** (`skills/agents/phase-validation-agent/`)
+   - Runs 5 checks: formatter, linter, build, tests, code-reviewer, security-reviewer
+   - Auto-fixes format/lint issues with retry
+   - **Critical security handling:** Stops immediately on vulnerabilities
+   - Returns consolidated JSON with all check results
+   - Language-specific command mapping
+
+3. **phase-pr-agent** (`skills/agents/phase-pr-agent/`)
+   - Creates GitHub draft PR via `gh` CLI
+   - Automatic Jira integration (links PR, transitions to "In Code Review")
+   - Graceful degradation if Atlassian MCP not configured
+   - Fuzzy matching for Jira transition names
+   - Optional immediate mark-ready parameter
+
+**Key Characteristics:**
+- **Background Execution:** Non-blocking by default using Task tool
+- **Auto-Detection:** Language, test commands, build requirements
+- **Retry Logic:** Exponential backoff for recoverable errors
+- **User Escalation:** AskUserQuestion when stuck after retries
+- **Structured I/O:** JSON schemas in `protocol.md` files
+- **Graceful Degradation:** Continue with partial success (e.g., PR without Jira)
+
+**Agent vs Skill:**
+- **Skills:** Interactive, conversation-based, flexible workflows
+- **Agents:** Autonomous, structured I/O, encapsulated logic, background mode
+- **Usage:** Workflow orchestrates overall flow, agents execute specific phases
+
+**Documentation:**
+- Agent specs: `skills/agents/<agent-name>/AGENT.md`
+- I/O protocols: `skills/agents/<agent-name>/protocol.md`
+- Agent system: `skills/agents/README.md`
+- Template: `skills/agents/AGENT_TEMPLATE.md`
+
 ## Workflow Methodology
 
 ### PARA-Programming
@@ -101,12 +158,14 @@ Task(Explore, "Check existing patterns...")
 Task(Bash, "Review git history...")
 ```
 
-**Phase: Validation**
+**Phase: Validation (via phase-validation-agent)**
 ```
-Task(general-purpose, "Run code-reviewer...")
-Task(general-purpose, "Run security-reviewer...")
-Task(Bash, "Run test suite: npm test")
-Task(Bash, "Run linter and build...")
+# Phase agents handle parallel execution internally
+# Workflow spawns single agent that runs all validations
+Task(
+  general-purpose,
+  "Read skills/agents/phase-validation-agent/AGENT.md and execute with input: {...}"
+)
 ```
 
 **Sequential Skills** (DO NOT parallelize):
@@ -159,8 +218,14 @@ Config locations:
 ### Feature Implementation
 
 1. Read workflow skill: `skills/workflow/SKILL.md`
-2. Follow 8-phase protocol:
-   - Plan → Branch → Execute → Testing → Validation → Commit → PR → Monitor
+2. Follow 8-phase protocol with hybrid architecture:
+   - Phase 1-2: Plan (para) → Branch (git)
+   - Phase 3: Execute (developer skill - TDD)
+   - Phase 4: Testing → **phase-testing-agent** (background)
+   - Phase 5: Validation → **phase-validation-agent** (background)
+   - Phase 6: Commit & Push (git-commits skill)
+   - Phase 7: PR Creation → **phase-pr-agent** (background)
+   - Phase 8: Monitor & Summarize (para)
 
 ### Code Review
 
