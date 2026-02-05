@@ -437,6 +437,97 @@ This workflow uses multiple specialized subagents working in parallel:
 
 ---
 
+## Hybrid Architecture: Workflow Skill + Phase Agents
+
+The workflow skill uses a **hybrid architecture** combining orchestration and autonomous phase agents:
+
+```
+Workflow Skill (Orchestrator)
+├── Phase 1-3: Direct orchestration (planning, branching, implementing)
+├── Phase 4: Testing → phase-testing-agent (background)
+├── Phase 5: Validation → phase-validation-agent (background)
+├── Phase 6: Commit & Push (direct orchestration)
+├── Phase 7: PR Creation → phase-pr-agent (background)
+└── Phase 8: Monitor & Summarize (direct orchestration)
+```
+
+**Orchestrator responsibilities:**
+- Overall workflow coordination
+- User communication and decision-making
+- Plan validation and approval
+- Branch management (Phase 2)
+- Implementation guidance (Phase 3)
+- Commit operations (Phase 6)
+- Monitoring and summarization (Phase 8)
+
+**Phase agent responsibilities:**
+- Autonomous execution within specific phases
+- Language/context auto-detection
+- Retry logic with exponential backoff
+- User escalation when stuck
+- Structured JSON output for workflow parsing
+
+**Phase Agents:**
+
+1. **phase-testing-agent** (`skills/agents/phase-testing-agent/`)
+   - **Phase:** 4 (Testing Validation)
+   - **Mode:** Background (default)
+   - **Responsibilities:** Auto-detect language, run build (if needed), execute tests, retry up to 3 times with backoff, escalate to user after max retries
+   - **Input:** `working_directory`
+   - **Output:** `status`, `tests_run`, `tests_passed`, `tests_failed`, `build_status`, `failing_tests[]`, `retry_count`
+
+2. **phase-validation-agent** (`skills/agents/phase-validation-agent/`)
+   - **Phase:** 5 (Validation)
+   - **Mode:** Background (default)
+   - **Responsibilities:** Run 5 checks (formatter, linter, build, tests, code-reviewer, security-reviewer), auto-fix format/lint issues with retry, STOP on critical security issues, return consolidated results
+   - **Input:** `working_directory`, `changed_files`
+   - **Output:** `status`, `checks{formatter, linter, build, tests, code_review, security_review}`, `total_retries`, `critical_security_issue`
+
+3. **phase-pr-agent** (`skills/agents/phase-pr-agent/`)
+   - **Phase:** 7 (PR Creation)
+   - **Mode:** Background (default)
+   - **Responsibilities:** Create GitHub draft PR via gh CLI, link to Jira (if configured), transition Jira to "In Code Review", graceful degradation if Jira unavailable
+   - **Input:** `branch`, `title`, `description`, `jira_key` (optional), `mark_ready` (optional)
+   - **Output:** `status`, `pr_url`, `pr_number`, `jira_status{linked, transitioned, current_state}`, `marked_ready`
+
+**Benefits of hybrid approach:**
+- **Modularity:** Phase agents are reusable and testable independently
+- **Parallelism:** Agents run in background while workflow continues (where applicable)
+- **Autonomy:** Agents handle retry logic and error recovery internally
+- **Graceful degradation:** Agents adapt to missing tools (e.g., Jira MCP)
+- **Structured communication:** JSON schemas enable programmatic validation
+- **User control:** Workflow orchestrator retains decision-making and communication
+
+**Agent invocation pattern:**
+
+```python
+# Workflow spawns agent in background
+Task(
+  subagent_type="general-purpose",
+  prompt="Read skills/agents/<agent-name>/AGENT.md and execute with input: {JSON}"
+)
+
+# Wait for agent completion
+agent_output = wait_for_completion()
+
+# Parse structured output
+result = parse_json(agent_output)
+
+# Validate and proceed
+if result["status"] == "pass":
+    proceed_to_next_phase()
+else:
+    handle_errors(result["errors"])
+```
+
+For detailed specifications, see:
+- `skills/agents/README.md` - Agent system overview
+- `skills/agents/phase-testing-agent/AGENT.md` - Testing agent spec
+- `skills/agents/phase-validation-agent/AGENT.md` - Validation agent spec
+- `skills/agents/phase-pr-agent/AGENT.md` - PR agent spec
+
+---
+
 ## Phase 1: Plan
 
 **Goal:** Create detailed implementation plan before writing code.
@@ -556,85 +647,86 @@ git commit -m "docs: add plan for <task>"
 
 **⚠️ BLOCKING REQUIREMENT:** Testing is MANDATORY. Do NOT proceed to Phase 5 until all tests pass.
 
-**Skills:** Use the **testing** skill for test execution and the **developer** skill for TDD validation. **For UI/frontend work, Playwright MCP is MANDATORY.**
+**Agent:** Use the **phase-testing-agent** to auto-detect language, run tests, and retry on failures.
 
-**NOTE:** If following the developer skill (TDD) correctly, tests should already exist from Phase 3. This phase validates and extends coverage.
+**NOTE:** If following the developer skill (TDD) correctly, tests should already exist from Phase 3. This phase validates execution.
 
-**Language-Specific Requirements:**
+**Execution:**
 
-| Stack                | Mandatory Checks                              | Commands                           |
-| -------------------- | --------------------------------------------- | ---------------------------------- |
-| **Frontend (JS/TS)** | Tests pass AND build succeeds                 | `npm test && npm run build`        |
-| **Node.js**          | Tests pass AND build succeeds (if applicable) | `npm test` / `npm run build`       |
-| **Python**           | Tests pass                                    | `pytest` or `python -m pytest`     |
-| **Go**               | Tests pass                                    | `go test -race ./...`              |
-| **Ruby**             | Tests pass                                    | `bundle exec rspec` or `rake test` |
-| **Rust**             | Tests pass                                    | `cargo test`                       |
-| **Java**             | Tests pass AND build succeeds                 | `mvn test` / `gradle test`         |
+Spawn the **phase-testing-agent** in background to execute tests:
 
-**Actions:**
+```
+Task(
+  subagent_type="general-purpose",
+  prompt="Read skills/agents/phase-testing-agent/AGENT.md and execute with input: {\"working_directory\": \"$(pwd)\"}"
+)
+```
 
-1. Verify tests from Phase 3 (developer skill TDD) are passing
-2. Add additional test coverage using parallel subagents:
-   - **Bash agent:** Run test suite, execute build commands
-   - **General-purpose agent:** Write additional edge case tests
-   - **Explore agent:** Find existing test patterns and files to emulate
-   - **Playwright MCP:** For UI testing (mandatory if frontend)
-3. Test coverage requirements:
-   - Happy path (primary use case)
-   - Edge cases (boundary conditions, empty data)
-   - Error handling (invalid inputs)
-   - Regression tests (existing scenarios still work)
-4. Parallel test execution:
-   - Run unit tests
-   - Run integration tests (if applicable)
-   - Run E2E tests via Playwright MCP (if UI exists)
-5. **For frontend/UI projects:** Verify build succeeds
-6. Fix any test failures or regressions
-7. Validate test coverage is reasonable
+The agent will:
+1. **Auto-detect language** from project files (package.json, go.mod, etc.)
+2. **Auto-detect test command** (npm test, pytest, go test, etc.)
+3. **Auto-detect build requirements** (for frontend/compiled languages)
+4. **Execute build** (if needed) then **execute tests**
+5. **Retry up to 3 times** with exponential backoff (5s, 10s, 15s) on test failures
+6. **Escalate to user** via AskUserQuestion after max retries if stuck
+7. Return structured JSON output with results
+
+**Agent Output:**
+
+```json
+{
+  "status": "pass",              // or "fail"
+  "tests_run": 127,
+  "tests_passed": 127,
+  "tests_failed": 0,
+  "build_status": "pass",        // or "fail", "skipped"
+  "retry_count": 0,
+  "failing_tests": [],           // Array of {name, file, error}
+  "execution_time_ms": 12340,
+  "language": "javascript",
+  "test_command": "npm test",
+  "build_command": "npm run build"
+}
+```
+
+**Handling Agent Results:**
+
+- **If status = "pass":** Proceed to Phase 5
+- **If status = "fail":**
+  - Review `failing_tests` array for specific failures
+  - Check `build_status` - if "fail", fix build errors first
+  - Check `retry_count` - if 3, agent already retried max times
+  - Fix failing tests or code issues
+  - Re-run agent until all tests pass
+
+**Manual Test Writing (if needed):**
+
+If the agent reports insufficient test coverage or you need to add tests for new functionality:
+
+1. Use **developer skill** for TDD approach (write tests first)
+2. Use **testing skill** for test design and implementation
+3. Use parallel subagents for additional coverage:
+   - **General-purpose agent:** Write unit tests for specific components
+   - **Explore agent:** Find existing test patterns to emulate
+   - **Playwright MCP:** For UI E2E testing (mandatory if frontend)
+
+**UI Testing with Playwright MCP:**
+
+For UI/frontend projects, after tests pass, run E2E tests:
+
+```
+Use Playwright MCP tools: browser_navigate, browser_click, browser_type, browser_snapshot, browser_screenshot
+```
 
 **Required Coverage (ALL must pass to proceed):**
 
-- [ ] New code is tested
-- [ ] Edge cases covered
-- [ ] No regressions in existing tests
-- [ ] Tests are deterministic (not flaky)
-- [ ] **Frontend: Build succeeds** (mandatory for JS/TS/Node projects)
+- [ ] Phase-testing-agent executed and returned status "pass"
+- [ ] Build succeeded (for frontend/compiled languages)
+- [ ] All tests passed (no failures in failing_tests array)
+- [ ] Tests are deterministic (retry_count = 0 or low)
+- [ ] **UI: E2E tests via Playwright MCP** (mandatory if frontend exists)
 
-**⚠️ RETRY LOOP (MANDATORY):**
-
-```
-WHILE any test fails:
-    1. Identify failed test(s)
-    2. Analyze failure reason
-    3. Fix code (or test if test is wrong)
-    4. Re-run ALL tests
-    5. IF same failure 3+ times: Ask user for guidance
-END WHILE
-→ Only proceed when ALL tests pass
-```
-
-**DO NOT proceed to Phase 5 until this loop completes successfully.**
-
-- [ ] **UI: E2E tests via Playwright MCP** (mandatory if UI exists)
-
-**⚡ PARALLEL SUBAGENTS (launch in single message):**
-
-```
-Task(subagent_type="Bash", prompt="Run existing test suite to establish baseline")
-Task(subagent_type="Bash", prompt="Run build to verify compilation: npm run build (or equivalent)")
-Task(subagent_type="general-purpose", prompt="Write unit tests for [component A] following testing skill")
-Task(subagent_type="general-purpose", prompt="Write unit tests for [component B] following testing skill")
-Task(subagent_type="Explore", prompt="Find existing test patterns in codebase to emulate")
-```
-
-**For UI projects, also use Playwright MCP:**
-
-```
-Use Playwright MCP tools (browser_navigate, browser_click, browser_type, browser_screenshot) for E2E testing
-```
-
-Wait for all subagents to complete, then consolidate and fix any failures. **Do NOT proceed until ALL tests pass and build succeeds.**
+**DO NOT proceed to Phase 5 until phase-testing-agent returns status "pass".**
 
 ---
 
@@ -644,99 +736,127 @@ Wait for all subagents to complete, then consolidate and fix any failures. **Do 
 
 **⚠️ BLOCKING REQUIREMENT:** All validation checks are MANDATORY. Do NOT proceed to Phase 6 until all checks pass.
 
-**Skills:** Use **code-reviewer**, **security-reviewer**, and **ci-cd** skills.
+**Agent:** Use the **phase-validation-agent** to run 5 validation checks in parallel with auto-fix and retry.
 
-**Language-Specific Validation:**
+**Execution:**
 
-| Stack                | Mandatory Validation                          | Commands                                                                                      |
-| -------------------- | --------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| **Frontend (JS/TS)** | Format + Lint + Build + Tests                 | `npm run format && npm run lint && npm run build && npm test`                                 |
-| **Node.js**          | Format + Lint + Build (if applicable) + Tests | `npm run format && npm run lint && npm run build && npm test`                                 |
-| **Python**           | Format + Lint + Tests                         | `black . && ruff check . && pytest` or `ruff format . && ruff check . && pytest`              |
-| **Go**               | Format + Lint + Build + Tests                 | `gofmt -s -w . && golangci-lint run && go build ./... && go test -race ./...`                 |
-| **Ruby**             | Format + Lint + Tests                         | `bundle exec rubocop -a && bundle exec rspec` (or `standardrb --fix`)                         |
-| **Rust**             | Format + Lint + Build + Tests                 | `cargo fmt && cargo clippy && cargo build && cargo test`                                      |
-| **Java**             | Format + Lint + Build + Tests                 | `mvn formatter:format && mvn checkstyle:check && mvn compile && mvn test` (or spotless:apply) |
+Spawn the **phase-validation-agent** in background to execute all validation checks:
 
-**Actions:**
+```
+Task(
+  subagent_type="general-purpose",
+  prompt="Read skills/agents/phase-validation-agent/AGENT.md and execute with input: {\"working_directory\": \"$(pwd)\", \"changed_files\": [list of changed files from git diff]}"
+)
+```
 
-1. Run formatter: `npm run format` or equivalent (Prettier, Black, gofmt, cargo fmt, etc.)
-2. Run linter: `npm run lint` or equivalent (ESLint, ruff, golangci-lint, etc.)
-3. Run build: `npm run build` or equivalent (MANDATORY for compiled languages and frontend)
-4. Run tests: Verify all tests still pass after any fixes
-5. Security review (security-reviewer skill):
-   - No hardcoded secrets or credentials
-   - No expanded data access
-   - No common vulnerabilities (injection, XSS, etc.)
-6. Code review (code-reviewer skill):
-   - Clear variable names
-   - Logical flow is obvious
-   - Tests are meaningful
-7. Performance check (if applicable):
-   - No N+1 queries
-   - No significant performance degradation
+The agent will run **5 checks in parallel** (formatter, linter, build, tests running in sequence; code-reviewer and security-reviewer in parallel):
+1. **Formatter:** Auto-format code, retry up to 3 times if issues persist
+2. **Linter:** Run linter with auto-fix, retry up to 3 times
+3. **Build:** Execute build command (skip if not needed), retry once on transient failures
+4. **Tests:** Run test suite, retry once on failures
+5. **Code Reviewer:** Launch code-reviewer subagent for quality review
+6. **Security Reviewer:** Launch security-reviewer subagent for vulnerability detection
+
+**Critical Security Handling:**
+- **If critical vulnerability found:** Agent STOPS immediately, does NOT retry
+- **Agent sets `critical_security_issue: true`** in output
+- **Workflow MUST escalate to user** - do NOT proceed until vulnerability is fixed
+
+**Agent Output:**
+
+```json
+{
+  "status": "pass",              // or "fail"
+  "execution_time_ms": 8901,
+  "total_retries": 3,            // Sum of all retry counts
+  "critical_security_issue": false,
+  "checks": {
+    "formatter": {
+      "status": "pass",          // or "fail"
+      "issues": [],
+      "retry_count": 2,
+      "command": "npx prettier --write .",
+      "execution_time_ms": 1200
+    },
+    "linter": {
+      "status": "pass",
+      "issues": [],
+      "retry_count": 1,
+      "command": "npm run lint",
+      "execution_time_ms": 1800
+    },
+    "build": {
+      "status": "pass",          // or "fail", "skipped"
+      "errors": [],
+      "retry_count": 0,
+      "command": "npm run build",
+      "execution_time_ms": 3000
+    },
+    "tests": {
+      "status": "pass",
+      "failing_count": 0,
+      "retry_count": 0,
+      "command": "npm test",
+      "execution_time_ms": 2400
+    },
+    "code_review": {
+      "status": "pass",
+      "findings": [],
+      "severity": "none",        // or "low", "medium", "high"
+      "execution_time_ms": 300
+    },
+    "security_review": {
+      "status": "pass",
+      "vulnerabilities": [],
+      "severity": "none",        // or "low", "medium", "high", "critical"
+      "execution_time_ms": 201
+    }
+  }
+}
+```
+
+**Handling Agent Results:**
+
+- **If status = "pass" AND critical_security_issue = false:** Proceed to Phase 6
+- **If critical_security_issue = true:**
+  - **STOP IMMEDIATELY - DO NOT PROCEED**
+  - Review `checks.security_review.vulnerabilities` array
+  - Fix critical vulnerabilities (SQL injection, XSS, hardcoded secrets, etc.)
+  - Re-run agent until security_review.severity != "critical"
+- **If any check status = "fail":**
+  - Review specific check results (issues, errors, findings)
+  - Check retry_count - if maxed out (3), agent already retried
+  - Fix issues based on check type:
+    - **Formatter:** Manually fix remaining format issues
+    - **Linter:** Fix linter errors that auto-fix couldn't resolve
+    - **Build:** Fix compilation/type errors
+    - **Tests:** Fix failing tests (see failing_count)
+    - **Code review:** Address quality findings
+    - **Security review:** Fix vulnerabilities
+  - Re-run agent until all checks pass
+
+**Manual Override (NOT RECOMMENDED):**
+
+You can skip specific checks using optional parameters:
+- `skip_build: true` - Skip build check
+- `skip_tests: true` - Skip test check
+
+**DO NOT skip security review or code review checks.**
 
 **Required Validation (ALL must pass to proceed):**
 
-- [ ] Formatter run and code formatted (no style-only diffs left)
-- [ ] Linter passes with no errors
-- [ ] Build succeeds (mandatory for frontend, compiled languages)
-- [ ] All tests pass
-- [ ] Security review complete (no vulnerabilities)
-- [ ] Code review complete (acceptable quality)
+- [ ] Phase-validation-agent executed and returned status "pass"
+- [ ] critical_security_issue is false (or not present)
+- [ ] checks.formatter.status = "pass"
+- [ ] checks.linter.status = "pass"
+- [ ] checks.build.status = "pass" or "skipped"
+- [ ] checks.tests.status = "pass"
+- [ ] checks.code_review.status = "pass" (severity: low/medium acceptable)
+- [ ] checks.security_review.status = "pass" (severity: low/medium acceptable, NOT critical/high)
 
-**⚠️ RETRY LOOP (MANDATORY):**
+**⛔ CRITICAL:** If security_review finds critical or high severity issues, you MUST fix them before proceeding. Do NOT skip or ignore security issues.
 
-```
-WHILE any validation fails:
-    1. Identify which check(s) failed
-    2. FOR format/linter errors:
-       - Run formatter (e.g., npm run format, black ., gofmt -w .)
-       - Run linter with auto-fix (e.g., npm run lint --fix)
-       - Manually fix remaining issues
-    3. FOR build errors:
-       - Fix compilation/type errors
-    4. FOR security issues:
-       - Fix vulnerability (NEVER skip or ignore)
-       - If unfixable, STOP and escalate to user
-    5. FOR code review issues:
-       - Address feedback
-       - Improve code quality
-    6. Re-run ALL validations
-    7. IF same failure 3+ times: Ask user for guidance
-END WHILE
-→ Only proceed when ALL validations pass
-```
-
-**DO NOT proceed to Phase 6 until this loop completes successfully.**
-
-**⚡ PARALLEL SUBAGENTS (launch ALL in single message):**
-
-**⛔ CRITICAL ENFORCEMENT:** You MUST launch ALL 5 subagents below. DO NOT skip code-reviewer or security-reviewer. They are NOT optional.
-
-```
-Task(subagent_type="Bash", prompt="Run formatter and linter: npm run format && npm run lint (or project equivalent: black . && ruff check ., gofmt -s -w . && golangci-lint run, etc.)")
-Task(subagent_type="Bash", prompt="Run build: npm run build (or project equivalent)")
-Task(subagent_type="Bash", prompt="Run tests: npm test (or project equivalent)")
-Task(subagent_type="general-purpose", prompt="Read skills/code-reviewer/SKILL.md and run code review on all changed files. Review for correctness, readability, maintainability, accessibility, i18n.")
-Task(subagent_type="general-purpose", prompt="Read skills/security-reviewer/SKILL.md and run security review on all changed files. Check for injection, XSS, auth issues, sensitive data exposure, crypto vulnerabilities.")
-```
-
-**VERIFICATION CHECKLIST (Complete BEFORE proceeding to Phase 6):**
-
-Before moving to Phase 6 (Commit), you MUST verify completion of ALL 5 tasks:
-
-1. [ ] Formatter and linter subagent completed - Result: PASS/FAIL
-2. [ ] Build subagent completed - Result: PASS/FAIL
-3. [ ] Tests subagent completed - Result: PASS/FAIL
-4. [ ] **Code review subagent completed** - Result: PASS/FAIL (with findings documented)
-5. [ ] **Security review subagent completed** - Result: PASS/FAIL (with findings documented)
-
-**IF any subagent was not launched:** STOP. Go back and launch it now. This is a blocking requirement.
-
-**IF any check failed:** Fix issues and re-run ALL validations until all pass.
-
-Wait for all 5 subagents to complete, then consolidate findings and fix any issues before proceeding. **Do NOT proceed until ALL validation checks pass.**
+**DO NOT proceed to Phase 6 until phase-validation-agent returns status "pass" and no critical security issues.**
 
 ---
 
@@ -790,33 +910,115 @@ IF ANY item above is unchecked:
 
 **Goal:** Submit work for team review.
 
-**Actions:**
+**Agent:** Use the **phase-pr-agent** to create PR and integrate with Jira (if configured).
 
-1. **Create PR as draft** with `gh pr create --draft` so the PR is not ready for review until all work is pushed.
-2. Include in the PR:
-   - Clear title summarizing change
-   - Description with context and reasoning
-   - Link to related issue/ticket
-   - Test plan or validation steps
-   - Any breaking changes or migration notes
-3. **Mark PR ready for review only after all commits are pushed:** run `gh pr ready` (or `gh pr ready <number>`) when the branch is complete and no further commits are expected for this round.
-4. **If a Jira ticket key was provided:** After the PR is created (and optionally after marking it ready), use **Atlassian MCP** to transition the issue to **In Code Review**. Call `jira_get_transitions` for the issue, find the transition whose name matches "In Code Review" or "Code Review" (names vary by project), then call `jira_transition_issue` with that transition ID.
+**Execution:**
+
+Spawn the **phase-pr-agent** in background to create the PR:
+
+```
+Task(
+  subagent_type="general-purpose",
+  prompt="Read skills/agents/phase-pr-agent/AGENT.md and execute with input: {\"branch\": \"$(git branch --show-current)\", \"title\": \"[generated PR title]\", \"description\": \"[generated PR description]\", \"jira_key\": \"[extracted from branch or plan]\", \"working_directory\": \"$(pwd)\"}"
+)
+```
+
+**Preparing Inputs:**
+
+1. **Branch:** Current git branch name (auto-detected: `git branch --show-current`)
+2. **Title:** Generate from commit messages or plan summary
+   - Format: `<type>(<scope>): <summary>` (e.g., "feat(api): Add user endpoint")
+   - Keep under 70 characters
+3. **Description:** Generate from plan and changes
+   - Use template below
+   - Include summary, changes, test plan, risks
+4. **Jira Key:** Extract from branch name (e.g., "PROJ-123" from "feature/PROJ-123-add-login") or plan context
+5. **Optional:** `mark_ready: false` (default) to create as draft, `mark_ready: true` to mark ready immediately
 
 **PR Description Template:**
 
-```
+```markdown
 ## Summary
-[1-3 bullet points of what changed and why]
+- [Bullet 1: What changed]
+- [Bullet 2: Why it changed]
+- [Bullet 3: Impact or benefit]
 
 ## Changes
-[List of files modified and what changed]
+- `path/to/file1.ts` - Description of changes
+- `path/to/file2.py` - Description of changes
 
 ## Test Plan
-[Steps to verify the changes work]
+- [ ] Unit tests pass (phase-testing-agent)
+- [ ] Integration tests pass
+- [ ] Manual testing: [specific steps]
 
 ## Risks/Notes
-[Any concerns or things reviewers should know]
+- [Any concerns, breaking changes, migration notes]
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
 ```
+
+**Agent Actions:**
+
+The phase-pr-agent will:
+1. **Create draft PR** via `gh pr create --draft`
+2. **Link to Jira** (if jira_key provided and Atlassian MCP configured):
+   - Add PR URL as comment to Jira issue
+   - Transition Jira issue to "In Code Review" state (fuzzy match for transition name)
+3. **Mark ready** (if mark_ready: true)
+4. Return structured JSON with PR URL and Jira status
+
+**Agent Output:**
+
+```json
+{
+  "status": "success",          // or "failed"
+  "pr_url": "https://github.com/org/repo/pull/42",
+  "pr_number": 42,
+  "jira_status": {
+    "linked": true,             // PR linked to Jira issue
+    "transitioned": true,       // Jira transitioned to "In Code Review"
+    "current_state": "In Code Review"
+  },
+  "marked_ready": false,        // Whether PR marked ready for review
+  "errors": []                  // Array of errors (empty if success)
+}
+```
+
+**Handling Agent Results:**
+
+- **If status = "success":**
+  - Display PR URL to user: `pr_url`
+  - If jira_status.transitioned = true: Confirm Jira updated
+  - If jira_status.linked = true but transitioned = false: Warn user (linked but not transitioned)
+  - If errors array not empty: Show warnings (e.g., Jira not configured)
+  - Ask user if they want to mark PR ready now (if marked_ready = false)
+- **If status = "failed":**
+  - Review errors array for specific failures
+  - Common errors: branch not found, PR already exists, Jira issue not found
+  - Fix issues and re-run agent
+
+**Graceful Degradation:**
+
+The agent handles missing Jira configuration gracefully:
+- If Atlassian MCP not configured → PR still created, Jira steps skipped
+- If Jira issue not found → PR still created, error noted in output
+- If Jira transition fails → PR still created and linked, transition error noted
+
+**Manual PR Marking Ready:**
+
+If mark_ready was false (default), manually mark ready when all commits are pushed:
+
+```bash
+gh pr ready <pr-number>
+```
+
+**Required Checks (before Phase 8):**
+
+- [ ] Phase-pr-agent executed and returned status "success"
+- [ ] PR URL received and verified
+- [ ] Jira linked (if applicable and MCP configured)
+- [ ] PR marked ready for review (manually or via mark_ready: true)
 
 ---
 
