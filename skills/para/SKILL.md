@@ -83,17 +83,40 @@ Plan → Review → Execute → Summarize → Archive
 
 **What happens:**
 
+- Execute ALL steps in the plan autonomously (no stopping between steps)
 - Create feature branch (optional but recommended)
-- Track todos and progress
+- Track todos and progress with TodoWrite
 - Reference the plan during implementation
 - Document decisions and changes as you work
+- Show progress as each step completes: "Step X/N: [description]"
+
+**Autonomous Step Execution:**
+
+When you run `/execute`, ALL steps in the plan execute automatically without stopping between steps:
+
+- Work through steps 1, 2, 3... N sequentially
+- Show progress: "Step X/N: [step description]" as each completes
+- **Don't ask "should I proceed to next step?"** - just proceed to the next step
+- **Make best-choice decisions** without asking (pick the best option and continue)
+- **Only escalate to user if:**
+  - Genuinely stuck after multiple attempts
+  - Critical blocker that requires user decision (e.g., conflicting requirements)
+  - Unrecoverable error that prevents continuing
+
+**Decision-Making:**
+
+- When multiple valid approaches exist: **choose the best one and proceed**
+- Never ask "which approach should I use?" between steps
+- Never ask "should I continue?" between steps
+- Only ask user for guidance when genuinely stuck or requirements are unclear/conflicting
 
 **Best practices:**
 
 - Follow the plan but adapt as needed
-- Document deviations from the plan
+- Document deviations from the plan in execution notes
 - Keep commits focused and atomic
-- Update the plan if scope changes
+- Update the plan if scope changes significantly
+- Use TodoWrite to track step completion visibly
 
 ### 4. Summarize Phase (`/summarize`)
 

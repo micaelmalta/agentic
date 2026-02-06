@@ -385,7 +385,7 @@ These skills depend on previous results and must run **sequentially**:
 
 ## Protocol: PARA-Driven Development Workflow
 
-**BLOCKING REQUIREMENT:** Follow phases in order. Do NOT skip phases or make assumptions about what needs to be done.
+**PHASE SEQUENCING REQUIREMENT:** Phases must execute in order (1→2→3→4→5→6→7→8). Do NOT skip phases. After Phase 1 approval, execute phases 2-8 autonomously without stopping between phases.
 
 **⛔ MANDATORY TESTING:** Testing is NOT optional. The workflow MUST include:
 
@@ -403,18 +403,18 @@ These skills depend on previous results and must run **sequentially**:
 - **STOP and run ALL 5 validations before proceeding to commit**
 - **Use validation script to verify:** `python3 skills/workflow/scripts/validate_phase.py --phase 5`
 
-**OUTCOME FOCUS:** Work continues until PR is merged or explicitly stopped by user. Track progress visibly at each phase.
+**OUTCOME FOCUS:** Work continues autonomously until PR is merged or explicitly stopped by user. Track progress visibly with "Phase X/8" headers and TodoWrite tool. Only escalate on gate failures after retries.
 
 **PARALLEL EXECUTION:** Launch multiple subagents simultaneously for independent tasks within the same phase. Track all parallel work with TodoWrite tool.
 
 **PARA SKILL INVOCATION:** This workflow **must** use the **para** skill. At the start of any workflow run, **read** `skills/para/SKILL.md` and follow it for:
 
 - **Plan phase:** Use PARA's `/plan` semantics: create `context/plans/YYYY-MM-DD-<task-name>.md`, document objectives/approach/steps, and follow PARA's Plan and Review phases.
-- **Execute phase:** Use PARA's `/execute` semantics: track progress, reference the plan, document deviations.
+- **Execute phase:** Use PARA's `/execute` semantics: **execute ALL plan steps autonomously** without stopping between steps, track progress with TodoWrite, reference the plan, document deviations.
 - **Summarize phase:** Use PARA's `/summarize` semantics: create `context/summaries/YYYY-MM-DD-<task-name>.md` with outcomes and learnings.
 - **Archive phase:** Use PARA's `/archive` when work is complete to move plans/summaries to `context/archives/`.
 
-Do not implement a custom plan/execute/summarize flow; use the para skill's structure and commands.
+Do not implement a custom plan/execute/summarize flow; use the para skill's structure and commands. **CRITICAL:** The para skill now executes all plan steps autonomously - review its updated Execute Phase section for autonomous execution guidance.
 
 ---
 
@@ -571,11 +571,35 @@ For large codebases (100+ files), use **RLM skill** instead of multiple Explore 
 
 When the plan involves architecture or tech design, also structure content using **tech_proposal_template.md** (Metadata, Architecture Considerations, API Changes, Data Models, Domain Architecture, Additional Considerations, Estimation & Implementation Plan)—either inline in the plan or in a separate tech spec file referenced from the plan.
 
-**Approval Gate:**
+**Approval Gate (ONE-TIME APPROVAL):**
 
-- Present plan to user for review
+- Present plan to user for **one-time review and approval**
 - User can approve, request changes, or provide clarification
-- Do NOT proceed to execution without approval
+- **IMPORTANT: Approval of the plan = approval to execute ALL phases 2-8 autonomously**
+- Do NOT proceed to execution without this one-time approval
+- After approval, do NOT stop between phases to ask permission
+
+**Autonomous Execution After Approval:**
+
+Once the plan is approved, phases 2-8 execute **fully autonomously** without stopping to ask permission between phases:
+
+- **Phases run sequentially:** 2 → 3 → 4 → 5 → 6 → 7 → 8
+- **No "should I proceed?" questions** between phases
+- **Show progress:** Display "Phase X/8: [Phase Name]" as each phase starts
+- **Track progress:** Use TodoWrite to show phase completion
+- **Only stop if:**
+  - Gate failure (tests fail, security issue, build fails) - retry then escalate if stuck
+  - User explicitly interrupts (Ctrl+C equivalent)
+  - Critical blocker requiring user decision
+
+**Decision-Making:**
+
+- **Pick the best option and proceed** - don't ask "which option should I use?"
+- **Make implementation decisions autonomously** based on context and best practices
+- **Only escalate decisions if:**
+  - Genuinely stuck after retry attempts (e.g., gate failed 3+ times)
+  - Critical security vulnerability found
+  - Requirements are unclear or conflicting
 
 **Commit Plan to Git:**
 
