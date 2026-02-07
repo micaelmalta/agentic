@@ -130,6 +130,7 @@ The agent validates:
 {
   "status": "pass",
   "execution_time_ms": 2500,
+  "retry_count": 0,
   "pr_url": "https://github.com/org/repo/pull/42",
   "pr_number": 42,
   "jira_status": {
@@ -148,6 +149,7 @@ The agent validates:
 {
   "status": "pass",
   "execution_time_ms": 3000,
+  "retry_count": 0,
   "pr_url": "https://github.com/org/repo/pull/42",
   "pr_number": 42,
   "jira_status": {
@@ -176,6 +178,7 @@ The agent validates:
 {
   "status": "fail",
   "execution_time_ms": 1000,
+  "retry_count": 0,
   "pr_url": null,
   "pr_number": null,
   "jira_status": {
@@ -202,7 +205,8 @@ The agent validates:
 | Field | Type | Description |
 |-------|------|-------------|
 | `status` | string | `"pass"` or `"fail"` |
-| `execution_time_ms` | number | Total execution time in milliseconds |
+| `execution_time_ms` | integer | Total execution time in milliseconds |
+| `retry_count` | integer | Number of retry attempts made (0 if all operations succeeded on first try) |
 | `pr_url` | string/null | GitHub PR URL (null if creation failed) |
 | `pr_number` | number/null | PR number (null if creation failed) |
 | `jira_status` | object | Jira integration status |

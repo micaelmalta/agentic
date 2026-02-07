@@ -61,7 +61,7 @@ They work alongside the **workflow skill** (orchestrator) to implement a hybrid 
 **Documentation:** `skills/agents/phase-testing-agent/AGENT.md`
 
 ### phase-validation-agent (Phase 5)
-**Purpose:** Run all 5 validations in parallel with retry logic
+**Purpose:** Run all 6 validations in parallel with retry logic
 
 **Capabilities:**
 - Format code (language-specific)
@@ -186,9 +186,9 @@ Phase agents implement smart retry logic:
 
 | Attempt | Backoff | Action |
 |---------|---------|--------|
-| 1 | 0s | Execute immediately |
-| 2 | 5s | Retry after 5 seconds |
-| 3 | 10s | Retry after 10 seconds |
+| 1 | 5s | Retry after 5 seconds |
+| 2 | 10s | Retry after 10 seconds |
+| 3 | 15s | Retry after 15 seconds |
 | 4+ | - | Ask user for guidance |
 
 **Exceptions:** Security vulnerabilities stop immediately (no retry).
@@ -295,16 +295,13 @@ skills/agents/
 ├── validate-input.py                   # Utility: validate agent inputs
 ├── phase-testing-agent/
 │   ├── AGENT.md                        # Full specification
-│   ├── protocol.md                     # Input/output schemas
-│   └── tests/                          # Test cases
+│   └── protocol.md                     # Input/output schemas
 ├── phase-validation-agent/
 │   ├── AGENT.md
-│   ├── protocol.md
-│   └── tests/
+│   └── protocol.md
 └── phase-pr-agent/
     ├── AGENT.md
-    ├── protocol.md
-    └── tests/
+    └── protocol.md
 ```
 
 ---
@@ -312,7 +309,7 @@ skills/agents/
 ## See Also
 
 - **Workflow Skill:** `skills/workflow/SKILL.md` - Orchestrator that uses phase agents
-- **PARA Methodology:** `~/.claude/CLAUDE.md` - Overall development workflow
+- **PARA Methodology:** Global CLAUDE.md - Overall development workflow
 - **Agent Template:** `skills/agents/AGENT_TEMPLATE.md` - Create new agents
 
 ---

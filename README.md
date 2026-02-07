@@ -139,7 +139,10 @@ Not sure if you need PARA? Use the decision helper:
 │   ├── dependencies/         # Dependency management
 │   ├── performance/          # Performance optimization
 │   ├── ci-cd/                # CI/CD pipelines
-│   └── setup/                # MCP configuration
+│   ├── setup/                # MCP configuration
+│   ├── skill-creator/        # Skill authoring guide
+│   ├── mcp-builder/          # MCP server development guide
+│   └── agents/               # Autonomous phase agents (testing, validation, PR)
 │
 ├── context/                  # Your project's PARA artifacts
 │   ├── context.md           # Active session state
@@ -222,6 +225,7 @@ Not sure if you need PARA? Use the decision helper:
 
 - **Atlassian** (atlassian, atlassian-tech) - Jira and Confluence integration
 - **Datadog** - Logs, metrics, monitors, traces
+- **Playwright** - Browser automation for UI/E2E testing
 
 ### Setup MCP
 
@@ -413,6 +417,8 @@ This skills collection is built on these principles:
 | `/perf` | Profile and optimize |
 | `/ci` | Configure CI/CD |
 | `/setup` | Configure MCP servers |
+| `/dev` | TDD implementation (Red-Green-Refactor) |
+| `/architect` | Technical specifications and design docs |
 
 ## Support
 

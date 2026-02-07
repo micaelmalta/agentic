@@ -48,6 +48,8 @@ Each skill lives in `skills/<name>/SKILL.md` with YAML frontmatter defining:
 - **performance** - Profiling and optimization
 - **ci-cd** - CI/CD pipeline configuration and fixes
 - **setup** - MCP server configuration (Atlassian, Datadog, Playwright)
+- **skill-creator** - Guide for creating new skills
+- **mcp-builder** - Guide for creating MCP servers
 
 ### Phase Agent System
 
@@ -74,7 +76,7 @@ Workflow Skill (Orchestrator)
    - User escalation after max retries
 
 2. **phase-validation-agent** (`skills/agents/phase-validation-agent/`)
-   - Runs 5 checks: formatter, linter, build, tests, code-reviewer, security-reviewer
+   - Runs 6 checks: formatter, linter, build, tests, code-reviewer, security-reviewer
    - Auto-fixes format/lint issues with retry
    - **Critical security handling:** Stops immediately on vulnerabilities
    - Returns consolidated JSON with all check results

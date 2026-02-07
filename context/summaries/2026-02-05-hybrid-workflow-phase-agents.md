@@ -21,7 +21,7 @@ Created the foundational system for autonomous phase agents:
 **Files:**
 - `skills/agents/README.md` - Agent system overview and architecture documentation
 - `skills/agents/AGENT_TEMPLATE.md` - Template for creating new agents
-- `skills/agents/protocol.md` - Standard JSON input/output protocol specification
+- `skills/agents/validate-input.py` - Python script to validate agent inputs against schemas (protocol specs live in each agent's `protocol.md`)
 - `skills/agents/run-agent.sh` - Helper script to spawn and execute agents
 - `skills/agents/check-agent.sh` - Helper script to monitor background agent status
 - `skills/agents/validate-input.py` - Python script to validate agent inputs against schemas
@@ -72,12 +72,13 @@ Created the foundational system for autonomous phase agents:
 **Location:** `skills/agents/phase-validation-agent/`
 
 **Capabilities:**
-- Runs 5 parallel validations:
+- Runs 6 parallel validations:
   1. Formatter (language-specific)
   2. Linter (language-specific)
   3. Build (if applicable)
   4. Tests (verify still passing)
-  5. Code-reviewer + security-reviewer subagents
+  5. Code-reviewer subagent
+  6. Security-reviewer subagent
 - Auto-fixes format/lint issues with retry
 - Language-specific command mapping for 6 languages
 
@@ -646,7 +647,7 @@ aa689c6 feat: add agent utility scripts
 ### Functional Requirements ✅
 
 - ✅ phase-testing-agent supports JS, Python, Go, Ruby, Rust, Java
-- ✅ phase-validation-agent runs all 5 validations with structured output
+- ✅ phase-validation-agent runs all 6 validations with structured output
 - ✅ phase-pr-agent creates PR, links Jira, transitions ticket
 - ✅ Workflow skill successfully coordinates all phase agents
 - ✅ All agents can run in background mode
