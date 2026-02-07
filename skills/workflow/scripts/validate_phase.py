@@ -99,18 +99,21 @@ class PhaseValidator:
         print("\n✅ PHASE 5 COMPLETE - Cleared to proceed to Phase 6")
         return True
 
-    def validate_phase_6(self):
+    def validate_phase_6(self, non_interactive=False):
         """
         Validate Phase 6 (Commit & Push) readiness.
 
         Checks:
         - Phase 5 is complete
         - All review findings addressed
+
+        Args:
+            non_interactive: If True, forwards to Phase 5 validation in non-interactive mode.
         """
         self.log("Validating Phase 6 (Commit & Push) readiness...")
 
         # First, validate Phase 5
-        if not self.validate_phase_5():
+        if not self.validate_phase_5(non_interactive=non_interactive):
             self.errors.append("Phase 5 is not complete")
             return False
 
@@ -197,7 +200,7 @@ def main():
     if args.phase == 5:
         success = validator.validate_phase_5(args.context, non_interactive=args.non_interactive)
     elif args.phase == 6:
-        success = validator.validate_phase_6()
+        success = validator.validate_phase_6(non_interactive=args.non_interactive)
     else:
         print(f"Error: Invalid phase {args.phase}")
         sys.exit(1)

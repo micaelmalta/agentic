@@ -131,6 +131,21 @@ For distributed systems, add tracing to follow requests across services:
 | Go        | `go test -cpuprofile`, `pprof`    | `go test -bench`                   |
 | Rust      | `cargo flamegraph`, `perf`        | `cargo bench`, `criterion`         |
 
+### 7. MCP Integration (Datadog)
+
+When monitoring or validating instrumentation in production, use the **Datadog MCP** (after **/setup**) to inspect real metrics, logs, and traces. Key tools:
+
+- `query_metrics` - Query time-series metrics data (e.g., latency, throughput)
+- `list_metrics` - Discover available metrics in your environment
+- `get_metric_metadata` - Get units, description, and tags for a metric
+- `search_logs` - Search logs with filters and time ranges
+- `list_monitors` - List monitors, optionally filtered by status or tags
+- `get_monitor_status` - Get detailed status for a specific monitor
+- `query_traces` - Query APM traces for a service
+- `get_service_health` - Get latency, error rate, and throughput for a service
+
+Ensure **/setup** has been run so Datadog MCP is configured.
+
 ---
 
 ## Checklist

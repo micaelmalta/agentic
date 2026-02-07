@@ -9,7 +9,7 @@ import json
 import os
 from pathlib import Path
 
-# Agent schemas (simplified - in production, read from protocol.md)
+# Agent schemas (synced with protocol.md definitions)
 SCHEMAS = {
     "phase-testing-agent": {
         "required": ["working_directory"],
@@ -18,6 +18,8 @@ SCHEMAS = {
             "test_command": str,
             "build_command": str,
             "max_retries": int,
+            "timeout_seconds": int,
+            "retry_backoff_ms": int,
         },
     },
     "phase-validation-agent": {
@@ -29,6 +31,8 @@ SCHEMAS = {
             "build_command": str,
             "test_command": str,
             "max_retries": int,
+            "skip_build": bool,
+            "skip_tests": bool,
         },
     },
     "phase-pr-agent": {
@@ -37,6 +41,7 @@ SCHEMAS = {
             "base_branch": str,
             "jira_key": str,
             "mark_ready": bool,
+            "draft": bool,
         },
     },
 }

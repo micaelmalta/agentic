@@ -1,5 +1,9 @@
 #!/bin/bash
-# check-agent.sh - Check status of a running background agent
+# check-agent.sh - Reference/template script for checking agent status
+# NOTE: This is a REFERENCE SCRIPT ONLY. Actual agent status checking is done
+# via Claude Code's TaskOutput tool, not by running this script directly.
+# See skills/agents/README.md for usage instructions.
+#
 # Usage: check-agent.sh <task-id>
 
 set -e

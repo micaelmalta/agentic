@@ -85,7 +85,7 @@ Add or change one job/workflow at a time; run the pipeline to verify.
 
 | Concern           | Approach                                                                                   |
 | ----------------- | ------------------------------------------------------------------------------------------ |
-| **Secrets**       | Use platform secret store (GitHub Secrets, Vault, AWS SSM); never in code or logs          |
+| **Secrets**       | Use platform secret store (GitHub Secrets, Vault, AWS SSM); never in code or logs. See Secrets Safety below |
 | **Env vars**      | Define in workflow YAML or platform settings; document required vars in README             |
 | **Config files**  | Use environment-specific files (`.env.production`, `config/prod.json`) or inject at deploy |
 | **Feature flags** | Integrate with flag service (LaunchDarkly, Unleash, custom) or env vars for simple cases   |
@@ -147,8 +147,40 @@ Set up observability in the pipeline and deployed application:
 - **Read logs**: Identify failing step and error message.
 - **Reproduce locally**: Run the same command (e.g. install, test, lint) in the same env (version, OS) when possible.
 - **Fix**: Fix the code or the pipeline (dependency, env var, path, permission). Prefer fixing the cause over relaxing checks (e.g. don't disable tests to make CI green).
-- **Secrets**: Never log or commit secrets; use the platform's secret store and reference by name.
+- **Secrets**: Never log or commit secrets; use the platform's secret store and reference by name. See Secrets Safety below.
 - **Migration failures**: Check for locked tables, constraint violations, or missing dependencies; test migrations in staging first.
+
+### Secrets Safety
+
+**BAD - Never do this:**
+
+```yaml
+# BAD: Hardcoded secret in workflow
+env:
+  API_KEY: "sk-1234567890abcdef"
+
+# BAD: Secret printed in logs
+- run: echo "Using key ${{ secrets.API_KEY }}"
+
+# BAD: Secret in code
+const API_KEY = "sk-1234567890abcdef";
+```
+
+**GOOD - Always do this:**
+
+```yaml
+# GOOD: Reference from secret store
+env:
+  API_KEY: ${{ secrets.API_KEY }}
+
+# GOOD: Mask secrets in output
+- run: echo "::add-mask::${{ secrets.API_KEY }}"
+
+# GOOD: Secret from environment variable
+const API_KEY = process.env.API_KEY;
+```
+
+For deep security analysis of secrets handling, invoke the **security-reviewer** skill.
 
 ### 8. Conventions
 

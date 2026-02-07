@@ -120,6 +120,8 @@ Structure the review as:
 | **UI changes without a11y/i18n**              | Flag in review; may need **testing** for a11y tests.         |
 | **Database migrations**                       | Ensure migration tests exist; invoke **testing** if missing. |
 
+**Scope Boundary:** Code-reviewer owns **correctness, readability, maintainability, testing coverage, conventions, accessibility, and i18n**. For vulnerabilities, authentication, cryptography, and sensitive data exposure, defer to the **security-reviewer** skill.
+
 **In workflow context (Phase 5):** Code-reviewer and security-reviewer run in parallel. If issues are found, the workflow MUST stop and fix before proceeding.
 
 ---

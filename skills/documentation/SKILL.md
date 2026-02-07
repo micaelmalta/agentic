@@ -50,7 +50,17 @@ No mandatory commands. Use project structure: if `docs/` or `CONTRIBUTING.md` ex
 
 ### 4. MCP (Atlassian Confluence)
 
-When documentation lives in Confluence or the user wants to sync with Confluence, use the **Atlassian MCP** (after **/setup**) to fetch pages, search with CQL, and list spaces. Use tools such as `getConfluencePage`, `searchConfluenceUsingCql`, `getConfluenceSpaces`, and `getPagesInConfluenceSpace` to read or align with existing Confluence docs. Ensure **/setup** has been run so Atlassian MCP is configured.
+When documentation lives in Confluence or the user wants to sync with Confluence, use the **Atlassian MCP** (after **/setup**) to fetch pages, search with CQL, and create/update content. Key tools:
+
+- `confluence_search` - Search Confluence content using simple terms or CQL
+- `confluence_get_page` - Get content of a specific page by ID or title+space
+- `confluence_create_page` - Create a new page in a space (supports Markdown)
+- `confluence_update_page` - Update an existing page
+- `confluence_get_page_children` - Get child pages for navigation
+- `confluence_get_comments` - Get comments on a page
+- `confluence_add_comment` - Add a comment to a page
+
+Ensure **/setup** has been run so Atlassian MCP is configured.
 
 ### 5. Output
 

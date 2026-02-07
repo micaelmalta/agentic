@@ -25,6 +25,8 @@ triggers:
 
 Focus on exploitable issues and insecure patterns. Prioritize by impact and likelihood.
 
+**Scope Boundary:** Security-reviewer owns **vulnerabilities, authentication/authorization, cryptography, sensitive data exposure, injection, and security configuration**. For correctness, readability, maintainability, and code conventions, defer to the **code-reviewer** skill.
+
 ---
 
 ## Protocol

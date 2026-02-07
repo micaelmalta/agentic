@@ -21,9 +21,12 @@ const claudeDesktopPath = path.join(
   'Claude',
   'claude_desktop_config.json'
 );
-const datadogPath =
-  process.env.MCP_DATADOG_PATH ||
-  path.join(home, 'projects', 'poc', 'mcp_datadog', 'src', 'index.js');
+const datadogPath = process.env.MCP_DATADOG_PATH;
+if (!datadogPath) {
+  console.error('Error: MCP_DATADOG_PATH environment variable is required.');
+  console.error('Set it to the absolute path of your Datadog MCP index.js file.');
+  process.exit(1);
+}
 const target = (process.env.TARGET || 'both').toLowerCase();
 const useClaudeDesktop = process.env.CLAUDE_DESKTOP === '1' || process.env.CLAUDE_DESKTOP === 'true';
 

@@ -635,10 +635,13 @@ git commit -m "docs: add plan for <task>"
 **Actions:**
 
 1. Start execution with `/execute`; track progress with TodoWrite tool
-2. **Read and follow the developer skill** for implementation:
-   - **Features:** Red-Green-Refactor cycle (tests first)
-   - **Bug fixes:** Write reproduction test first, then fix
-   - **Refactoring:** Tests as safety net
+2. **Read and follow the developer skill** for implementation using TDD (Red-Green-Refactor):
+   - **RED:** Write a failing test that defines the expected behavior
+   - **GREEN:** Write the minimum code to make the test pass
+   - **REFACTOR:** Clean up code while keeping tests green
+   - Repeat for each behavior/requirement
+   - **Bug fixes:** Write reproduction test first (RED), then fix (GREEN), then refactor
+   - **Refactoring:** Ensure existing tests pass as safety net before and after changes
 3. Use parallel subagents for efficient execution:
    - **Bash agent:** Git operations, command execution, builds
    - **Explore agent:** Code navigation, pattern discovery
@@ -877,6 +880,7 @@ You can skip specific checks using optional parameters:
 - [ ] checks.tests.status = "pass"
 - [ ] checks.code_review.status = "pass" (severity: low/medium acceptable)
 - [ ] checks.security_review.status = "pass" (severity: low/medium acceptable, NOT critical/high)
+- [ ] **UI E2E tests via Playwright MCP pass** (BLOCKING if frontend exists)
 
 **⛔ CRITICAL:** If security_review finds critical or high severity issues, you MUST fix them before proceeding. Do NOT skip or ignore security issues.
 
@@ -996,7 +1000,7 @@ The phase-pr-agent will:
 
 ```json
 {
-  "status": "success",          // or "failed"
+  "status": "pass",             // or "fail"
   "pr_url": "https://github.com/org/repo/pull/42",
   "pr_number": 42,
   "jira_status": {
@@ -1011,13 +1015,13 @@ The phase-pr-agent will:
 
 **Handling Agent Results:**
 
-- **If status = "success":**
+- **If status = "pass":**
   - Display PR URL to user: `pr_url`
   - If jira_status.transitioned = true: Confirm Jira updated
   - If jira_status.linked = true but transitioned = false: Warn user (linked but not transitioned)
   - If errors array not empty: Show warnings (e.g., Jira not configured)
   - Ask user if they want to mark PR ready now (if marked_ready = false)
-- **If status = "failed":**
+- **If status = "fail":**
   - Review errors array for specific failures
   - Common errors: branch not found, PR already exists, Jira issue not found
   - Fix issues and re-run agent
@@ -1039,7 +1043,7 @@ gh pr ready <pr-number>
 
 **Required Checks (before Phase 8):**
 
-- [ ] Phase-pr-agent executed and returned status "success"
+- [ ] Phase-pr-agent executed and returned status "pass"
 - [ ] PR URL received and verified
 - [ ] Jira linked (if applicable and MCP configured)
 - [ ] PR marked ready for review (manually or via mark_ready: true)

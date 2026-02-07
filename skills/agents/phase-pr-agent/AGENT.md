@@ -128,7 +128,7 @@ The agent validates:
 
 ```json
 {
-  "status": "success",
+  "status": "pass",
   "execution_time_ms": 2500,
   "pr_url": "https://github.com/org/repo/pull/42",
   "pr_number": 42,
@@ -146,7 +146,7 @@ The agent validates:
 
 ```json
 {
-  "status": "success",
+  "status": "pass",
   "execution_time_ms": 3000,
   "pr_url": "https://github.com/org/repo/pull/42",
   "pr_number": 42,
@@ -174,7 +174,7 @@ The agent validates:
 
 ```json
 {
-  "status": "failed",
+  "status": "fail",
   "execution_time_ms": 1000,
   "pr_url": null,
   "pr_number": null,
@@ -201,7 +201,7 @@ The agent validates:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `status` | string | `"success"` or `"failed"` |
+| `status` | string | `"pass"` or `"fail"` |
 | `execution_time_ms` | number | Total execution time in milliseconds |
 | `pr_url` | string/null | GitHub PR URL (null if creation failed) |
 | `pr_number` | number/null | PR number (null if creation failed) |
@@ -271,7 +271,7 @@ working_directory: "/Users/user/project"
 ```json
 // Output
 {
-  "status": "success",
+  "status": "pass",
   "execution_time_ms": 1500,
   "pr_url": "https://github.com/org/repo/pull/42",
   "pr_number": 42,
@@ -309,7 +309,7 @@ working_directory: "/Users/user/project"
 ```json
 // Output
 {
-  "status": "success",
+  "status": "pass",
   "execution_time_ms": 3200,
   "pr_url": "https://github.com/org/repo/pull/43",
   "pr_number": 43,
@@ -337,7 +337,7 @@ working_directory: "/Users/user/project"
 ```json
 // Output
 {
-  "status": "failed",
+  "status": "fail",
   "execution_time_ms": 500,
   "pr_url": null,
   "pr_number": null,
@@ -382,7 +382,7 @@ working_directory: "/Users/user/project"
 
 // After user selects option 2:
 {
-  "status": "success",
+  "status": "pass",
   "execution_time_ms": 4000,
   "pr_url": "https://github.com/org/repo/pull/44",
   "pr_number": 44,
@@ -450,7 +450,7 @@ agent_task = spawn_agent("phase-pr-agent", inputs)
 result = wait_for_agent(agent_task)
 
 # Workflow handles result
-if result.status == "success":
+if result.status == "pass":
   display_success(f"PR created: {result.pr_url}")
   if result.jira_status.transitioned:
     display_info(f"Jira {jira_key} moved to {result.jira_status.current_state}")

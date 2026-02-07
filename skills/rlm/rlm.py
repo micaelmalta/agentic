@@ -67,17 +67,16 @@ if __name__ == "__main__":
     
     peek_parser = subparsers.add_parser("peek")
     peek_parser.add_argument("query")
-    
+    peek_parser.add_argument("--path", default=".")
+
     chunk_parser = subparsers.add_parser("chunk")
     chunk_parser.add_argument("--pattern", default=None)
+    chunk_parser.add_argument("--path", default=".")
     
     args = parser.parse_args()
     
-    # Initialize context with path if provided (only for scan command)
-    root_dir = "."
-    if args.command == "scan" and hasattr(args, "path"):
-        root_dir = args.path
-        
+    # Initialize context with path if provided
+    root_dir = getattr(args, "path", ".")
     ctx = RLMContext(root_dir=root_dir)
     
     if args.command == "scan":

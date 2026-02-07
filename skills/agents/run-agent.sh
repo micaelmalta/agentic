@@ -1,5 +1,9 @@
 #!/bin/bash
-# run-agent.sh - Spawn a phase agent and wait for completion
+# run-agent.sh - Reference/template script for spawning phase agents
+# NOTE: This is a REFERENCE SCRIPT ONLY. Actual agent spawning is done
+# via Claude Code's Task tool, not by running this script directly.
+# See skills/agents/README.md for usage instructions.
+#
 # Usage: run-agent.sh <agent-name> <input-json-file>
 
 set -e
