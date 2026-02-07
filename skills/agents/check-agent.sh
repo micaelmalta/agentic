@@ -13,7 +13,7 @@ if [ "$#" -lt 1 ]; then
 fi
 
 TASK_ID="$1"
-OUTPUT_FILE="/private/tmp/claude-502/-Users-mmalta-projects-poc-agentic/tasks/${TASK_ID}.output"
+OUTPUT_FILE="${AGENT_LOG_DIR:-/tmp/agent-tasks}/${TASK_ID}.output"
 
 echo "=========================================="
 echo "Agent Status: $TASK_ID"

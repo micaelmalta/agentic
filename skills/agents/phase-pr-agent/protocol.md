@@ -140,7 +140,7 @@ This document defines the input/output protocol for the phase-pr-agent. All inpu
   "properties": {
     "status": {
       "type": "string",
-      "enum": ["success", "failed"],
+      "enum": ["pass", "fail"],
       "description": "Overall operation status"
     },
     "execution_time_ms": {
@@ -236,7 +236,7 @@ This document defines the input/output protocol for the phase-pr-agent. All inpu
 
 ```json
 {
-  "status": "success",
+  "status": "pass",
   "execution_time_ms": 1823,
   "pr_url": "https://github.com/myorg/myrepo/pull/42",
   "pr_number": 42,
@@ -254,7 +254,7 @@ This document defines the input/output protocol for the phase-pr-agent. All inpu
 
 ```json
 {
-  "status": "success",
+  "status": "pass",
   "execution_time_ms": 3542,
   "pr_url": "https://github.com/myorg/myrepo/pull/43",
   "pr_number": 43,
@@ -272,7 +272,7 @@ This document defines the input/output protocol for the phase-pr-agent. All inpu
 
 ```json
 {
-  "status": "success",
+  "status": "pass",
   "execution_time_ms": 2934,
   "pr_url": "https://github.com/myorg/myrepo/pull/44",
   "pr_number": 44,
@@ -300,7 +300,7 @@ This document defines the input/output protocol for the phase-pr-agent. All inpu
 
 ```json
 {
-  "status": "success",
+  "status": "pass",
   "execution_time_ms": 1654,
   "pr_url": "https://github.com/myorg/myrepo/pull/45",
   "pr_number": 45,
@@ -325,7 +325,7 @@ This document defines the input/output protocol for the phase-pr-agent. All inpu
 
 ```json
 {
-  "status": "failed",
+  "status": "fail",
   "execution_time_ms": 423,
   "pr_url": null,
   "pr_number": null,
@@ -352,7 +352,7 @@ This document defines the input/output protocol for the phase-pr-agent. All inpu
 
 ```json
 {
-  "status": "failed",
+  "status": "fail",
   "execution_time_ms": 1245,
   "pr_url": null,
   "pr_number": null,
@@ -379,7 +379,7 @@ This document defines the input/output protocol for the phase-pr-agent. All inpu
 
 ```json
 {
-  "status": "failed",
+  "status": "fail",
   "execution_time_ms": 12,
   "pr_url": null,
   "pr_number": null,
@@ -406,7 +406,7 @@ This document defines the input/output protocol for the phase-pr-agent. All inpu
 
 ```json
 {
-  "status": "success",
+  "status": "pass",
   "execution_time_ms": 2123,
   "pr_url": "https://github.com/myorg/myrepo/pull/46",
   "pr_number": 46,
@@ -454,11 +454,11 @@ This document defines the input/output protocol for the phase-pr-agent. All inpu
 
 | Status | Meaning | PR Created | Jira Status | Next Steps |
 |--------|---------|------------|-------------|------------|
-| `success` | All operations succeeded | Yes | Linked & transitioned (if requested) | Continue workflow |
-| `success` | PR created, Jira partially failed | Yes | Linked OR transitioned (partial) | Review errors, continue workflow |
-| `success` | PR created, Jira skipped | Yes | Not attempted | Continue workflow |
-| `failed` | PR creation failed | No | Not attempted | Fix errors, retry agent |
-| `failed` | Validation failed | No | Not attempted | Fix input, retry agent |
+| `pass` | All operations succeeded | Yes | Linked & transitioned (if requested) | Continue workflow |
+| `pass` | PR created, Jira partially failed | Yes | Linked OR transitioned (partial) | Review errors, continue workflow |
+| `pass` | PR created, Jira skipped | Yes | Not attempted | Continue workflow |
+| `fail` | PR creation failed | No | Not attempted | Fix errors, retry agent |
+| `fail` | Validation failed | No | Not attempted | Fix input, retry agent |
 
 ---
 
@@ -523,7 +523,7 @@ result = spawn_agent("phase-pr-agent", agent_input, background=True)
 output = wait_for_agent(result)
 
 # Handle output
-if output["status"] == "success":
+if output["status"] == "pass":
     print(f"✅ PR created: {output['pr_url']}")
 
     if output["jira_status"]["transitioned"]:

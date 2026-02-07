@@ -33,7 +33,15 @@ if [ -d "context/plans" ] || [ -d "context/summaries" ]; then
             echo "Running Phase 5 validation check..."
             echo ""
             
-            if python3 skills/workflow/scripts/validate_phase.py --phase 5; then
+            # Check if running in a non-interactive environment (CI, script)
+            # Use --non-interactive flag if a specific env var is set, or let it fail safely
+            NON_INTERACTIVE_FLAG=""
+            if [ -n "$CI" ] || [ ! -t 0 ]; then
+                NON_INTERACTIVE_FLAG="--non-interactive"
+                echo "⚠️  Non-interactive environment detected"
+            fi
+            
+            if python3 skills/workflow/scripts/validate_phase.py --phase 5 $NON_INTERACTIVE_FLAG; then
                 echo ""
                 echo "✅ Phase 5 validation complete - commit allowed"
                 echo ""

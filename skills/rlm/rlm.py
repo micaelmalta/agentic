@@ -73,14 +73,23 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
-    ctx = RLMContext()
-    ctx.load_context()
+    # Initialize context with path if provided (only for scan command)
+    root_dir = "."
+    if args.command == "scan" and hasattr(args, "path"):
+        root_dir = args.path
+        
+    ctx = RLMContext(root_dir=root_dir)
     
     if args.command == "scan":
+        # load_context returns the status string
         print(ctx.load_context())
-    elif args.command == "peek":
-        results = ctx.peek(args.query)
-        print(json.dumps(results, indent=2))
-    elif args.command == "chunk":
-        chunks = ctx.get_chunks(args.pattern)
-        print(json.dumps(chunks))
+    else:
+        # For other commands, load context first (using default root ".")
+        ctx.load_context()
+        
+        if args.command == "peek":
+            results = ctx.peek(args.query)
+            print(json.dumps(results, indent=2))
+        elif args.command == "chunk":
+            chunks = ctx.get_chunks(args.pattern)
+            print(json.dumps(chunks))

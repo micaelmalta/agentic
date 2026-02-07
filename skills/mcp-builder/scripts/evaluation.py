@@ -169,6 +169,11 @@ async def evaluate_single_task(
     summary = extract_xml_content(response, "summary")
     feedback = extract_xml_content(response, "feedback")
 
+    # Handle cases where extract_xml_content returns None
+    response_value = response_value or ""
+    summary = summary or ""
+    feedback = feedback or ""
+
     duration_seconds = time.time() - start_time
 
     return {

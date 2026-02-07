@@ -42,19 +42,23 @@ class PhaseValidator:
         if self.verbose or level in ["ERROR", "WARNING"]:
             print(f"[{level}] {message}")
 
-    def validate_phase_5(self, context_file=None):
+    def validate_phase_5(self, context_file=None, non_interactive=False):
         """
         Validate Phase 5 (Validation) completion.
-
-        Checks:
-        - Formatter executed and code formatted
-        - Linter executed
-        - Build executed
-        - Tests executed
-        - Code review subagent launched
-        - Security review subagent launched
+        
+        Args:
+            context_file: Path to context file (unused currently)
+            non_interactive: If True, skips interactive prompts and fails if not verifiable.
+                             (Currently Phase 5 is manual, so non-interactive mode will fail 
+                             unless we implement automatic verification)
         """
         self.log("Validating Phase 5 (Validation) completion...")
+
+        if non_interactive:
+             print("⚠️  Non-interactive mode: Cannot manually verify Phase 5 checklist.")
+             print("   Assuming validation failed for safety in automated environments.")
+             print("   To fix: Run this script interactively or implement automated checks.")
+             return False
 
         # Interactive checklist
         print("\n" + "=" * 60)
@@ -64,13 +68,19 @@ class PhaseValidator:
 
         all_complete = True
         for key, description in self.PHASE_5_REQUIREMENTS.items():
-            response = input(f"✓ {description}? (y/n): ").strip().lower()
-            if response != "y":
-                self.errors.append(f"MISSING: {description}")
-                all_complete = False
-                print(f"  ❌ FAILED: {description}\n")
+            if non_interactive:
+                # In non-interactive mode, we can't ask. 
+                # Ideally we would check a state file here.
+                # For now, we rely on the check at the start of the method.
+                pass
             else:
-                print(f"  ✅ PASSED: {description}\n")
+                response = input(f"✓ {description}? (y/n): ").strip().lower()
+                if response != "y":
+                    self.errors.append(f"MISSING: {description}")
+                    all_complete = False
+                    print(f"  ❌ FAILED: {description}\n")
+                else:
+                    print(f"  ✅ PASSED: {description}\n")
 
         print("=" * 60)
 
@@ -174,12 +184,18 @@ def main():
         help="Enable verbose logging",
     )
 
+    parser.add_argument(
+        "--non-interactive",
+        action="store_true",
+        help="Run in non-interactive mode (fail if manual verification needed)",
+    )
+
     args = parser.parse_args()
 
     validator = PhaseValidator(verbose=args.verbose)
 
     if args.phase == 5:
-        success = validator.validate_phase_5(args.context)
+        success = validator.validate_phase_5(args.context, non_interactive=args.non_interactive)
     elif args.phase == 6:
         success = validator.validate_phase_6()
     else:

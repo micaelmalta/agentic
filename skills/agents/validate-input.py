@@ -18,7 +18,7 @@ SCHEMAS = {
             "test_command": str,
             "build_command": str,
             "max_retries": int,
-        }
+        },
     },
     "phase-validation-agent": {
         "required": ["working_directory", "changed_files"],
@@ -29,18 +29,18 @@ SCHEMAS = {
             "build_command": str,
             "test_command": str,
             "max_retries": int,
-        }
+        },
     },
     "phase-pr-agent": {
-        "required": ["branch", "title", "description"],
+        "required": ["branch", "title", "description", "working_directory"],
         "optional": {
             "base_branch": str,
             "jira_key": str,
             "mark_ready": bool,
-            "working_directory": str,
-        }
-    }
+        },
+    },
 }
+
 
 def validate_input(agent_name: str, input_data: dict) -> tuple[bool, list[str]]:
     """
@@ -59,8 +59,12 @@ def validate_input(agent_name: str, input_data: dict) -> tuple[bool, list[str]]:
     for field in schema["required"]:
         if field not in input_data:
             errors.append(f"Missing required field: {field}")
-        elif not input_data[field]:
-            errors.append(f"Required field is empty: {field}")
+        elif input_data[field] is None or input_data[field] == "":
+            # distinct check: None or empty string are invalid, but 0/False/[] are valid
+            if isinstance(input_data[field], (int, bool, list)):
+                pass # valid
+            else:
+                errors.append(f"Required field is empty: {field}")
 
     # Check optional field types
     for field, expected_type in schema["optional"].items():
@@ -74,6 +78,7 @@ def validate_input(agent_name: str, input_data: dict) -> tuple[bool, list[str]]:
                 )
 
     return len(errors) == 0, errors
+
 
 def main():
     if len(sys.argv) < 3:
@@ -89,7 +94,7 @@ def main():
 
     # Read input JSON
     try:
-        with open(input_file, 'r') as f:
+        with open(input_file, "r") as f:
             input_data = json.load(f)
     except FileNotFoundError:
         print(f"Error: Input file not found: {input_file}")
@@ -117,6 +122,7 @@ def main():
         print("Input received:")
         print(json.dumps(input_data, indent=2))
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

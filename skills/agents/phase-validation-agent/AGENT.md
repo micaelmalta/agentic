@@ -822,11 +822,11 @@ Planned improvements:
 
 ## See Also
 
-- **Agent System:** `/Users/mmalta/projects/poc/agentic/skills/agents/README.md` - Overview of all agents
-- **Workflow Skill:** `/Users/mmalta/projects/poc/agentic/skills/workflow/SKILL.md` - Orchestrator
-- **Code Reviewer Skill:** `/Users/mmalta/projects/poc/agentic/skills/code-reviewer/SKILL.md` - Code quality review
-- **Security Reviewer Skill:** `/Users/mmalta/projects/poc/agentic/skills/security-reviewer/SKILL.md` - Security audit
-- **Protocol Documentation:** `/Users/mmalta/projects/poc/agentic/skills/agents/phase-validation-agent/protocol.md` - Detailed schemas
+- **Agent System:** `skills/agents/README.md` - Overview of all agents
+- **Workflow Skill:** `skills/workflow/SKILL.md` - Orchestrator
+- **Code Reviewer Skill:** `skills/code-reviewer/SKILL.md` - Code quality review
+- **Security Reviewer Skill:** `skills/security-reviewer/SKILL.md` - Security audit
+- **Protocol Documentation:** `skills/agents/phase-validation-agent/protocol.md` - Detailed schemas
 
 ---
 
