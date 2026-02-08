@@ -102,3 +102,16 @@ If `Task` is unavailable or fails:
 - [ ] Collected and synthesized all agent outputs.
 - [ ] Refined with a second RLM pass if answer was incomplete.
 - [ ] Never loaded more than 3-5 files directly into main context.
+
+---
+
+## Cross-Skill Integration
+
+| Situation | Skill to invoke | How |
+|-----------|----------------|-----|
+| RLM discovers architectural issues | **architect** skill | Read `skills/architect/SKILL.md` |
+| RLM finds security concerns across files | **security-reviewer** skill | Read `skills/security-reviewer/SKILL.md` |
+| Cross-file refactoring needed | **refactoring** skill | Read `skills/refactoring/SKILL.md` |
+| Large-scale dependency analysis | **dependencies** skill | Read `skills/dependencies/SKILL.md` |
+| Results need implementation plan | **para** skill | Read `skills/para/SKILL.md`, use `/plan` |
+| Performance analysis across codebase | **performance** skill | Read `skills/performance/SKILL.md` |

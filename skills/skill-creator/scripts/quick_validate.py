@@ -8,6 +8,8 @@ import re
 import yaml
 from pathlib import Path
 
+MAX_SKILL_SIZE = 1_048_576  # 1 MB
+
 
 def validate_skill(skill_path):
     """Basic validation of a skill"""
@@ -18,8 +20,18 @@ def validate_skill(skill_path):
     if not skill_md.exists():
         return False, "SKILL.md not found"
 
+    # Check file size
+    file_size = skill_md.stat().st_size
+    if file_size > MAX_SKILL_SIZE:
+        return False, f"SKILL.md is too large ({file_size} bytes, max {MAX_SKILL_SIZE})"
+
     # Read and validate frontmatter
-    content = skill_md.read_text()
+    try:
+        content = skill_md.read_text(encoding='utf-8')
+    except UnicodeDecodeError:
+        return False, "SKILL.md is not valid UTF-8"
+    except OSError as e:
+        return False, f"Could not read SKILL.md: {e}"
     if not content.startswith("---"):
         return False, "No YAML frontmatter found"
 

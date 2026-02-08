@@ -69,7 +69,13 @@ class PhaseValidator:
         for _key, description in self.PHASE_5_REQUIREMENTS.items():
             # non_interactive case is handled by the early return above;
             # this loop only runs in interactive mode.
-            response = input(f"✓ {description}? (y/n): ").strip().lower()
+            try:
+                response = input(f"✓ {description}? (y/n): ").strip().lower()
+            except EOFError:
+                print("\n⚠️  No interactive input available (stdin closed).")
+                print("   Cannot verify Phase 5 checklist non-interactively.")
+                print("   Use --non-interactive flag or set CI=1 in environment.")
+                return False
             if response != "y":
                 self.errors.append(f"MISSING: {description}")
                 all_complete = False

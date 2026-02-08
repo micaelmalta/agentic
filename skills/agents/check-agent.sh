@@ -36,8 +36,22 @@ if [ "$#" -lt 1 ]; then
 fi
 
 TASK_ID="$1"
+
+# Validate TASK_ID contains only safe characters (prevent path traversal)
+if ! echo "$TASK_ID" | grep -qE '^[a-zA-Z0-9_-]+$'; then
+    echo "Error: Invalid task ID '$TASK_ID'. Only alphanumeric characters, hyphens, and underscores are allowed."
+    exit 1
+fi
+
 AGENT_LOG_DIR="${AGENT_LOG_DIR:-/tmp/agent-tasks}"
 OUTPUT_FILE="${AGENT_LOG_DIR}/${TASK_ID}.output"
+
+# Validate log directory exists
+if [ ! -d "$AGENT_LOG_DIR" ]; then
+    echo "Error: Agent log directory not found: $AGENT_LOG_DIR"
+    echo "Set AGENT_LOG_DIR to the correct path or create the directory."
+    exit 1
+fi
 
 echo "=========================================="
 echo "Agent Status: $TASK_ID"
@@ -59,7 +73,7 @@ echo "---"
 echo ""
 
 # Check if agent completed
-if tail -n 5 "$OUTPUT_FILE" | grep -q "Agent execution complete"; then
+if grep -q "Agent execution complete" "$OUTPUT_FILE" 2>/dev/null; then
     echo "Status: COMPLETED"
 else
     echo "Status: RUNNING"

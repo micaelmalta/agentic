@@ -107,3 +107,16 @@ No mandatory commands. Use **RLM** or codebase search when you need to describe 
 - [ ] Feature flag strategy defined (if gradual rollout needed).
 - [ ] Risks and rollout are addressed.
 - [ ] Open questions are listed so they can be resolved before or during implementation.
+
+---
+
+## Cross-Skill Integration
+
+| Situation | Skill to invoke | How |
+|-----------|----------------|-----|
+| Tech spec needs implementation plan | **para** skill | Read `skills/para/SKILL.md`, use `/plan` |
+| Design has security implications | **security-reviewer** skill | Read `skills/security-reviewer/SKILL.md` |
+| Architecture needs documentation (ADR) | **documentation** skill | Read `skills/documentation/SKILL.md` |
+| Design includes CI/CD pipeline | **ci-cd** skill | Read `skills/ci-cd/SKILL.md` |
+| Performance requirements in design | **performance** skill | Read `skills/performance/SKILL.md` |
+| Large codebase requires exploration | **rlm** skill | Read `skills/rlm/SKILL.md` |

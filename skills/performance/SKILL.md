@@ -156,3 +156,15 @@ Ensure **/setup** has been run so Datadog MCP is configured.
 - [ ] Trade-offs (e.g. readability, memory) noted when relevant.
 - [ ] Observability added: structured logging, key metrics, tracing for distributed calls.
 - [ ] No sensitive data in logs or metrics; correlation IDs propagated.
+
+---
+
+## Cross-Skill Integration
+
+| Situation | Skill to invoke | How |
+|-----------|----------------|-----|
+| Performance issue in production | **Datadog MCP** | Use `query_metrics`, `search_logs`, `query_traces` (after `/setup`) |
+| Optimization changes need review | **code-reviewer** skill | Read `skills/code-reviewer/SKILL.md` |
+| Optimization reveals security concern | **security-reviewer** skill | Read `skills/security-reviewer/SKILL.md` |
+| Need benchmarks in CI | **ci-cd** skill | Read `skills/ci-cd/SKILL.md` |
+| Logging/tracing needs tests | **testing** skill | Read `skills/testing/SKILL.md` |

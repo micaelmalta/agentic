@@ -298,3 +298,16 @@ Before marking implementation complete:
 - [ ] **All tests pass**: No failures
 - [ ] **No regressions**: Existing tests still pass
 - [ ] **Quality gates met**: Conventions, security, minimal changes
+
+---
+
+## Cross-Skill Integration
+
+| Situation | Skill to invoke | How |
+|-----------|----------------|-----|
+| Need to design before implementing | **architect** skill | Read `skills/architect/SKILL.md` |
+| Tests reveal security concern | **security-reviewer** skill | Read `skills/security-reviewer/SKILL.md` |
+| Implementation needs code review | **code-reviewer** skill | Read `skills/code-reviewer/SKILL.md` |
+| Bug discovered during TDD | **debugging** skill | Read `skills/debugging/SKILL.md` |
+| Need to refactor after Green phase | **refactoring** skill | Read `skills/refactoring/SKILL.md` |
+| UI implementation needs e2e tests | **testing** skill + Playwright MCP | Read `skills/testing/SKILL.md` |

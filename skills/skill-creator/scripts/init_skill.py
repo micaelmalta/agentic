@@ -215,7 +215,10 @@ def init_skill(skill_name, path):
     try:
         skill_dir.mkdir(parents=True, exist_ok=False)
         print(f"✅ Created skill directory: {skill_dir}")
-    except Exception as e:
+    except PermissionError:
+        print(f"❌ Error: Permission denied creating directory: {skill_dir}")
+        return None
+    except OSError as e:
         print(f"❌ Error creating directory: {e}")
         return None
 
@@ -230,7 +233,7 @@ def init_skill(skill_name, path):
     try:
         skill_md_path.write_text(skill_content)
         print("✅ Created SKILL.md")
-    except Exception as e:
+    except (PermissionError, OSError) as e:
         print(f"❌ Error creating SKILL.md: {e}")
         return None
 
@@ -257,7 +260,7 @@ def init_skill(skill_name, path):
         example_asset = assets_dir / 'example_asset.txt'
         example_asset.write_text(EXAMPLE_ASSET)
         print("✅ Created assets/example_asset.txt")
-    except Exception as e:
+    except (PermissionError, OSError) as e:
         print(f"❌ Error creating resource directories: {e}")
         return None
 
@@ -292,6 +295,10 @@ def main():
     if not re.match(r'^[a-z0-9-]+$', skill_name):
         print(f"Error: Invalid skill name '{skill_name}'.")
         print("Skill names must contain only lowercase letters, digits, and hyphens (e.g., 'my-skill-1').")
+        sys.exit(1)
+
+    if len(skill_name) > 40:
+        print(f"Error: Skill name '{skill_name}' is too long ({len(skill_name)} chars, max 40).")
         sys.exit(1)
 
     print(f"🚀 Initializing skill: {skill_name}")

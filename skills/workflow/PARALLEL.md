@@ -35,7 +35,7 @@ When exploring the codebase, launch **parallel Explore subagents**:
 | Check existing patterns | `Explore`     | Independent search |
 | Review git history      | `Bash`        | Independent lookup |
 
-### Group 3: Test Writing (Phase 4)
+### Group 3: Test Writing (Phase 3)
 
 When writing tests for multiple components:
 
@@ -65,6 +65,17 @@ These skills depend on previous results and must run **sequentially**:
 - **dependencies** - requires conflict analysis before resolution
 - **performance** - requires profiling before optimization
 - **git-commits** - requires all changes complete before commit
+
+### Cross-Skill Delegation Pattern
+
+When one skill needs to invoke another during execution:
+
+1. **Read the target skill** - `Read skills/<skill-name>/SKILL.md`
+2. **Follow its protocol** - Execute the target skill's protocol steps
+3. **Return to the calling skill** - Continue where you left off
+4. **Document the delegation** - Note in the summary which skills were invoked and why
+
+**Example:** Code-reviewer finds a security issue → reads `skills/security-reviewer/SKILL.md` → follows security review protocol → returns findings to code review output.
 
 ---
 

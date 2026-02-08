@@ -52,6 +52,39 @@ Change structure and names, not observable behavior. Small steps, with tests (or
 - Run tests after changes: `npm test`, `pytest`, `go test ./...`, etc., per project.
 - Search for references before rename/move: `grep` or IDE "Find references".
 
+### 5. When NOT to Refactor
+
+- **Low-traffic, stable code** - If no one touches it and it works, leave it alone.
+- **Before understanding** - Don't refactor code you don't fully understand yet; read and test first.
+- **Mixed with features/fixes** - Don't combine refactoring with behavior changes in the same commit.
+- **Without tests** - If there are no tests and you can't quickly add them, the risk of silent breakage is high.
+- **Under time pressure** - Refactoring under deadline pressure leads to half-done changes that are worse than the original.
+
+### 6. Large-Scale Refactoring
+
+For refactors spanning multiple files or modules:
+
+1. **Map the scope** - Identify all affected files, imports, and call sites before starting.
+2. **Plan the sequence** - Order changes to minimize broken intermediate states (e.g., introduce new interface first, then migrate callers, then remove old code).
+3. **Feature branch** - Always use a dedicated branch for large refactors.
+4. **Incremental commits** - One logical change per commit; each commit should leave tests passing.
+5. **Parallel safety** - If using parallel subagents (RLM skill), ensure changes don't conflict across files.
+
+### 7. Performance Implications
+
+- **Measure before and after** if refactoring hot paths (use the **performance** skill for profiling).
+- **Extra abstractions** add indirection — acceptable for clarity but watch for overhead in tight loops.
+- **Data structure changes** (e.g., array → map) can affect performance positively or negatively; benchmark if critical.
+
+### 8. Cross-Skill Integration
+
+| Situation | Skill to invoke |
+|-----------|----------------|
+| Need tests before refactoring | **testing** skill |
+| Refactoring reveals a security issue | **security-reviewer** skill |
+| Refactoring changes API surface | **code-reviewer** skill |
+| Refactoring affects performance-critical code | **performance** skill |
+
 ---
 
 ## Checklist
@@ -60,3 +93,5 @@ Change structure and names, not observable behavior. Small steps, with tests (or
 - [ ] Tests pass (or equivalent verification) after each logical step.
 - [ ] Renames and moves are consistent (all references updated).
 - [ ] Commits are focused (one refactor type or one area per commit when practical).
+- [ ] Large-scale refactors have a clear plan and incremental commits.
+- [ ] Performance-sensitive code benchmarked before and after (if applicable).

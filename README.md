@@ -52,6 +52,7 @@ For Jira, Confluence, and Datadog integration:
 |-------|---------|---------|
 | **para** | `/plan`, `/execute`, `/summarize`, `/archive` | PARA methodology implementation |
 | **workflow** | `/workflow` | Complete dev workflow from plan to GitHub PR |
+| **developer** | `/dev` | TDD implementation (Red-Green-Refactor cycle) |
 | **rlm** | `/rlm` | Handle large codebases (100+ files) with map-reduce |
 | **architect** | `/architect` | Technical specifications and design documents |
 
@@ -60,16 +61,16 @@ For Jira, Confluence, and Datadog integration:
 | Skill | Command | Purpose |
 |-------|---------|---------|
 | **testing** | `/test` | Write and run tests (unit, integration, e2e, a11y, i18n) |
-| **debugging** | `/debug` | Reproduce, diagnose, and fix bugs |
-| **refactoring** | `/refactor` | Safe structural changes |
-| **dependencies** | `/deps` | Manage and upgrade dependencies |
-| **performance** | `/perf` | Profile and optimize performance |
+| **debugging** | `/debug` | Reproduce, diagnose, and fix bugs (TDD-based) |
+| **refactoring** | `/refactor` | Safe structural changes without behavior modification |
+| **dependencies** | `/deps` | Manage, upgrade, and audit dependencies |
+| **performance** | `/perf` | Profile, benchmark, and optimize performance |
 
 ### Quality & Review
 
 | Skill | Command | Purpose |
 |-------|---------|---------|
-| **code-reviewer** | `/review` | Review for correctness and maintainability |
+| **code-reviewer** | `/review` | Review for correctness, readability, and maintainability |
 | **security-reviewer** | `/security` | Security auditing and vulnerability detection |
 
 ### Documentation & Git
@@ -79,12 +80,36 @@ For Jira, Confluence, and Datadog integration:
 | **documentation** | `/docs` | README, API docs, ADRs, runbooks |
 | **git-commits** | `/commit` | Commit messages, changelogs, release notes |
 
-### Infrastructure
+### Infrastructure & Extensibility
 
 | Skill | Command | Purpose |
 |-------|---------|---------|
-| **ci-cd** | `/ci` | CI/CD pipeline configuration |
-| **setup** | `/setup` | Configure MCP servers (Atlassian, Datadog) |
+| **ci-cd** | `/ci` | CI/CD pipeline configuration and fixes |
+| **setup** | `/setup` | Configure MCP servers (Atlassian, Datadog, Playwright) |
+| **skill-creator** | — | Guide for creating new skills |
+| **mcp-builder** | — | Guide for building MCP servers |
+
+## Prerequisites
+
+- **Python 3.10+** — Required for RLM (`skills/rlm/rlm.py`), skill-creator scripts, validation scripts, and MCP builder evaluation
+- **Node.js** — Required for `skills/setup/setup_mcp.js` (MCP server configuration)
+- **GitHub CLI (`gh`)** — Required for PR creation in workflow Phase 7
+- **Git** — Required for branch management, commits, and version control operations
+
+## Phase Agent System
+
+The workflow skill uses a **hybrid architecture** combining direct orchestration and autonomous background agents:
+
+| Phase | Handler | Mode |
+|-------|---------|------|
+| 1-3 | Orchestrator (planning, branching, implementing) | Direct |
+| 4 | **phase-testing-agent** — auto-detect language, run tests, retry with backoff | Background |
+| 5 | **phase-validation-agent** — 6 checks (format, lint, build, test, code review, security) | Background |
+| 6 | Orchestrator (commit & push) | Direct |
+| 7 | **phase-pr-agent** — create GitHub PR, link Jira (optional) | Background |
+| 8 | Orchestrator (monitor & summarize) | Direct |
+
+Phase agents have structured JSON I/O, exponential retry logic, and escalate to the user after max retries. See `skills/agents/` for full specs.
 
 ## PARA Methodology
 
@@ -421,6 +446,18 @@ This skills collection is built on these principles:
 | `/dev` | TDD implementation (Red-Green-Refactor) |
 | `/architect` | Technical specifications and design docs |
 
+## Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| `/workflow` stuck at validation | Check phase agent output; run `skills/agents/check-agent.sh <log-dir>` to inspect |
+| RLM script fails | Ensure Python 3.10+; check file encoding (UTF-8 required) |
+| MCP setup fails | Run `/setup` again; verify API keys; check config file at the correct path for your IDE |
+| `gh` CLI not found | Install GitHub CLI: `brew install gh` (macOS) or see [cli.github.com](https://cli.github.com) |
+| Pre-commit validation fails | Run `skills/workflow/scripts/pre-commit-validation.sh` manually to see errors |
+| Skill not triggering | Check YAML frontmatter `triggers` list in `skills/<name>/SKILL.md` |
+| Large codebase context overflow | Use `/rlm` to enable map-reduce parallel analysis |
+
 ## Support
 
 For issues, questions, or contributions, please refer to the individual skill documentation in `skills/*/SKILL.md`.
@@ -429,7 +466,7 @@ For issues, questions, or contributions, please refer to the individual skill do
 
 MIT License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details if available.
+This project is licensed under the MIT License.
 
 ---
 

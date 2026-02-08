@@ -376,3 +376,15 @@ After testing the skill, users may request improvements. Often this happens righ
 - [ ] Scripts tested and working correctly.
 - [ ] Skill packaged via `skills/skill-creator/scripts/package_skill.py` (Step 5).
 - [ ] Validated against real usage and iterated (Step 6).
+
+---
+
+## Cross-Skill Integration
+
+| Situation | Skill to invoke | How |
+|-----------|----------------|-----|
+| New skill needs testing | **testing** skill | Read `skills/testing/SKILL.md` |
+| New skill needs documentation | **documentation** skill | Read `skills/documentation/SKILL.md` |
+| New skill includes MCP tools | **mcp-builder** skill | Read `skills/mcp-builder/SKILL.md` |
+| New skill needs code review | **code-reviewer** skill | Read `skills/code-reviewer/SKILL.md` |
+| Skill scripts need hardening | **security-reviewer** skill | Read `skills/security-reviewer/SKILL.md` |

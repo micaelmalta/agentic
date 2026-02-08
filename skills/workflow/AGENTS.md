@@ -87,6 +87,16 @@ else:
     handle_errors(result["errors"])
 ```
 
+## Error Recovery Between Phases
+
+When a phase agent fails:
+
+1. **Review the structured JSON output** - Check `status`, error details, and retry count.
+2. **Fix the issue** - Address the root cause (test failure, lint error, build failure, etc.).
+3. **Re-run the agent** - Spawn a new instance of the same agent with updated input.
+4. **Escalate after 3 retries** - If the same issue persists, use `AskUserQuestion` to get user input.
+5. **Never skip a phase** - Agents must return `status: "pass"` before the workflow proceeds.
+
 ## Detailed Specifications
 
 - `skills/agents/README.md` - Agent system overview

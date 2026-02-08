@@ -88,7 +88,7 @@ def parse_evaluation_file(file_path: Path) -> list[dict[str, Any]]:
                 })
 
         return evaluations
-    except Exception as e:
+    except (ET.ParseError, OSError, ValueError) as e:
         print(f"Error parsing evaluation file {file_path}: {e}")
         return []
 
@@ -136,7 +136,7 @@ async def agent_loop(
             try:
                 tool_result = await connection.call_tool(tool_name, tool_input)
                 tool_response = json.dumps(tool_result) if isinstance(tool_result, (dict, list)) else str(tool_result)
-            except Exception as e:
+            except (ConnectionError, TimeoutError, RuntimeError, ValueError, OSError) as e:
                 tool_response = f"Error executing tool {tool_name}: {str(e)}\n"
                 tool_response += traceback.format_exc()
             tool_duration = time.time() - tool_start_ts

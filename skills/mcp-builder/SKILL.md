@@ -255,3 +255,16 @@ Load these resources as needed during development:
 - [ ] No duplicated code; consistent error handling; full type coverage.
 - [ ] Build succeeds and tested with MCP Inspector.
 - [ ] 10 evaluation questions created, verified, and saved as XML.
+
+---
+
+## Cross-Skill Integration
+
+| Situation | Skill to invoke | How |
+|-----------|----------------|-----|
+| MCP server needs tests | **testing** skill | Read `skills/testing/SKILL.md` |
+| MCP server needs security review | **security-reviewer** skill | Read `skills/security-reviewer/SKILL.md` |
+| MCP server needs API docs | **documentation** skill | Read `skills/documentation/SKILL.md` |
+| MCP server needs CI pipeline | **ci-cd** skill | Read `skills/ci-cd/SKILL.md` |
+| MCP server needs code review | **code-reviewer** skill | Read `skills/code-reviewer/SKILL.md` |
+| Configure MCP in IDE after build | **setup** skill | Read `skills/setup/SKILL.md` |

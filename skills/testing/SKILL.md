@@ -236,3 +236,15 @@ When adding or updating tests, provide:
 - [ ] Database migrations tested: up, down, and data integrity verified.
 
 **⚠️ NEVER output "Optional: Add tests" - testing is MANDATORY.**
+
+---
+
+## Cross-Skill Integration
+
+| Situation | Skill to invoke | How |
+|-----------|----------------|-----|
+| UI/E2E tests needed | Playwright MCP | Run `/setup` first, then use `browser_navigate`, `browser_click`, etc. |
+| Flaky test caused by timing/race | **debugging** skill | Read `skills/debugging/SKILL.md` |
+| Test reveals security issue | **security-reviewer** skill | Read `skills/security-reviewer/SKILL.md` |
+| Test coverage in CI pipeline | **ci-cd** skill | Read `skills/ci-cd/SKILL.md` |
+| Need to write tests before refactoring | **refactoring** skill | Read `skills/refactoring/SKILL.md` |
