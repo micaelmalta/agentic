@@ -138,7 +138,7 @@ This document defines the complete input/output protocol for the Phase Validatio
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "PhaseValidationAgentOutput",
   "type": "object",
-  "required": ["status", "execution_time_ms", "total_retries", "checks"],
+  "required": ["status", "execution_time_ms", "total_retries", "checks", "errors"],
   "additionalProperties": false,
   "properties": {
     "status": {
@@ -162,6 +162,32 @@ This document defines the complete input/output protocol for the Phase Validatio
       "type": "boolean",
       "description": "True if security-reviewer found a critical vulnerability (only present if true)",
       "examples": [true]
+    },
+    "errors": {
+      "type": "array",
+      "description": "Top-level input validation or agent-level errors (empty if no errors). Captures issues like missing required parameters or invalid working_directory separately from individual check results.",
+      "items": {
+        "type": "object",
+        "required": ["type", "message"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Error type (e.g., validation_error, configuration_error)"
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message"
+          },
+          "context": {
+            "type": "object",
+            "description": "Additional error context (structure varies by error type)"
+          }
+        }
+      },
+      "examples": [
+        [],
+        [{"type": "validation_error", "message": "missing required parameter 'working_directory'"}]
+      ]
     },
     "checks": {
       "type": "object",
@@ -451,7 +477,7 @@ For TypeScript implementations or integrations, here are the equivalent type def
 export interface PhaseValidationAgentInput {
   working_directory: string;
   changed_files: string[];
-  language?: 'javascript' | 'typescript' | 'python' | 'go' | 'rust' | 'ruby' | 'java';
+  language?: 'javascript' | 'js' | 'typescript' | 'ts' | 'python' | 'py' | 'go' | 'golang' | 'rust' | 'rs' | 'ruby' | 'rb' | 'java';
   format_command?: string;
   lint_command?: string;
   build_command?: string;
@@ -467,7 +493,14 @@ export interface PhaseValidationAgentOutput {
   execution_time_ms: number;
   total_retries: number;
   critical_security_issue?: boolean;
+  errors: ValidationError[];
   checks: ValidationChecks;
+}
+
+export interface ValidationError {
+  type: string;
+  message: string;
+  context?: Record<string, unknown>;
 }
 
 export interface ValidationChecks {
@@ -540,7 +573,7 @@ from pydantic import BaseModel, Field, field_validator
 class PhaseValidationAgentInput(BaseModel):
     working_directory: str = Field(..., min_length=1, pattern=r"^/")
     changed_files: List[str] = Field(...)
-    language: Optional[Literal['javascript', 'typescript', 'python', 'go', 'rust', 'ruby', 'java']] = None
+    language: Optional[Literal['javascript', 'js', 'typescript', 'ts', 'python', 'py', 'go', 'golang', 'rust', 'rs', 'ruby', 'rb', 'java']] = None
     format_command: Optional[str] = Field(None, min_length=1)
     lint_command: Optional[str] = Field(None, min_length=1)
     build_command: Optional[str] = Field(None, min_length=1)
@@ -605,11 +638,17 @@ class ValidationChecks(BaseModel):
     code_review: CodeReviewCheck
     security_review: SecurityReviewCheck
 
+class ValidationError(BaseModel):
+    type: str
+    message: str
+    context: Optional[dict] = None
+
 class PhaseValidationAgentOutput(BaseModel):
     status: Literal['pass', 'fail']
     execution_time_ms: int = Field(..., ge=0)
     total_retries: int = Field(..., ge=0)
     critical_security_issue: Optional[bool] = None
+    errors: List[ValidationError] = []
     checks: ValidationChecks
 ```
 
@@ -636,6 +675,7 @@ class PhaseValidationAgentOutput(BaseModel):
   "status": "pass",
   "execution_time_ms": 8901,
   "total_retries": 0,
+  "errors": [],
   "checks": {
     "formatter": {
       "status": "pass",
@@ -705,6 +745,7 @@ class PhaseValidationAgentOutput(BaseModel):
   "status": "pass",
   "execution_time_ms": 10234,
   "total_retries": 3,
+  "errors": [],
   "checks": {
     "formatter": {
       "status": "pass",
@@ -770,6 +811,7 @@ class PhaseValidationAgentOutput(BaseModel):
   "execution_time_ms": 5678,
   "total_retries": 0,
   "critical_security_issue": true,
+  "errors": [],
   "checks": {
     "formatter": {
       "status": "pass",
@@ -834,6 +876,12 @@ class PhaseValidationAgentOutput(BaseModel):
   "status": "fail",
   "execution_time_ms": 0,
   "total_retries": 0,
+  "errors": [
+    {
+      "type": "validation_error",
+      "message": "missing required parameter 'working_directory'"
+    }
+  ],
   "checks": {
     "formatter": {
       "status": "fail",

@@ -104,7 +104,7 @@ Run tests after changes. Fix or skip failing tests before adding new ones.
 | `browser_type`          | Type text into inputs                       |
 | `browser_screenshot`    | Capture screenshots for visual verification |
 | `browser_snapshot`      | Get accessibility tree snapshot             |
-| `browser_wait`          | Wait for conditions                         |
+| `browser_wait_for`      | Wait for conditions                         |
 | `browser_select_option` | Select dropdown options                     |
 | `browser_hover`         | Hover over elements                         |
 | `browser_drag`          | Drag and drop                               |

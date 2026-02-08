@@ -26,7 +26,7 @@ A structured, enforceable workflow from planning to GitHub PR with mandatory qua
 
 ## Why Enforcement Matters
 
-In workflow execution RNA-363, Phase 5 validation was incomplete:
+In a past workflow execution, Phase 5 validation was incomplete:
 
 - ✅ Linter, build, tests ran
 - ❌ **Code review subagent skipped**
@@ -38,7 +38,7 @@ This allowed a security-sensitive authentication change (S2S token migration) to
 
 ### 1. Enhanced SKILL.md (Documentation)
 
-**Location:** `SKILL.md` lines 698-750
+**Location:** `SKILL.md` Phase 5 and Phase 6 sections
 
 **What changed:**
 
@@ -115,7 +115,7 @@ chmod +x .git/hooks/pre-commit
 
 **Contents:**
 
-- All 5 validation requirements
+- All 6 validation requirements
 - Space for findings and status
 - Re-validation section
 - Sign-off area
@@ -124,13 +124,14 @@ chmod +x .git/hooks/pre-commit
 
 ## Phase 5 Requirements (MANDATORY)
 
-Before Phase 6 (Commit), ALL 5 checks must complete:
+Before Phase 6 (Commit), ALL 6 checks must complete:
 
-1. ✅ **Linter** - Run and pass (auto-fix allowed)
-2. ✅ **Build** - Compile/bundle successfully
-3. ✅ **Tests** - All tests pass (unit + integration + e2e)
-4. ✅ **Code Review** - Launch `code-reviewer` subagent, address findings
-5. ✅ **Security Review** - Launch `security-reviewer` subagent, fix vulnerabilities
+1. ✅ **Formatter** - Run and format code (project style)
+2. ✅ **Linter** - Run and pass (auto-fix allowed)
+3. ✅ **Build** - Compile/bundle successfully
+4. ✅ **Tests** - All tests pass (unit + integration + e2e)
+5. ✅ **Code Review** - Launch `code-reviewer` subagent, address findings
+6. ✅ **Security Review** - Launch `security-reviewer` subagent, fix vulnerabilities
 
 **How to verify:**
 
@@ -145,7 +146,7 @@ cat skills/workflow/PHASE5-CHECKLIST.md
 ## Correct Phase 5 Execution
 
 ```python
-# Launch ALL 5 subagents in parallel (single message):
+# Launch ALL 6 checks (single message):
 
 Task(subagent_type="Bash",
      prompt="Run linter: npm run lint")
@@ -160,7 +161,7 @@ Task(subagent_type="general-purpose",
 Task(subagent_type="general-purpose",
      prompt="Read skills/security-reviewer/SKILL.md and run security review on all changed files. Check for injection, XSS, auth issues, sensitive data exposure, crypto.")
 
-# Wait for ALL 5 to complete
+# Wait for ALL 6 to complete
 # Address all findings
 # Re-run validations
 # Verify with validation script
@@ -175,7 +176,7 @@ Task(subagent_type="general-purpose",
 | 2     | Branch         | git                                         | Branch created           |
 | 3     | Execute        | developer (TDD)                             | Implementation complete  |
 | 4     | Testing        | testing, developer                          | All tests pass           |
-| 5     | **Validation** | **code-reviewer, security-reviewer, ci-cd** | **ALL 5 checks pass** ⚠️ |
+| 5     | **Validation** | **code-reviewer, security-reviewer, ci-cd** | **ALL 6 checks pass** ⚠️ |
 | 6     | Commit         | git-commits                                 | Changes committed        |
 | 7     | PR             | git, documentation                          | PR created               |
 | 8     | Monitor        | Datadog, documentation                      | Observability verified   |
@@ -219,7 +220,7 @@ Setup: `/setup` or `skills/setup/SKILL.md`
 ### "Phase 5 was skipped"
 
 1. **STOP immediately** before Phase 6
-2. Point to `SKILL.md` Phase 5 requirements (lines 629-723)
+2. Point to `SKILL.md` Phase 5 requirements (see Phase 5 section)
 3. Run validation script: `python3 skills/workflow/scripts/validate_phase.py --phase 5`
 4. Launch missing review subagents
 5. Address all findings

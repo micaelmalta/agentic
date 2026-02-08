@@ -260,7 +260,7 @@ git commit -m "test: validation hook"
 
 Track these metrics to measure enforcement effectiveness:
 
-1. **Compliance Rate**: % of workflows that complete all 5 Phase 5 checks
+1. **Compliance Rate**: % of workflows that complete all 6 Phase 5 checks
 2. **Skip Detection**: Number of times validation script caught missing reviews
 3. **Hook Blocks**: Number of commits blocked by pre-commit hook
 4. **Time to Validation**: Average time spent in Phase 5

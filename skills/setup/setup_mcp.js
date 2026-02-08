@@ -59,11 +59,22 @@ function merge(filePath, label) {
     // file missing or invalid
   }
   data.mcpServers = data.mcpServers || {};
+
+  // Warn if existing entries will be overwritten
+  const keysToWrite = ['atlassian', 'atlassian-tech', 'datadog'];
+  for (const key of keysToWrite) {
+    if (data.mcpServers[key]) {
+      console.warn(`Warning: Overwriting existing '${key}' entry in ${label} config (${filePath})`);
+    }
+  }
+
   data.mcpServers.atlassian = atlassian;
   data.mcpServers['atlassian-tech'] = atlassianTech;
   data.mcpServers.datadog = datadog;
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+  // Restrict permissions since config may contain API keys
+  fs.chmodSync(filePath, 0o600);
   console.log('Updated', label, 'MCP config:', filePath);
 }
 

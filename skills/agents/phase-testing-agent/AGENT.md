@@ -64,6 +64,8 @@ The agent validates:
 - [ ] If `retry_backoff_ms` is provided, array length matches `max_retries`
 - [ ] Project files exist (package.json, go.mod, etc.) if language is auto-detected
 
+**Constraint: `retry_backoff_ms` length must equal `max_retries`.** The retry loop uses `retry_backoff_ms[retry_count]` to determine wait time. If the array is shorter than `max_retries`, an index-out-of-bounds error will occur. When providing custom values, ensure the array has exactly `max_retries` elements (e.g., `max_retries: 4` requires `retry_backoff_ms: [3000, 6000, 9000, 12000]`).
+
 **Validation Errors:** Return status "fail" with error object containing missing/invalid parameter details.
 
 ---

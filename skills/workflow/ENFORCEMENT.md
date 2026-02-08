@@ -4,7 +4,7 @@ This document explains how to ensure all mandatory workflow phases are executed,
 
 ## Problem Statement
 
-In the RNA-363 workflow execution, **Phase 5 validation was incomplete**:
+In a past workflow execution, **Phase 5 validation was incomplete**:
 
 - ✅ Formatter and linter ran
 - ✅ Build ran
@@ -16,7 +16,7 @@ This violated the workflow's MANDATORY requirements and allowed a security-sensi
 
 ## Root Cause
 
-The workflow skill (lines 698-708) requires launching **5 parallel subagents**, but execution only ran 3 bash commands and skipped the 2 general-purpose subagents for reviews.
+The workflow skill (see Phase 5 section) requires launching **6 validation checks**, but execution only ran 3 bash commands and skipped the 2 general-purpose subagents for reviews.
 
 ## Solutions
 
@@ -29,7 +29,7 @@ The workflow skill (lines 698-708) requires launching **5 parallel subagents**, 
 - Added VERIFICATION CHECKLIST that must be completed before Phase 6
 - Added Phase 6 gate with explicit Phase 5 completion check
 
-**Location:** `skills/workflow/SKILL.md` (lines 698-748)
+**Location:** `skills/workflow/SKILL.md` (see Phase 5 and Phase 6 sections)
 
 **How it helps:**
 
@@ -127,9 +127,9 @@ chmod +x .git/hooks/pre-commit
 
 **Key additions to `SKILL.md`:**
 
-1. **Lines 390-397:** Added mandatory validation section with validation script usage
-2. **Lines 701-723:** Enhanced Phase 5 with critical enforcement and verification checklist
-3. **Lines 733-750:** Added Phase 6 gate enforcement with explicit Phase 5 check
+1. **Protocol section:** Added mandatory validation section with validation script usage
+2. **Phase 5 section:** Enhanced Phase 5 with critical enforcement and verification checklist
+3. **Phase 6 section:** Added Phase 6 gate enforcement with explicit Phase 5 check
 
 ## Implementation Checklist
 
@@ -176,7 +176,7 @@ To ensure proper enforcement in your projects:
 ### Correct Phase 5 Execution
 
 ```python
-# At Phase 5 start, launch ALL 5 subagents in parallel:
+# At Phase 5 start, launch ALL 6 checks:
 
 # Bash subagents
 Task(subagent_type="Bash",
@@ -192,7 +192,7 @@ Task(subagent_type="general-purpose",
 Task(subagent_type="general-purpose",
      prompt="Read skills/security-reviewer/SKILL.md and run security review on all changed files. Check for injection, XSS, auth issues, sensitive data exposure.")
 
-# Wait for ALL 5 to complete before Phase 6
+# Wait for ALL 6 to complete before Phase 6
 ```
 
 ### Manual Validation Before Commit
@@ -301,7 +301,7 @@ During rapid iteration, you may want to commit frequently:
 
 ### Q: Why is this so strict?
 
-**A:** Security and code quality issues are expensive to fix later. The RNA-363 case showed that skipping security review on auth changes is dangerous. Enforcement prevents human error and AI oversight.
+**A:** Security and code quality issues are expensive to fix later. A historical incident showed that skipping security review on auth changes is dangerous. Enforcement prevents human error and AI oversight.
 
 ### Q: Can I skip reviews for trivial changes?
 

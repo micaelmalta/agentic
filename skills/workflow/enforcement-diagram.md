@@ -109,7 +109,7 @@ Visual representation of the multi-layer enforcement system.
 ┌─────────────────────────────────────────────────────────────────┐
 │                     PHASE 5: VALIDATION                         │
 │                                                                  │
-│  Launch 5 Parallel Subagents (MANDATORY)                        │
+│  Launch 6 Validation Checks (MANDATORY)                        │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
 │  │   Subagent   │  │   Subagent   │  │   Subagent   │          │
 │  │   #1 Bash    │  │   #2 Bash    │  │   #3 Bash    │          │
@@ -143,7 +143,7 @@ Visual representation of the multi-layer enforcement system.
 │                            │                                    │
 │                            ▼                                    │
 │                  ┌────────────────────┐                         │
-│                  │  ALL 5 COMPLETE?   │                         │
+│                  │  ALL 6 COMPLETE?   │                         │
 │                  └─────────┬──────────┘                         │
 │                            │                                    │
 │              ┌─────────────┼─────────────┐                      │
@@ -164,7 +164,7 @@ Visual representation of the multi-layer enforcement system.
 │            ▼               │      └─────┬──────┘               │
 │      ┌────────────┐        │            │                       │
 │      │  Re-run    │        │            │                       │
-│      │  ALL 5     │◄───────┼────────────┘                       │
+│      │  ALL 6     │◄───────┼────────────┘                       │
 │      └─────┬──────┘        │                                    │
 │            │               │                                    │
 │            └───────────────┘                                    │
@@ -211,14 +211,14 @@ Visual representation of the multi-layer enforcement system.
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-## What Went Wrong in RNA-363
+## What Went Wrong (Historical Incident)
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                     PHASE 5: VALIDATION                         │
 │                    (What should happen)                         │
 │                                                                  │
-│  Launch 5 Parallel Subagents:                                   │
+│  Launch 6 Validation Checks:                                   │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐                      │
 │  │  Linter  │  │  Build   │  │  Tests   │                      │
 │  │    ✅    │  │    ✅    │  │    ✅    │                      │
@@ -229,7 +229,7 @@ Visual representation of the multi-layer enforcement system.
 │  │       ✅         │  │       ✅         │                    │
 │  └──────────────────┘  └──────────────────┘                    │
 │                                                                  │
-│  Result: ALL 5 complete → Proceed to Phase 6                    │
+│  Result: ALL 6 complete → Proceed to Phase 6                    │
 └─────────────────────────────────────────────────────────────────┘
 
                             vs.
@@ -238,7 +238,7 @@ Visual representation of the multi-layer enforcement system.
 │                     PHASE 5: VALIDATION                         │
 │                     (What actually happened)                    │
 │                                                                  │
-│  Only 3 of 5 subagents launched:                                │
+│  Only 3 of 6 checks launched:                                │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐                      │
 │  │  Linter  │  │  Build   │  │  Tests   │                      │
 │  │    ✅    │  │    ✅    │  │    ✅    │                      │
@@ -264,7 +264,7 @@ Visual representation of the multi-layer enforcement system.
 │                  WORKFLOW SKILL (LAYER 1)                       │
 │                                                                  │
 │  Before Phase 5 execution:                                      │
-│  ⛔ CRITICAL ENFORCEMENT: You MUST launch ALL 5 subagents       │
+│  ⛔ CRITICAL ENFORCEMENT: You MUST launch ALL 6 checks          │
 │                                                                  │
 │  → Clear instruction, hard to misinterpret                      │
 └─────────────────────────────┬───────────────────────────────────┘

@@ -2,12 +2,12 @@
 """
 validate-input.py - Validate agent input against schema
 Usage: validate-input.py <agent-name> <input-json-file>
+
+Requires Python 3.10+ (uses PEP 604 union types in type hints: tuple[bool, list[str]])
 """
 
 import sys
 import json
-import os
-from pathlib import Path
 
 # Agent schemas (synced with protocol.md definitions)
 SCHEMAS = {

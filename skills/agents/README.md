@@ -61,7 +61,7 @@ They work alongside the **workflow skill** (orchestrator) to implement a hybrid 
 **Documentation:** `skills/agents/phase-testing-agent/AGENT.md`
 
 ### phase-validation-agent (Phase 5)
-**Purpose:** Run all 6 validations in parallel with retry logic
+**Purpose:** Run all 6 validations (first 4 sequentially, then last 2 in parallel) with retry logic
 
 **Capabilities:**
 - Format code (language-specific)
@@ -269,6 +269,16 @@ All phase agents must:
 - Ensure AskUserQuestion tool is available
 - Check that agent has permission to interact
 - Verify escalation threshold is correct
+
+---
+
+## Known Gaps
+
+The following items are documented in agent specifications but not yet implemented:
+
+- **Test directories:** Each agent's AGENT.md defines test cases (unit and integration), but `tests/` directories have not yet been created. Test implementations are planned for a future iteration.
+- **CI/CD enforcement (Layer 4):** Described in workflow enforcement docs but not yet implemented as a GitHub Actions workflow.
+- **Agent registry:** A centralized catalog of all agents is planned but does not exist yet.
 
 ---
 

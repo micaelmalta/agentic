@@ -70,7 +70,8 @@ This document defines the input/output protocol for the phase-pr-agent. All inpu
       "description": "Absolute path to git repository",
       "example": "/Users/user/project"
     }
-  }
+  },
+  "additionalProperties": false
 }
 ```
 
@@ -159,7 +160,7 @@ This document defines the input/output protocol for the phase-pr-agent. All inpu
       "description": "GitHub pull request URL (null if creation failed)"
     },
     "pr_number": {
-      "type": ["number", "null"],
+      "type": ["integer", "null"],
       "minimum": 1,
       "description": "GitHub pull request number (null if creation failed)"
     },

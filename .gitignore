@@ -4,3 +4,26 @@ __pycache__
 node_modules/
 *.pyc
 .DS_Store
+
+# Environment
+.env.local
+.env.*.local
+
+# Logs
+*.log
+
+# Coverage
+coverage/
+
+# Build
+dist/
+build/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+Thumbs.db

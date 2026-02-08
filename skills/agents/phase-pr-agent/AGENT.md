@@ -68,6 +68,19 @@ The agent validates:
 
 **Validation Errors:** Return clear error message with missing/invalid parameter details.
 
+### Parameter Interactions
+
+The `draft` and `mark_ready` parameters interact as follows:
+
+| `draft` | `mark_ready` | Behavior |
+|---------|-------------|----------|
+| `true` (default) | `false` (default) | Creates draft PR. Recommended for review workflows. |
+| `true` | `true` | Creates draft PR then immediately marks it ready. Redundant -- use `draft: false` instead. |
+| `false` | `false` | Creates non-draft PR directly. `mark_ready` is irrelevant. |
+| `false` | `true` | Creates non-draft PR directly. `mark_ready` is ignored (already non-draft). |
+
+**Recommended:** Use `draft: true, mark_ready: false` (the defaults) for standard review workflows. The PR author or a reviewer can mark it ready manually after review.
+
 ---
 
 ## Execution Logic
