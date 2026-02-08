@@ -85,7 +85,7 @@ def package_skill(skill_path, output_dir=None):
         print(f"\n✅ Successfully packaged skill to: {skill_filename}")
         return skill_filename
 
-    except Exception as e:
+    except (PermissionError, OSError) as e:
         print(f"❌ Error creating .skill file: {e}")
         return None
 

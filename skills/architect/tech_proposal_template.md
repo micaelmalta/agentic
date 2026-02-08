@@ -120,11 +120,40 @@ Identify where the system lives in domain maps.
 
 ------------------------------------------------------------------------
 
+## Success Metrics & Measurement
+
+- **How will you measure success?** Define concrete metrics (e.g., latency p99 < 200ms, error rate < 0.1%, adoption rate > 80%)
+- **Baseline measurements** - Current values for comparison
+- **Measurement tools** - How and where metrics are collected (Datadog, analytics, custom dashboards)
+- **Review timeline** - When to check metrics after launch (1 day, 1 week, 1 month)
+
+------------------------------------------------------------------------
+
+## Failure Modes & Recovery
+
+- **What can go wrong?** List failure scenarios with likelihood and impact
+- **Graceful degradation** - How does the system behave when this component fails?
+- **Recovery procedures** - Steps to recover from each failure mode
+- **Circuit breakers / fallbacks** - What automatic protections are in place?
+- **Data recovery** - Can data be recovered if corrupted or lost?
+
+------------------------------------------------------------------------
+
+## Cost Implications
+
+- **Infrastructure costs** - Additional compute, storage, bandwidth, or managed services
+- **Third-party costs** - New licenses, API usage fees, SaaS subscriptions
+- **Operational costs** - Ongoing maintenance, monitoring, on-call burden
+- **Migration costs** - One-time costs for data migration, client updates, deprecation period
+- **Cost comparison** - How does this compare to alternatives considered?
+
+------------------------------------------------------------------------
+
 ## Estimation & Implementation Plan
 
 -   **Estimated engineering effort** - Break down by phase or component (e.g., "API: 3 days, DB migration: 1 day, Frontend: 2 days")
 -   **Teams involved** - Which teams need to contribute or review?
 -   **Rollout / Deployment Strategy** - Phased rollout, canary, blue-green, or big-bang? Describe each phase
 -   **Datadog metrics, alerts, logs** - What dashboards, monitors, and log queries will be added?
--   **Impact analysis (Atlan #data-watch)** - What downstream data consumers are affected?
+-   **Impact analysis** - What downstream data consumers, dashboards, or pipelines are affected?
 -   **Rollback plan** - How to safely revert if issues arise in production

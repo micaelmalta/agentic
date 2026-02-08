@@ -429,3 +429,16 @@ PARA-Programming is built on these principles:
 ---
 
 **Remember:** PARA is a tool to help you work better with AI, not a bureaucratic requirement. Use it when it adds value, skip it when it doesn't.
+
+---
+
+## Cross-Skill Integration
+
+| Situation | Skill to invoke | How |
+|-----------|----------------|-----|
+| Plan needs technical architecture | **architect** skill | Read `skills/architect/SKILL.md` |
+| Execute phase needs TDD | **developer** skill | Read `skills/developer/SKILL.md` |
+| Full workflow from plan to PR | **workflow** skill | Read `skills/workflow/SKILL.md` |
+| Summarize needs commit info | **git-commits** skill | Read `skills/git-commits/SKILL.md` |
+| Large codebase exploration in plan | **rlm** skill | Read `skills/rlm/SKILL.md` |
+| Plan includes documentation updates | **documentation** skill | Read `skills/documentation/SKILL.md` |

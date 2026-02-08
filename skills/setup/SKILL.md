@@ -227,3 +227,15 @@ After setup, the **workflow**, **ci-cd**, **debugging**, **documentation**, and 
 - [ ] Existing `mcpServers` entries preserved (not overwritten).
 - [ ] Config written to correct location for target client(s).
 - [ ] User reminded to restart client after config changes.
+
+---
+
+## Cross-Skill Integration
+
+| Situation | Skill to invoke | How |
+|-----------|----------------|-----|
+| Atlassian MCP configured → use in workflow | **workflow** skill | Read `skills/workflow/SKILL.md` |
+| Datadog MCP configured → use for monitoring | **ci-cd** / **debugging** skill | Read `skills/ci-cd/SKILL.md` or `skills/debugging/SKILL.md` |
+| Playwright MCP configured → use for testing | **testing** skill | Read `skills/testing/SKILL.md` |
+| Need to build a custom MCP server | **mcp-builder** skill | Read `skills/mcp-builder/SKILL.md` |
+| MCP config needs documentation | **documentation** skill | Read `skills/documentation/SKILL.md` |

@@ -66,6 +66,65 @@ Ensure **/setup** has been run so Atlassian MCP is configured.
 
 When adding or updating docs, provide the content and say what was created/updated. If the project has a docs style guide, follow it.
 
+### 6. ADR (Architecture Decision Record) Structure
+
+When writing ADRs, follow this structure:
+
+```markdown
+# ADR-NNN: [Decision Title]
+
+**Date:** YYYY-MM-DD
+**Status:** Proposed | Accepted | Deprecated | Superseded by ADR-NNN
+
+## Context
+
+[What is the issue or situation that motivates this decision?]
+
+## Decision
+
+[What is the decision that was made?]
+
+## Consequences
+
+**Positive:**
+- [Benefits of this decision]
+
+**Negative:**
+- [Trade-offs and costs]
+
+**Neutral:**
+- [Other implications]
+```
+
+Number ADRs sequentially. Store in `docs/adr/` or `context/adr/`. Reference from plans and summaries when relevant.
+
+### 7. API Versioning Documentation
+
+When documenting APIs with versioning:
+
+- **Document the versioning strategy** (URL path `/v1/`, header `Accept-Version`, query param).
+- **Mark deprecated endpoints** clearly with sunset dates.
+- **Provide migration guides** when upgrading between API versions.
+- **Include changelog per version** showing what changed.
+
+### 8. Documentation During Refactoring
+
+When code is refactored, update affected documentation:
+
+- **README** - Update if installation, usage, or API examples changed.
+- **API docs** - Regenerate or update if endpoints/models changed.
+- **Inline comments** - Remove or update stale comments; don't leave misleading docs.
+- **ADR** - Write a new ADR if the refactoring represents an architectural decision.
+
+### 9. Cross-Skill Integration
+
+| Situation | Skill to invoke |
+|-----------|----------------|
+| Documenting API changes | **architect** skill (for tech spec) |
+| Writing architectural decisions | Use ADR format above |
+| Syncing docs to Confluence | Use **Atlassian MCP** tools (after `/setup`) |
+| Code needs inline documentation | **code-reviewer** can flag gaps |
+
 ---
 
 ## Checklist
@@ -74,3 +133,6 @@ When adding or updating docs, provide the content and say what was created/updat
 - [ ] Scannable (headings, lists, code blocks where useful).
 - [ ] Links to related docs or code when helpful.
 - [ ] No duplicate info across README and other docs; cross-reference instead.
+- [ ] ADRs follow standard structure (Context, Decision, Consequences).
+- [ ] Deprecated APIs marked with sunset dates and migration guides.
+- [ ] Documentation updated alongside code refactoring.

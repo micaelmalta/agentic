@@ -143,3 +143,15 @@ Respect project conventions: if the repo uses a different format (e.g. Jira tick
 - [ ] Version bump follows SemVer based on change type.
 - [ ] Tag created and pushed for releases.
 - [ ] GitHub Release created with release notes (if applicable).
+
+---
+
+## Cross-Skill Integration
+
+| Situation | Skill to invoke | How |
+|-----------|----------------|-----|
+| Need to version based on commit history | Use SemVer rules in Section 4 above | Automated: `semantic-release` / `release-please` |
+| Commit includes security fix | **security-reviewer** skill | Read `skills/security-reviewer/SKILL.md` to verify fix |
+| Commit includes breaking API change | **architect** / **documentation** skill | Update API docs and write ADR |
+| Release needs CI/CD pipeline | **ci-cd** skill | Read `skills/ci-cd/SKILL.md` for release pipeline |
+| Revert commit needed | Use `git revert <SHA>` | Creates new commit that undoes changes (safe; don't use `git reset`) |

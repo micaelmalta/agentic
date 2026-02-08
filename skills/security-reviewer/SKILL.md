@@ -511,3 +511,16 @@ Data leaks are one of the most common and impactful security issues. They expose
 - [ ] Severity appropriate (Critical, High, Medium, Low).
 - [ ] No unfounded alarm; distinguish theoretical vs practical risk.
 - [ ] Positive security practices noted when present.
+
+---
+
+## Cross-Skill Integration
+
+| Situation | Skill to invoke | How |
+|-----------|----------------|-----|
+| Correctness/readability issues found | **code-reviewer** skill | Read `skills/code-reviewer/SKILL.md` |
+| Dependency vulnerabilities found | **dependencies** skill | Read `skills/dependencies/SKILL.md` for upgrade |
+| Security fix needs tests | **testing** skill | Read `skills/testing/SKILL.md` |
+| Production incident investigation | **Datadog MCP** | Use `search_logs`, `query_traces` (after `/setup`) |
+| Security in CI/CD pipeline | **ci-cd** skill | Read `skills/ci-cd/SKILL.md` for secrets safety |
+| Large codebase security scan | **rlm** skill | Read `skills/rlm/SKILL.md` for parallel analysis |

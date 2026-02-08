@@ -8,6 +8,9 @@ Requires Python 3.10+ (uses PEP 604 union types in type hints: tuple[bool, list[
 
 import sys
 import json
+import os
+
+MAX_INPUT_SIZE = 1_048_576  # 1 MB
 
 # Agent schemas (synced with protocol.md definitions)
 SCHEMAS = {
@@ -96,13 +99,23 @@ def main():
 
     # Read input JSON
     try:
+        file_size = os.path.getsize(input_file)
+        if file_size > MAX_INPUT_SIZE:
+            print(f"Error: Input file too large ({file_size} bytes, max {MAX_INPUT_SIZE})")
+            sys.exit(1)
         with open(input_file, "r") as f:
             input_data = json.load(f)
     except FileNotFoundError:
         print(f"Error: Input file not found: {input_file}")
         sys.exit(1)
+    except PermissionError:
+        print(f"Error: Permission denied reading: {input_file}")
+        sys.exit(1)
     except json.JSONDecodeError as e:
         print(f"Error: Invalid JSON in input file: {e}")
+        sys.exit(1)
+    except OSError as e:
+        print(f"Error: Cannot read input file: {e}")
         sys.exit(1)
 
     # Validate

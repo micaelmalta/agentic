@@ -620,3 +620,18 @@ When complete (ONLY after all gates pass):
 - Link to summary document in `context/summaries/`
 - **Confirmation that all tests pass**
 - **Confirmation that build succeeds**
+
+---
+
+## Cross-Skill Integration
+
+| Situation | Skill to invoke | How |
+|-----------|----------------|-----|
+| Phase 1 needs technical architecture | **architect** skill | Read `skills/architect/SKILL.md` |
+| Phase 3 implementation uses TDD | **developer** skill | Read `skills/developer/SKILL.md` |
+| Phase 4 testing details | **testing** skill | Read `skills/testing/SKILL.md` |
+| Phase 5 code review | **code-reviewer** skill | Read `skills/code-reviewer/SKILL.md` |
+| Phase 5 security review | **security-reviewer** skill | Read `skills/security-reviewer/SKILL.md` |
+| Phase 6 commit messages | **git-commits** skill | Read `skills/git-commits/SKILL.md` |
+| Phase 8 documentation | **documentation** skill | Read `skills/documentation/SKILL.md` |
+| Large codebase in any phase | **rlm** skill | Read `skills/rlm/SKILL.md` |

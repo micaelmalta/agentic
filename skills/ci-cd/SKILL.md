@@ -209,3 +209,15 @@ For deep security analysis of secrets handling, invoke the **security-reviewer**
 - [ ] Environment variables documented; config separated from code.
 - [ ] Observability configured: logging, metrics, alerts for deployments.
 - [ ] Release process defined: versioning, tagging, changelog generation.
+
+---
+
+## Cross-Skill Integration
+
+| Situation | Skill to invoke | How |
+|-----------|----------------|-----|
+| CI needs observability/monitoring | **Datadog MCP** | Use `list_monitors`, `query_metrics` (after `/setup`) |
+| Pipeline has security concerns | **security-reviewer** skill | Read `skills/security-reviewer/SKILL.md` |
+| Release needs commit messages/changelog | **git-commits** skill | Read `skills/git-commits/SKILL.md` |
+| CI tests failing | **testing** / **debugging** skill | Read respective SKILL.md files |
+| Database migration in pipeline | Also check **testing** skill | Section 8: Database Migration Testing |

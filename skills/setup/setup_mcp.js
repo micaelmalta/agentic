@@ -21,13 +21,16 @@ const claudeDesktopPath = path.join(
   'Claude',
   'claude_desktop_config.json'
 );
-const datadogPath = process.env.MCP_DATADOG_PATH;
-if (!datadogPath) {
-  console.error('Error: MCP_DATADOG_PATH environment variable is required.');
-  console.error('Set it to the absolute path of your Datadog MCP index.js file.');
+const target = (process.env.TARGET || 'both').toLowerCase();
+if (!['cursor', 'claude', 'both'].includes(target)) {
+  console.error('Error: TARGET must be cursor, claude, or both');
   process.exit(1);
 }
-const target = (process.env.TARGET || 'both').toLowerCase();
+
+const datadogPath = process.env.MCP_DATADOG_PATH || null;
+if (datadogPath && !fs.existsSync(datadogPath)) {
+  console.warn(`Warning: MCP_DATADOG_PATH points to non-existent file: ${datadogPath}`);
+}
 const useClaudeDesktop = process.env.CLAUDE_DESKTOP === '1' || process.env.CLAUDE_DESKTOP === 'true';
 
 const atlassian = {
@@ -40,7 +43,7 @@ const atlassianTech = {
   type: 'http',
 };
 
-const datadog = {
+const datadog = datadogPath ? {
   type: 'stdio',
   command: 'node',
   args: [datadogPath],
@@ -48,20 +51,28 @@ const datadog = {
     DATADOG_API_KEY: process.env.DATADOG_API_KEY || '',
     DATADOG_APP_KEY: process.env.DATADOG_APP_KEY || '',
   },
-};
+} : null;
+
+if (datadog && (!process.env.DATADOG_API_KEY || !process.env.DATADOG_APP_KEY)) {
+  console.warn('Warning: DATADOG_API_KEY and/or DATADOG_APP_KEY not set. Datadog MCP may not authenticate.');
+}
 
 function merge(filePath, label) {
   let data = {};
   try {
     const raw = fs.readFileSync(filePath, 'utf8');
     data = JSON.parse(raw);
-  } catch (_) {
-    // file missing or invalid
+  } catch (err) {
+    if (err.code !== 'ENOENT') {
+      console.warn(`Warning: Could not read existing config at ${filePath}: ${err.message}`);
+    }
+    // Start fresh if file missing or unreadable
   }
   data.mcpServers = data.mcpServers || {};
 
   // Warn if existing entries will be overwritten
-  const keysToWrite = ['atlassian', 'atlassian-tech', 'datadog'];
+  const keysToWrite = ['atlassian', 'atlassian-tech'];
+  if (datadog) keysToWrite.push('datadog');
   for (const key of keysToWrite) {
     if (data.mcpServers[key]) {
       console.warn(`Warning: Overwriting existing '${key}' entry in ${label} config (${filePath})`);
@@ -70,9 +81,14 @@ function merge(filePath, label) {
 
   data.mcpServers.atlassian = atlassian;
   data.mcpServers['atlassian-tech'] = atlassianTech;
-  data.mcpServers.datadog = datadog;
+  if (datadog) {
+    data.mcpServers.datadog = datadog;
+  }
+  // Validate JSON is well-formed before writing
+  const jsonContent = JSON.stringify(data, null, 2);
+  JSON.parse(jsonContent); // throws if malformed
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+  fs.writeFileSync(filePath, jsonContent, 'utf8');
   // Restrict permissions since config may contain API keys
   fs.chmodSync(filePath, 0o600);
   console.log('Updated', label, 'MCP config:', filePath);
@@ -85,8 +101,4 @@ if (target === 'claude' || target === 'both') {
   const claudePath = useClaudeDesktop ? claudeDesktopPath : claudeCodePath;
   const claudeLabel = useClaudeDesktop ? 'Claude Desktop' : 'Claude Code';
   merge(claudePath, claudeLabel);
-}
-if (!['cursor', 'claude', 'both'].includes(target)) {
-  console.error('Error: TARGET must be cursor, claude, or both');
-  process.exit(1);
 }

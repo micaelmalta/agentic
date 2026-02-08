@@ -108,6 +108,13 @@ Workflow Skill (Orchestrator)
 - Agent system: `skills/agents/README.md`
 - Template: `skills/agents/AGENT_TEMPLATE.md`
 
+## Prerequisites
+
+- **Python 3.10+** — Required for `skills/rlm/rlm.py`, skill-creator scripts (`init_skill.py`, `package_skill.py`, `quick_validate.py`), validation scripts (`validate-input.py`), and MCP builder evaluation (`evaluation.py`)
+- **Node.js** — Required for `skills/setup/setup_mcp.js`
+- **GitHub CLI (`gh`)** — Required for Phase 7 (PR creation) in workflow skill
+- **Git** — Required for branch management, commits, and all version control operations
+
 ## Workflow Methodology
 
 ### PARA-Programming
@@ -275,3 +282,14 @@ When a task matches a skill's domain, **read the skill file first** and follow i
 - Explicit requests: "use the testing skill", "use the developer skill"
 
 The skill system provides specialized knowledge and structured approaches for each development activity.
+
+## Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| Phase agent fails with retries exhausted | Check structured JSON output for `status`, error details, and `retry_count`; fix root cause and re-run agent |
+| Validation agent reports critical security | Workflow stops; address the vulnerability before proceeding (never skip) |
+| RLM script encoding errors | Ensure source files are UTF-8; `.venv` and `.env` dirs are auto-excluded |
+| MCP server not available | Run `/setup` to configure; check API keys in config file for your IDE |
+| Pre-commit validation missing | Run `skills/workflow/scripts/pre-commit-validation.sh` — it validates changed files before commit |
+| Cross-skill invocation unclear | Read `skills/<target-skill>/SKILL.md`, follow its protocol, then return to calling context |

@@ -25,11 +25,11 @@ Feedback should be clear, actionable, and prioritized. Explain the "why" for non
 
 Code review should work alongside these skills. **Invoke them when their domain is relevant:**
 
-| Skill                 | When to Invoke                                                                                                |
-| --------------------- | ------------------------------------------------------------------------------------------------------------- |
-| **security-reviewer** | Deep security audit for auth, crypto, injection, sensitive data. Always invoke for security-critical changes. |
-| **testing**           | Verify tests exist and pass. If tests are missing, **STOP** and require tests before approving.               |
-| **performance**       | Profile hotspots, query patterns, algorithmic complexity. Invoke when performance is a concern.               |
+| Skill                 | When to Invoke                                                                                                | How to Invoke |
+| --------------------- | ------------------------------------------------------------------------------------------------------------- | ------------- |
+| **security-reviewer** | Deep security audit for auth, crypto, injection, sensitive data. Always invoke for security-critical changes. | Read `skills/security-reviewer/SKILL.md` and follow its protocol |
+| **testing**           | Verify tests exist and pass. If tests are missing, **STOP** and require tests before approving.               | Read `skills/testing/SKILL.md` and follow its protocol |
+| **performance**       | Profile hotspots, query patterns, algorithmic complexity. Invoke when performance is a concern.               | Read `skills/performance/SKILL.md` and follow its protocol |
 
 **IMPORTANT:** Code review should **NOT** approve code that lacks tests. If the change has no tests, flag it as **Critical** and require tests before merge.
 
@@ -60,11 +60,13 @@ Code review should work alongside these skills. **Invoke them when their domain 
 
 ### 3. Severity Levels
 
-Format feedback with severity so the author can triage:
+Format feedback with severity so the author can triage. The code-reviewer uses a simplified 3-tier model; the security-reviewer uses a more granular 4-tier model (Critical/High/Medium/Low):
 
-- **Critical** – Bug or clear correctness/security issue; should fix before merge.
-- **Suggestion** – Improvement that would help readability, performance, or maintainability.
-- **Nit** – Minor style or preference; optional.
+| Severity | Code Review Meaning | Security Review Equivalent |
+|----------|-------------------|---------------------------|
+| **Critical** | Bug or correctness/security issue; must fix before merge | Critical / High |
+| **Suggestion** | Improvement for readability, performance, or maintainability | Medium |
+| **Nit** | Minor style or preference; optional | Low / Info |
 
 ### 4. Output Format
 

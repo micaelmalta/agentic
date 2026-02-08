@@ -86,6 +86,49 @@ If the user didn't provide steps, ask or infer and state assumptions. If you can
 
 When the failure involves production or staged environments, use the **Datadog MCP** (after **/setup**) to search logs, inspect trace details, and query metrics. Use `search_logs`, `get_log_details`, `query_traces`, and `query_metrics` to correlate errors and narrow down the cause. Ensure **/setup** has been run so Datadog MCP is configured.
 
+### 7. Flaky Test Handling
+
+When a test failure appears intermittent (flaky):
+
+1. **Identify the flake** - Run the failing test in a loop (e.g., `pytest --count=20`, `npx jest --repeat=10`) to confirm flakiness.
+2. **Common causes:**
+   - **Timing/race conditions** - Tests depending on setTimeout, async operations, or external services.
+   - **Shared state** - Tests leaking state to each other (global variables, database rows, file artifacts).
+   - **Non-deterministic input** - Using `Date.now()`, `Math.random()`, or system-dependent values.
+   - **Resource contention** - Ports, files, or connections not properly cleaned up.
+3. **Fix before proceeding** - Flaky tests MUST be fixed, not skipped. A flaky test masks real failures.
+4. **Write deterministic tests** - Use fixed seeds, mock time/date, isolate test state.
+
+### 8. Production vs Local Debugging
+
+| Aspect | Local Debugging | Production Debugging |
+|--------|----------------|---------------------|
+| **Access** | Full code, debugger, breakpoints | Logs, metrics, traces only |
+| **Reproduce** | Run test directly | Analyze logs, attempt local repro with prod data shape |
+| **Tools** | IDE debugger, `console.log`, `pdb` | Datadog MCP (`search_logs`, `query_traces`), error tracking |
+| **Safety** | No risk | Read-only access; never modify prod data to debug |
+| **Strategy** | Step through code | Correlate logs → traces → metrics to find the failure point |
+
+### 9. Log Analysis Patterns
+
+When debugging with logs (local or production):
+
+1. **Find the error** - Search for ERROR/FATAL level entries around the incident timestamp.
+2. **Trace the request** - Use correlation/request ID to follow the full request path.
+3. **Check surrounding context** - Look at WARN entries before the error for early indicators.
+4. **Compare with success** - Find a successful request and diff the log patterns to spot divergence.
+5. **Use structured search** - With Datadog MCP: `search_logs` with filters for service, status, and time range.
+
+### 10. Cross-Skill Integration
+
+| Situation | Skill to invoke |
+|-----------|----------------|
+| Bug fix needs tests | **testing** skill (write reproduction test) |
+| Performance-related bug | **performance** skill (profile first) |
+| Security-related bug | **security-reviewer** skill |
+| Bug in CI/CD pipeline | **ci-cd** skill |
+| Bug caused by dependency update | **dependencies** skill |
+
 ---
 
 ## Checklist
@@ -96,3 +139,5 @@ When the failure involves production or staged environments, use the **Datadog M
 - [ ] Fix targets root cause; **reproduction test now passes**.
 - [ ] All existing tests still pass (no regressions).
 - [ ] No unrelated changes in the fix.
+- [ ] Flaky tests identified and fixed (not skipped).
+- [ ] Production debugging done via logs/traces only (no prod data modification).
