@@ -13,7 +13,12 @@ Example:
 import sys
 import zipfile
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent))
 from quick_validate import validate_skill
+
+# Directories and files to exclude from packaging
+EXCLUDED_NAMES = {'.venv', '__pycache__', '.git', '.env', 'node_modules', '.DS_Store'}
 
 
 def package_skill(skill_path, output_dir=None):
@@ -69,6 +74,9 @@ def package_skill(skill_path, output_dir=None):
             # Walk through the skill directory
             for file_path in skill_path.rglob('*'):
                 if file_path.is_file():
+                    # Skip hidden/sensitive directories and files
+                    if any(excluded in file_path.parts for excluded in EXCLUDED_NAMES):
+                        continue
                     # Calculate the relative path within the zip
                     arcname = file_path.relative_to(skill_path.parent)
                     zipf.write(file_path, arcname)

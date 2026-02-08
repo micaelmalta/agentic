@@ -12,7 +12,6 @@ Usage:
 
 import argparse
 import sys
-from pathlib import Path
 
 
 class PhaseValidator:
@@ -42,12 +41,12 @@ class PhaseValidator:
         if self.verbose or level in ["ERROR", "WARNING"]:
             print(f"[{level}] {message}")
 
-    def validate_phase_5(self, context_file=None, non_interactive=False):
+    def validate_phase_5(self, _context_file=None, non_interactive=False):
         """
         Validate Phase 5 (Validation) completion.
-        
+
         Args:
-            context_file: Path to context file (unused currently)
+            _context_file: Path to context file (reserved for future use)
             non_interactive: If True, skips interactive prompts and fails if not verifiable.
                              (Currently Phase 5 is manual, so non-interactive mode will fail 
                              unless we implement automatic verification)
@@ -67,20 +66,16 @@ class PhaseValidator:
         print("\nVerify that ALL of the following were completed:\n")
 
         all_complete = True
-        for key, description in self.PHASE_5_REQUIREMENTS.items():
-            if non_interactive:
-                # In non-interactive mode, we can't ask. 
-                # Ideally we would check a state file here.
-                # For now, we rely on the check at the start of the method.
-                pass
+        for _key, description in self.PHASE_5_REQUIREMENTS.items():
+            # non_interactive case is handled by the early return above;
+            # this loop only runs in interactive mode.
+            response = input(f"✓ {description}? (y/n): ").strip().lower()
+            if response != "y":
+                self.errors.append(f"MISSING: {description}")
+                all_complete = False
+                print(f"  ❌ FAILED: {description}\n")
             else:
-                response = input(f"✓ {description}? (y/n): ").strip().lower()
-                if response != "y":
-                    self.errors.append(f"MISSING: {description}")
-                    all_complete = False
-                    print(f"  ❌ FAILED: {description}\n")
-                else:
-                    print(f"  ✅ PASSED: {description}\n")
+                print(f"  ✅ PASSED: {description}\n")
 
         print("=" * 60)
 
@@ -197,13 +192,11 @@ def main():
 
     validator = PhaseValidator(verbose=args.verbose)
 
+    # argparse choices=[5, 6] guarantees only valid phases reach here
     if args.phase == 5:
         success = validator.validate_phase_5(args.context, non_interactive=args.non_interactive)
-    elif args.phase == 6:
+    else:  # args.phase == 6
         success = validator.validate_phase_6(non_interactive=args.non_interactive)
-    else:
-        print(f"Error: Invalid phase {args.phase}")
-        sys.exit(1)
 
     validator.print_summary()
 

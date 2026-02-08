@@ -11,6 +11,7 @@ Examples:
     init_skill.py custom-skill --path /custom/location
 """
 
+import re
 import sys
 from pathlib import Path
 
@@ -286,6 +287,12 @@ def main():
 
     skill_name = sys.argv[1]
     path = sys.argv[3]
+
+    # Validate skill name to prevent path traversal and enforce naming convention
+    if not re.match(r'^[a-z0-9-]+$', skill_name):
+        print(f"Error: Invalid skill name '{skill_name}'.")
+        print("Skill names must contain only lowercase letters, digits, and hyphens (e.g., 'my-skill-1').")
+        sys.exit(1)
 
     print(f"🚀 Initializing skill: {skill_name}")
     print(f"   Location: {path}")

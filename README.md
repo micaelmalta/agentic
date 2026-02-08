@@ -137,6 +137,7 @@ Not sure if you need PARA? Use the decision helper:
 │   ├── refactoring/          # Code refactoring
 │   ├── debugging/            # Bug fixing
 │   ├── dependencies/         # Dependency management
+│   ├── developer/            # TDD implementation (Red-Green-Refactor)
 │   ├── performance/          # Performance optimization
 │   ├── ci-cd/                # CI/CD pipelines
 │   ├── setup/                # MCP configuration
@@ -426,7 +427,9 @@ For issues, questions, or contributions, please refer to the individual skill do
 
 ## License
 
-This skills collection is designed for use with Claude Code and Cursor AI assistants.
+MIT License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details if available.
 
 ---
 

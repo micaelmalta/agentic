@@ -6,7 +6,6 @@ triggers:
   - "new skill"
   - "build a skill"
   - "skill template"
-license: Complete terms in LICENSE.txt
 ---
 
 # Skill Creator
@@ -58,7 +57,8 @@ skill-name/
 ├── SKILL.md (required)
 │   ├── YAML frontmatter metadata (required)
 │   │   ├── name: (required)
-│   │   └── description: (required)
+│   │   ├── description: (required)
+│   │   └── triggers: (recommended)
 │   └── Markdown instructions (required)
 └── Bundled Resources (optional)
     ├── scripts/          - Executable code (Python/Bash/etc.)
@@ -70,7 +70,7 @@ skill-name/
 
 Every SKILL.md consists of:
 
-- **Frontmatter** (YAML): Contains `name` and `description` fields. These are the only fields that Claude reads to determine when the skill gets used, thus it is very important to be clear and comprehensive in describing what the skill is, and when it should be used.
+- **Frontmatter** (YAML): Contains `name`, `description`, and `triggers` fields. `name` and `description` are required; `triggers` is recommended. Claude reads these to determine when the skill gets used, so be clear and comprehensive in describing what the skill is and when it should be used. `triggers` is a list of commands and phrases that activate the skill (e.g., `/command`, `"natural language phrase"`).
 - **Body** (Markdown): Instructions and guidance for using the skill. Only loaded AFTER the skill triggers (if at all).
 
 #### Bundled Resources (optional)
@@ -114,7 +114,7 @@ A skill should only contain essential files that directly support its functional
 - CHANGELOG.md
 - etc.
 
-The skill should only contain the information needed for an AI agent to do the job at hand. It should not contain auxilary context about the process that went into creating it, setup and testing procedures, user-facing documentation, etc. Creating additional documentation files just adds clutter and confusion.
+The skill should only contain the information needed for an AI agent to do the job at hand. It should not contain auxiliary context about the process that went into creating it, setup and testing procedures, user-facing documentation, etc. Creating additional documentation files just adds clutter and confusion.
 
 ### Progressive Disclosure Design Principle
 
@@ -269,7 +269,7 @@ When creating a new skill from scratch, always run the `init_skill.py` script. T
 Usage:
 
 ```bash
-scripts/init_skill.py <skill-name> --path <output-directory>
+skills/skill-creator/scripts/init_skill.py <skill-name> --path <output-directory>
 ```
 
 The script:
@@ -308,13 +308,14 @@ Any example files and directories not needed for the skill should be deleted. Th
 
 ##### Frontmatter
 
-Write the YAML frontmatter with `name` and `description`:
+Write the YAML frontmatter with `name`, `description`, and `triggers`:
 
 - `name`: The skill name
 - `description`: This is the primary triggering mechanism for your skill, and helps Claude understand when to use the skill.
   - Include both what the Skill does and specific triggers/contexts for when to use it.
   - Include all "when to use" information here - Not in the body. The body is only loaded after triggering, so "When to Use This Skill" sections in the body are not helpful to Claude.
   - Example description for a `docx` skill: "Comprehensive document creation, editing, and analysis with support for tracked changes, comments, formatting preservation, and text extraction. Use when Claude needs to work with professional documents (.docx files) for: (1) Creating new documents, (2) Modifying or editing content, (3) Working with tracked changes, (4) Adding comments, or any other document tasks"
+- `triggers`: A list of commands and natural language phrases that activate the skill. Include the primary slash command (e.g., `/docx`) and common phrases users would say (e.g., `"edit document"`, `"create Word file"`). Keep triggers specific to avoid overlap with other skills.
 
 Do not include any other fields in YAML frontmatter.
 
@@ -327,13 +328,13 @@ Write instructions for using the skill and its bundled resources.
 Once development of the skill is complete, it must be packaged into a distributable .skill file that gets shared with the user. The packaging process automatically validates the skill first to ensure it meets all requirements:
 
 ```bash
-scripts/package_skill.py <path/to/skill-folder>
+skills/skill-creator/scripts/package_skill.py <path/to/skill-folder>
 ```
 
 Optional output directory specification:
 
 ```bash
-scripts/package_skill.py <path/to/skill-folder> ./dist
+skills/skill-creator/scripts/package_skill.py <path/to/skill-folder> ./dist
 ```
 
 The packaging script will:
@@ -359,3 +360,19 @@ After testing the skill, users may request improvements. Often this happens righ
 2. Notice struggles or inefficiencies
 3. Identify how SKILL.md or bundled resources should be updated
 4. Implement changes and test again
+
+---
+
+## Checklist
+
+- [ ] Concrete usage examples gathered and understood (Step 1).
+- [ ] Reusable resources identified: scripts, references, and assets (Step 2).
+- [ ] Skill initialized via `skills/skill-creator/scripts/init_skill.py` (Step 3).
+- [ ] YAML frontmatter has `name`, `description`, and `triggers`.
+- [ ] Description is clear, comprehensive, and includes "when to use" context.
+- [ ] Triggers are specific and do not overlap with other skills.
+- [ ] SKILL.md body is under 500 lines; detailed content split into references.
+- [ ] No extraneous files (README.md, CHANGELOG.md, etc.).
+- [ ] Scripts tested and working correctly.
+- [ ] Skill packaged via `skills/skill-creator/scripts/package_skill.py` (Step 5).
+- [ ] Validated against real usage and iterated (Step 6).

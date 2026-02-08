@@ -15,8 +15,15 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DEFAULT_DATADOG_PATH="${HOME:-$USERPROFILE}/projects/poc/mcp_datadog/src/index.js"
-export MCP_DATADOG_PATH="${MCP_DATADOG_PATH:-$DEFAULT_DATADOG_PATH}"
+
+# MCP_DATADOG_PATH must be set by the user; no hardcoded default.
+if [[ -z "$MCP_DATADOG_PATH" ]]; then
+  echo "Error: MCP_DATADOG_PATH environment variable is required."
+  echo "Set it to the absolute path of your Datadog MCP index.js file."
+  echo "Example: export MCP_DATADOG_PATH=\"/path/to/mcp_datadog/src/index.js\""
+  exit 1
+fi
+export MCP_DATADOG_PATH
 export TARGET="${TARGET:-both}"
 
 if [[ -z "$DATADOG_API_KEY" || -z "$DATADOG_APP_KEY" ]]; then

@@ -52,7 +52,7 @@ This agent is responsible for:
 
 | Parameter | Type | Default | Description | Example |
 |-----------|------|---------|-------------|---------|
-| `language` | string | Auto-detect | Programming language override | `"javascript"` |
+| `language` | string | Auto-detect | Programming language override. Accepts full names (`javascript`, `typescript`, `python`, `go`, `rust`, `ruby`, `java`) and short aliases (`js`, `ts`, `py`, `golang`, `rs`, `rb`). | `"javascript"` |
 | `format_command` | string | Language default | Override formatter command | `"npm run format"` |
 | `lint_command` | string | Language default | Override linter command | `"npm run lint"` |
 | `build_command` | string | Language default | Override build command | `"npm run build"` |

@@ -1,9 +1,18 @@
-import os
+#!/usr/bin/env python3
+"""RLM (Recursive Language Model) Engine
+
+Provides map-reduce style file indexing and chunking for large codebase analysis.
+Supports scanning directories, peeking at content matches, and chunking files
+for parallel subagent processing.
+"""
+
 import glob
 import json
 import math
 from pathlib import Path
 from typing import List, Dict, Any
+
+MAX_FILE_SIZE = 1_048_576  # 1 MB
 
 class RLMContext:
     def __init__(self, root_dir: str = "."):
@@ -16,11 +25,14 @@ class RLMContext:
         loaded_count = 0
         for f in files:
             path = Path(f)
-            if path.is_file() and not any(p in str(path) for p in ['.git', '__pycache__', 'node_modules']):
+            if path.is_file() and not any(p in path.parts for p in ['.git', '__pycache__', 'node_modules']):
+                if path.stat().st_size > MAX_FILE_SIZE:
+                    print(f"RLM: Skipping {path} (exceeds {MAX_FILE_SIZE} byte limit)")
+                    continue
                 try:
                     self.index[str(path)] = path.read_text(errors='ignore')
                     loaded_count += 1
-                except Exception:
+                except (OSError, UnicodeDecodeError):
                     pass
         return f"RLM: Loaded {loaded_count} files into hidden context. Total size: {sum(len(c) for c in self.index.values())} chars."
 
@@ -31,7 +43,8 @@ class RLMContext:
                 start = 0
                 while True:
                     idx = content.find(query, start)
-                    if idx == -1: break
+                    if idx == -1:
+                        break
                     
                     snippet_start = max(0, idx - context_window)
                     snippet_end = min(len(content), idx + len(query) + context_window)

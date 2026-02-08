@@ -15,7 +15,7 @@ triggers:
 
 # Setup Skill (MCP Configuration)
 
-## Purpose
+## Core Philosophy
 
 Configure **Atlassian** (two servers: `atlassian`, `atlassian-tech`), **Datadog**, and **Playwright** MCP servers for **Claude** or **Cursor** so the agent can use Jira, Confluence, Datadog (logs, metrics, monitors), and browser automation for UI testing during workflows.
 
@@ -213,3 +213,17 @@ Optional arguments:
 - User asks to **connect to Atlassian**, **connect to Datadog**, or **setup Playwright** in the IDE.
 
 After setup, the **workflow**, **ci-cd**, **debugging**, **documentation**, and **testing** skills can use these MCPs (see those skills for when to call Atlassian/Datadog/Playwright tools). Use **atlassian** or **atlassian-tech** tools as appropriate (e.g. atlassian-tech for tech-specific Jira/Confluence use). Use **playwright** for UI testing and browser automation.
+
+---
+
+## Checklist
+
+- [ ] Target client(s) identified (Cursor, Claude Code, Claude Desktop, or both).
+- [ ] PARA structure initialized (`/init`) before MCP configuration.
+- [ ] API keys collected securely (env vars preferred; never committed to repo).
+- [ ] Atlassian MCP configured (atlassian and atlassian-tech servers).
+- [ ] Datadog MCP configured with valid API key and app key.
+- [ ] Playwright MCP configured (npx @playwright/mcp@latest).
+- [ ] Existing `mcpServers` entries preserved (not overwritten).
+- [ ] Config written to correct location for target client(s).
+- [ ] User reminded to restart client after config changes.

@@ -1,23 +1,43 @@
 #!/bin/bash
+# =============================================================================
 # check-agent.sh - Reference/template script for checking agent status
-# NOTE: This is a REFERENCE SCRIPT ONLY. Actual agent status checking is done
-# via Claude Code's TaskOutput tool, not by running this script directly.
-# See skills/agents/README.md for usage instructions.
+#
+# NOTE: This is a REFERENCE SCRIPT / TEMPLATE ONLY. In production, agent status
+# checking is done via Claude Code's TaskOutput tool, not by running this script
+# directly. This script is provided as an example of how agent output files are
+# structured and can be inspected manually for debugging purposes.
+#
+# See skills/agents/README.md for actual usage instructions.
+#
+# Configuration:
+#   AGENT_LOG_DIR - Directory where agent output files are stored.
+#                   Defaults to /tmp/agent-tasks if not set.
+#
+# Completion marker convention:
+#   Agents write "Agent execution complete" as the last line of their output
+#   file when they finish. This script checks for that marker to determine
+#   whether an agent is still running or has completed.
 #
 # Usage: check-agent.sh <task-id>
+# =============================================================================
 
 set -e
 
 if [ "$#" -lt 1 ]; then
     echo "Usage: check-agent.sh <task-id>"
     echo ""
+    echo "Environment variables:"
+    echo "  AGENT_LOG_DIR  Directory for agent output files (default: /tmp/agent-tasks)"
+    echo ""
     echo "Example:"
     echo "  check-agent.sh a1234567"
+    echo "  AGENT_LOG_DIR=/var/log/agents check-agent.sh a1234567"
     exit 1
 fi
 
 TASK_ID="$1"
-OUTPUT_FILE="${AGENT_LOG_DIR:-/tmp/agent-tasks}/${TASK_ID}.output"
+AGENT_LOG_DIR="${AGENT_LOG_DIR:-/tmp/agent-tasks}"
+OUTPUT_FILE="${AGENT_LOG_DIR}/${TASK_ID}.output"
 
 echo "=========================================="
 echo "Agent Status: $TASK_ID"

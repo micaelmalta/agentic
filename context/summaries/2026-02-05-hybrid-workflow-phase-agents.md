@@ -311,20 +311,19 @@ Created the foundational system for autonomous phase agents:
 **Infrastructure:**
 1. `skills/agents/README.md` - Agent system overview
 2. `skills/agents/AGENT_TEMPLATE.md` - Template for new agents
-3. `skills/agents/protocol.md` - Standard I/O protocol
 
 **Phase Agents (6):**
-4. `skills/agents/phase-testing-agent/AGENT.md`
-5. `skills/agents/phase-testing-agent/protocol.md`
-6. `skills/agents/phase-validation-agent/AGENT.md`
-7. `skills/agents/phase-validation-agent/protocol.md`
-8. `skills/agents/phase-pr-agent/AGENT.md`
-9. `skills/agents/phase-pr-agent/protocol.md`
+3. `skills/agents/phase-testing-agent/AGENT.md`
+4. `skills/agents/phase-testing-agent/protocol.md`
+5. `skills/agents/phase-validation-agent/AGENT.md`
+6. `skills/agents/phase-validation-agent/protocol.md`
+7. `skills/agents/phase-pr-agent/AGENT.md`
+8. `skills/agents/phase-pr-agent/protocol.md`
 
 **Utilities (3):**
-10. `skills/agents/run-agent.sh` - Agent execution helper
-11. `skills/agents/check-agent.sh` - Agent status checker
-12. `skills/agents/validate-input.py` - Input validation script
+9. `skills/agents/run-agent.sh` - Agent execution helper
+10. `skills/agents/check-agent.sh` - Agent status checker
+11. `skills/agents/validate-input.py` - Input validation script
 
 ### Modified Files (3)
 

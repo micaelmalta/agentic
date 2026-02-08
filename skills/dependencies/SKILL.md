@@ -7,7 +7,7 @@ triggers:
   - "update packages"
   - "dependency conflict"
   - "update lockfile"
-  - "bump version"
+  - "bump dependency version"
   - "outdated packages"
   - "npm update"
   - "pip install --upgrade"

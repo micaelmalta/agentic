@@ -43,23 +43,23 @@ Decide based on the nature of the data:
 
 1.  **Divide**: Split the work into atomic units.
     - **Strict Mode**: `python3 .../rlm.py chunk --pattern "*.log"` -> Returns JSON chunks.
-2.  **Spawn**: Use `background_task` to launch parallel agents.
+2.  **Spawn**: Use `Task` to launch parallel agents.
     - _Constraint_: Launch at least 3-5 agents in parallel for broad tasks.
     - _Prompting_: Give each background agent ONE specific chunk or file path.
-    - _Format_: `background_task(agent="explore", prompt="Analyze chunk #5 of big.log: {content}...")`
+    - _Format_: `Task(agent="explore", prompt="Analyze chunk #5 of big.log: {content}...")`
 
 ### Phase 4: Reduce & Synthesize (The "Aggregation" Phase)
 
 **Goal**: Combine results into a coherent answer.
 
-1.  **Collect**: Read the outputs from `background_task` (via `background_output`).
+1.  **Collect**: Read the outputs from `Task` (via `Task output`).
 2.  **Synthesize**: Look for patterns, consensus, or specific answers in the aggregated data.
 3.  **Refine**: If the answer is incomplete, perform a second RLM recursion on the specific missing pieces.
 
 ## Critical Instructions
 
 1.  **NEVER** use `cat *` or read more than 3-5 files into your main context at once.
-2.  **ALWAYS** prefer `background_task` for reading/analyzing file contents when the file count > 1.
+2.  **ALWAYS** prefer `Task` for reading/analyzing file contents when the file count > 1.
 3.  **Use `rlm.py`** for programmatic slicing of large files that `grep` can't handle well.
 4.  **Python is your Memory**: If you need to track state across 50 files, write a Python script (or use `rlm.py`) to scan them and output a summary.
 
@@ -75,8 +75,8 @@ Decide based on the nature of the data:
 
 1.  **Filter**: `grep -l "@Controller" src/**/*.ts` -> Returns 20 files.
 2.  **Map**:
-    - `background_task(prompt="Read src/api/routes.ts. Extract all endpoints and their @Auth decorators.")`
-    - `background_task(prompt="Read src/api/users.ts. Extract all endpoints and their @Auth decorators.")`
+    - `Task(prompt="Read src/api/routes.ts. Extract all endpoints and their @Auth decorators.")`
+    - `Task(prompt="Read src/api/users.ts. Extract all endpoints and their @Auth decorators.")`
     - ... (Launch all 20)
 3.  **Reduce**:
     - Collect all 20 outputs.
@@ -85,8 +85,20 @@ Decide based on the nature of the data:
 
 ## Recovery Mode
 
-If `background_task` is unavailable or fails:
+If `Task` is unavailable or fails:
 
 1.  Fall back to **Iterative Python Scripting**.
 2.  Write a Python script that loads each file, runs a regex/AST check, and prints the result to stdout.
 3.  Read the script's stdout.
+
+---
+
+## Checklist
+
+- [ ] Chose appropriate engine (Native or Strict) for the data type.
+- [ ] Indexed and filtered before loading any file content.
+- [ ] Spawned parallel Task agents (3-5 minimum for broad tasks).
+- [ ] Each agent received ONE specific chunk or file path.
+- [ ] Collected and synthesized all agent outputs.
+- [ ] Refined with a second RLM pass if answer was incomplete.
+- [ ] Never loaded more than 3-5 files directly into main context.

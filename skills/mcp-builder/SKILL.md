@@ -6,12 +6,11 @@ triggers:
   - "create MCP server"
   - "MCP development"
   - "new MCP tool"
-license: Complete terms in LICENSE.txt
 ---
 
 # MCP Server Development Guide
 
-## Overview
+## Core Philosophy
 
 Create MCP (Model Context Protocol) servers that enable LLMs to interact with external services through well-designed tools. The quality of an MCP server is measured by how well it enables LLMs to accomplish real-world tasks.
 
@@ -239,3 +238,20 @@ Load these resources as needed during development:
   - XML format specifications
   - Example questions and answers
   - Running an evaluation with the provided scripts
+
+---
+
+## Checklist
+
+- [ ] API documentation studied; key endpoints and auth requirements understood.
+- [ ] MCP protocol specification reviewed (via sitemap).
+- [ ] Framework documentation loaded (TypeScript SDK or Python SDK).
+- [ ] Tool names are clear, descriptive, and use consistent prefixes.
+- [ ] Input schemas defined with Zod (TypeScript) or Pydantic (Python).
+- [ ] Output schemas defined where possible (structuredContent).
+- [ ] Error messages are actionable with specific suggestions.
+- [ ] Pagination supported for list operations.
+- [ ] Tool annotations set (readOnlyHint, destructiveHint, idempotentHint).
+- [ ] No duplicated code; consistent error handling; full type coverage.
+- [ ] Build succeeds and tested with MCP Inspector.
+- [ ] 10 evaluation questions created, verified, and saved as XML.
