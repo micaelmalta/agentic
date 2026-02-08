@@ -82,7 +82,7 @@ If the user already has Cursor MCP configured (e.g. OAuth for Atlassian), keep e
 
 - **Datadog MCP (stdio):** Use the user's local path for the Node server. Default from snippet:
   - `command`: `node`
-  - `args`: `["/Users/mmalta/projects/poc/mcp_datadog/src/index.js"]`
+  - `args`: `["<YOUR_MCP_DATADOG_PATH>/src/index.js"]`
     If the user has a different path (e.g. `MCP_DATADOG_PATH`), use that in `args`.
 - **Atlassian MCP (HTTP)** – two servers:
   - **atlassian:** `url`: `https://mcp.atlassian.com/v1/mcp`, `type`: `http`
@@ -167,7 +167,7 @@ Override **atlassian-tech** URL with `ATLASSIAN_TECH_URL` when running the setup
 "datadog": {
   "type": "stdio",
   "command": "node",
-  "args": ["/Users/mmalta/projects/poc/mcp_datadog/src/index.js"],
+  "args": ["<YOUR_MCP_DATADOG_PATH>/src/index.js"],
   "env": {
     "DATADOG_API_KEY": "<from-user>",
     "DATADOG_APP_KEY": "<from-user>"

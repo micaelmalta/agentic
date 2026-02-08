@@ -50,8 +50,8 @@ This document defines the input/output protocol for the phase-testing-agent. The
       "examples": ["javascript", "python", "go"]
     },
     "test_command": {
-      "type": "string",
-      "description": "Override default test command",
+      "type": ["string", "null"],
+      "description": "Override default test command (set to null to use auto-detection)",
       "examples": [
         "npm run test:ci",
         "pytest -v --cov",

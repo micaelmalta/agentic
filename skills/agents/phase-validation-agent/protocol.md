@@ -48,11 +48,17 @@ This document defines the complete input/output protocol for the Phase Validatio
       "description": "Programming language override (auto-detected if not provided)",
       "enum": [
         "javascript",
+        "js",
         "typescript",
+        "ts",
         "python",
+        "py",
         "go",
+        "golang",
         "rust",
+        "rs",
         "ruby",
+        "rb",
         "java"
       ],
       "examples": ["javascript", "python", "go"]
@@ -528,7 +534,7 @@ For Python implementations, here are Pydantic models:
 
 ```python
 from typing import List, Literal, Optional
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 # Input Model
 class PhaseValidationAgentInput(BaseModel):
@@ -543,7 +549,8 @@ class PhaseValidationAgentInput(BaseModel):
     skip_build: bool = False
     skip_tests: bool = False
 
-    @validator('changed_files')
+    @field_validator('changed_files')
+    @classmethod
     def validate_changed_files(cls, v):
         if not isinstance(v, list):
             raise ValueError('changed_files must be a list')
@@ -900,7 +907,7 @@ class PhaseValidationAgentOutput(BaseModel):
    - `status` (always "pass" or "fail")
    - `execution_time_ms` (always >= 0)
    - `total_retries` (always >= 0)
-   - `checks` object with all 5 checks
+   - `checks` object with all 6 checks
 
 2. **Conditional Fields:**
    - `critical_security_issue` only present when true
@@ -932,8 +939,8 @@ class PhaseValidationAgentOutput(BaseModel):
 
 ## See Also
 
-- **Agent Specification:** `/Users/mmalta/projects/poc/agentic/skills/agents/phase-validation-agent/AGENT.md`
-- **Workflow Integration:** `/Users/mmalta/projects/poc/agentic/skills/workflow/SKILL.md`
+- **Agent Specification:** `skills/agents/phase-validation-agent/AGENT.md`
+- **Workflow Integration:** `skills/workflow/SKILL.md`
 
 ---
 

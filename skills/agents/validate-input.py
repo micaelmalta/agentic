@@ -17,9 +17,10 @@ SCHEMAS = {
             "language": str,
             "test_command": str,
             "build_command": str,
+            "run_build": bool,
             "max_retries": int,
             "timeout_seconds": int,
-            "retry_backoff_ms": int,
+            "retry_backoff_ms": list,
         },
     },
     "phase-validation-agent": {
@@ -65,11 +66,7 @@ def validate_input(agent_name: str, input_data: dict) -> tuple[bool, list[str]]:
         if field not in input_data:
             errors.append(f"Missing required field: {field}")
         elif input_data[field] is None or input_data[field] == "":
-            # distinct check: None or empty string are invalid, but 0/False/[] are valid
-            if isinstance(input_data[field], (int, bool, list)):
-                pass # valid
-            else:
-                errors.append(f"Required field is empty: {field}")
+            errors.append(f"Required field is empty: {field}")
 
     # Check optional field types
     for field, expected_type in schema["optional"].items():

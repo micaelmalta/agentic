@@ -10,7 +10,7 @@
 
 ## Overview
 
-The Phase Validation Agent encapsulates the complete validation phase of the development workflow. It runs 5 critical checks in parallel to ensure code quality, security, and correctness before allowing progression to commit and PR stages.
+The Phase Validation Agent encapsulates the complete validation phase of the development workflow. It runs 6 critical checks in parallel to ensure code quality, security, and correctness before allowing progression to commit and PR stages.
 
 This agent is designed to be autonomous and operate in background mode by default. It auto-detects the programming language, maps to appropriate tool commands, handles auto-fixable issues (formatting, linting) with retry logic, and immediately escalates security vulnerabilities to the user without retry.
 
@@ -145,7 +145,7 @@ The agent validates:
    - Code-reviewer failures are informational (don't block PR, but report findings)
 
 6. **Result Consolidation**
-   - Collect results from all 5 checks
+   - Collect results from all 6 checks
    - Determine overall status:
      - **Pass:** All checks pass (formatter, linter, build, tests, security)
      - **Fail:** Any check fails OR security vulnerability found
@@ -341,10 +341,10 @@ The agent validates:
 | Field | Type | Description |
 |-------|------|-------------|
 | `status` | string | Overall status: `"pass"` or `"fail"` |
-| `execution_time_ms` | number | Total execution time in milliseconds |
-| `total_retries` | number | Sum of retry counts across all checks |
+| `execution_time_ms` | integer | Total execution time in milliseconds |
+| `total_retries` | integer | Sum of retry counts across all checks |
 | `critical_security_issue` | boolean | True if security-reviewer found critical vulnerability |
-| `checks` | object | Results for each of the 5 checks (see sub-objects below) |
+| `checks` | object | Results for each of the 6 checks (see sub-objects below) |
 | `checks.*.status` | string | Check status: `"pass"` or `"fail"` |
 | `checks.*.retry_count` | number | Number of retries for this check |
 | `checks.*.command` | string | Command executed for this check |
@@ -588,7 +588,7 @@ The workflow skill spawns this agent at:
 ```
 1. Workflow Phase 4 (Testing) completes successfully
 2. Workflow spawns phase-validation-agent in background
-3. Agent runs all 5 validation checks
+3. Agent runs all 6 validation checks
 4. Agent completes and returns structured JSON result
 5. Workflow validates agent output:
    - If status = "pass": Proceed to Phase 6 (Commit)

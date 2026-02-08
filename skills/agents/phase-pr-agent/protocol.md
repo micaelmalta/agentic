@@ -136,7 +136,7 @@ This document defines the input/output protocol for the phase-pr-agent. All inpu
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["status", "execution_time_ms", "pr_url", "pr_number", "jira_status", "marked_ready", "errors"],
+  "required": ["status", "execution_time_ms", "retry_count", "pr_url", "pr_number", "jira_status", "marked_ready", "errors"],
   "properties": {
     "status": {
       "type": "string",
@@ -144,9 +144,14 @@ This document defines the input/output protocol for the phase-pr-agent. All inpu
       "description": "Overall operation status"
     },
     "execution_time_ms": {
-      "type": "number",
+      "type": "integer",
       "minimum": 0,
       "description": "Total execution time in milliseconds"
+    },
+    "retry_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of retry attempts made (0 if all operations succeeded on first try)"
     },
     "pr_url": {
       "type": ["string", "null"],
@@ -238,6 +243,7 @@ This document defines the input/output protocol for the phase-pr-agent. All inpu
 {
   "status": "pass",
   "execution_time_ms": 1823,
+  "retry_count": 0,
   "pr_url": "https://github.com/myorg/myrepo/pull/42",
   "pr_number": 42,
   "jira_status": {
@@ -256,6 +262,7 @@ This document defines the input/output protocol for the phase-pr-agent. All inpu
 {
   "status": "pass",
   "execution_time_ms": 3542,
+  "retry_count": 0,
   "pr_url": "https://github.com/myorg/myrepo/pull/43",
   "pr_number": 43,
   "jira_status": {
@@ -274,6 +281,7 @@ This document defines the input/output protocol for the phase-pr-agent. All inpu
 {
   "status": "pass",
   "execution_time_ms": 2934,
+  "retry_count": 0,
   "pr_url": "https://github.com/myorg/myrepo/pull/44",
   "pr_number": 44,
   "jira_status": {
@@ -302,6 +310,7 @@ This document defines the input/output protocol for the phase-pr-agent. All inpu
 {
   "status": "pass",
   "execution_time_ms": 1654,
+  "retry_count": 0,
   "pr_url": "https://github.com/myorg/myrepo/pull/45",
   "pr_number": 45,
   "jira_status": {
@@ -327,6 +336,7 @@ This document defines the input/output protocol for the phase-pr-agent. All inpu
 {
   "status": "fail",
   "execution_time_ms": 423,
+  "retry_count": 0,
   "pr_url": null,
   "pr_number": null,
   "jira_status": {
@@ -354,6 +364,7 @@ This document defines the input/output protocol for the phase-pr-agent. All inpu
 {
   "status": "fail",
   "execution_time_ms": 1245,
+  "retry_count": 0,
   "pr_url": null,
   "pr_number": null,
   "jira_status": {
@@ -381,6 +392,7 @@ This document defines the input/output protocol for the phase-pr-agent. All inpu
 {
   "status": "fail",
   "execution_time_ms": 12,
+  "retry_count": 0,
   "pr_url": null,
   "pr_number": null,
   "jira_status": {
@@ -408,6 +420,7 @@ This document defines the input/output protocol for the phase-pr-agent. All inpu
 {
   "status": "pass",
   "execution_time_ms": 2123,
+  "retry_count": 0,
   "pr_url": "https://github.com/myorg/myrepo/pull/46",
   "pr_number": 46,
   "jira_status": {
