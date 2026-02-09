@@ -1,0 +1,11 @@
+{
+  "name": "js-fixture-project",
+  "version": "1.0.0",
+  "description": "Minimal JS fixture for testing",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "node --test tests/"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

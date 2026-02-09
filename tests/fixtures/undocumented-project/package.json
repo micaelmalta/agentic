@@ -1,0 +1,7 @@
+{
+  "name": "undocumented-fixture-project",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "echo \"no tests\""
+  }
+}
