@@ -1,0 +1,7 @@
+[project]
+name = "py-fixture-project"
+version = "1.0.0"
+description = "Minimal Python fixture for testing"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
