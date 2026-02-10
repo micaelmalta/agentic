@@ -25,5 +25,8 @@ build/
 *.swp
 *.swo
 
+# PARA workflow context (session-specific, not shared)
+context/
+
 # OS
 Thumbs.db
