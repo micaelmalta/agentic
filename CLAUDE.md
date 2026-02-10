@@ -15,7 +15,7 @@ skills/                    # Specialized agent skills
 ├── <skill-name>/
 │   ├── SKILL.md          # Skill definition, protocol, and usage
 │   └── [assets/]         # Optional supporting files
-context/                  # PARA workflow artifacts
+context/                  # PARA workflow artifacts (git-ignored)
 ├── context.md            # Active session state
 ├── plans/                # Implementation plans (YYYY-MM-DD-<task>.md)
 ├── summaries/            # Post-work documentation

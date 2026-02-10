@@ -203,7 +203,7 @@ Task(subagent_type="general-purpose",
 
 - Documentation-only changes
 - Configuration changes
-- Non-code commits (e.g., context/plans)
+- Non-code commits (e.g., documentation updates)
 
 ## Integration with MCP
 

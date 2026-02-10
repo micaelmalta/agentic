@@ -38,7 +38,7 @@ Refer to these when the user asks how to manage MCP in general, add other server
 
 Before MCP configuration, **run /init** for PARA so the project has a consistent workflow context:
 
-- Ensure the project has a **PARA structure**: `context/` with `context.md`, `plans/`, `summaries/`, `archives/`, `data/`, `servers/` (create any missing dirs and `context/context.md`; use `.gitkeep` in empty dirs if needed).
+- Ensure the project has a **PARA structure**: `context/` with `context.md`, `plans/`, `summaries/`, `archives/`, `data/`, `servers/` (create any missing dirs and `context/context.md`). Note: `context/` is git-ignored so `.gitkeep` files are not needed.
 - Ensure a project-level **`CLAUDE.md`** exists (create a minimal one if missing).
 
 If the structure already exists, skip or only add missing pieces. Then proceed with MCP setup below.

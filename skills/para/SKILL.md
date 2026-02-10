@@ -129,7 +129,6 @@ When you run `/execute`, ALL steps in the plan execute automatically without sto
 - Record decisions and trade-offs
 - Note lessons learned and future considerations
 - Link to related plans and commits
-- **Commit the summary to git:** `git add context/summaries/<summary-file>.md && git commit -m "docs: add summary for <task>"`
 
 **What to include:**
 
@@ -149,7 +148,6 @@ When you run `/execute`, ALL steps in the plan execute automatically without sto
 - Move completed plans and summaries to `context/archives/` (in a monorepo: under the same root or project context where the plan/summary lived)
 - Update `context/context.md` to remove completed work
 - Preserve the knowledge chain (plan → summary → archive)
-- **Commit the archive changes to git:** `git add context/archives/ context/context.md && git commit -m "docs: archive completed work for <task>"`
 
 ---
 
@@ -217,7 +215,7 @@ monorepo-root/
 - Session state
 - Links to active plans
 - Temporary notes and findings
-- **Commit to git when updated:** Changes to this file should be committed regularly to track workflow state
+- **Note:** `context/` is git-ignored. These files are local session artifacts, not version-controlled.
 
 ### `context/plans/`
 
@@ -313,7 +311,6 @@ monorepo-root/
 - Consider edge cases upfront
 - Identify risks and unknowns
 - Keep plans focused (single responsibility)
-- **Commit the plan to git immediately after creation**
 
 ### Execution
 
@@ -330,7 +327,6 @@ monorepo-root/
 - Document trade-offs and alternatives considered
 - Link to relevant commits and PRs
 - Note future work and tech debt
-- **Commit the summary to git immediately after creation**
 
 ### Archiving
 
@@ -338,7 +334,6 @@ monorepo-root/
 - Organize archives by date or milestone
 - Maintain searchable structure
 - Don't delete - archives are knowledge base
-- **Commit archive changes to git immediately after archiving**
 
 ---
 
@@ -358,7 +353,7 @@ Keep this file lean and focused:
 - Temporary findings
 - Session state
 
-**Git tracking:** Commit updates to `context.md` when starting new work or completing phases to preserve workflow state history.
+**Note:** `context/` is git-ignored — context files are local session artifacts, not version-controlled.
 
 ### Long-term Knowledge (`CLAUDE.md`)
 

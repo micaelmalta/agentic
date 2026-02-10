@@ -321,14 +321,7 @@ Once the plan is approved, phases 2-8 execute **fully autonomously** without sto
   - Critical security vulnerability found
   - Requirements are unclear or conflicting
 
-**Commit Plan to Git:**
-
-After plan approval, commit it to git:
-
-```bash
-git add context/plans/<plan-file>.md
-git commit -m "docs: add plan for <task>"
-```
+**Note:** The `context/` directory is git-ignored. Plans are local session artifacts and are not committed to git.
 
 ---
 
@@ -562,14 +555,7 @@ Task(
 - Future improvements
 - Link to merged PR and commits
 
-**Commit Summary to Git:**
-
-After creating the summary, commit it to git:
-
-```bash
-git add context/summaries/<summary-file>.md
-git commit -m "docs: add summary for <task>"
-```
+**Note:** The `context/` directory is git-ignored. Summaries are local session artifacts and are not committed to git.
 
 **⚡ PARALLEL SUBAGENTS for documentation (if docs need updating):**
 
