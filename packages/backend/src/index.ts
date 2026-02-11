@@ -7,6 +7,7 @@ import { JiraService } from './services/jira-service.js';
 import { WSServer } from './websocket/server.js';
 import { createAgentRoutes } from './routes/agents.js';
 import { createJiraRoutes } from './routes/jira.js';
+import chatRoutes from './routes/chat.js';
 
 dotenv.config();
 
@@ -47,6 +48,7 @@ app.get('/health', (req, res) => {
 // API routes
 app.use('/api/agents', createAgentRoutes(agentManager, wsServer));
 app.use('/api/jira', createJiraRoutes(jiraService, wsServer));
+app.use('/api/chat', chatRoutes);
 
 // Start Jira polling
 jiraService.startPolling((issues) => {

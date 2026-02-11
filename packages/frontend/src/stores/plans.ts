@@ -55,6 +55,39 @@ export const usePlansStore = defineStore('plans', () => {
     }
   }
 
+  async function requestChanges(planId: string, feedback: string) {
+    try {
+      await fetch(`/api/plans/${planId}/request-changes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ feedback })
+      })
+      const plan = plans.value.find(p => p.id === planId)
+      if (plan) {
+        plan.status = 'changes-requested'
+      }
+    } catch (error) {
+      console.error('Failed to request changes:', error)
+    }
+  }
+
+  async function reassignPlan(planId: string, targetAgentId: string) {
+    try {
+      await fetch(`/api/plans/${planId}/reassign`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetAgentId })
+      })
+      // Plan stays pending but switches agent
+      const plan = plans.value.find(p => p.id === planId)
+      if (plan) {
+        plan.agentId = targetAgentId
+      }
+    } catch (error) {
+      console.error('Failed to reassign plan:', error)
+    }
+  }
+
   function selectPlan(planId: string | null) {
     selectedPlanId.value = planId
   }
@@ -82,6 +115,8 @@ export const usePlansStore = defineStore('plans', () => {
     fetchPlans,
     approvePlan,
     rejectPlan,
+    requestChanges,
+    reassignPlan,
     selectPlan,
     addPlan,
     updatePlanStatus
