@@ -6,7 +6,7 @@ describe('AgentManager', () => {
   let manager: AgentManager;
 
   beforeEach(() => {
-    manager = new AgentManager({ maxConcurrent: 2 });
+    manager = new AgentManager({ maxConcurrent: 2, cliPath: 'claude' });
   });
 
   describe('spawn', () => {

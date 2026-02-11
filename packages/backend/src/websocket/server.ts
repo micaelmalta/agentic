@@ -132,4 +132,68 @@ export class WSServer {
     this.clients.clear();
     this.wss.close();
   }
+
+  /**
+   * Gracefully close WebSocket server by notifying clients before disconnecting.
+   * Sends shutdown message to all clients and waits up to 2 seconds for them to close.
+   */
+  async gracefulClose(): Promise<void> {
+    if (this.clients.size === 0) {
+      this.wss.close();
+      return;
+    }
+
+    console.log(`🔌 Gracefully closing ${this.clients.size} WebSocket connection(s)...`);
+
+    // Send shutdown notification to all clients
+    const shutdownMessage: WebSocketMessage = {
+      type: 'server:shutdown',
+      payload: {
+        message: 'Server is shutting down',
+        timestamp: new Date().toISOString()
+      }
+    };
+
+    this.broadcast(shutdownMessage);
+
+    // Wait for clients to close with 2s timeout
+    const closePromises = Array.from(this.clients).map((client) => {
+      return new Promise<void>((resolve) => {
+        // Close immediately if already closing/closed
+        if (client.readyState === WebSocket.CLOSING || client.readyState === WebSocket.CLOSED) {
+          resolve();
+          return;
+        }
+
+        // Set up close listener
+        const closeHandler = () => {
+          resolve();
+        };
+
+        client.once('close', closeHandler);
+
+        // Close the connection
+        try {
+          client.close();
+        } catch (error) {
+          // Client may have already disconnected
+          resolve();
+        }
+
+        // Timeout after 2s
+        setTimeout(() => {
+          client.removeListener('close', closeHandler);
+          resolve();
+        }, 2000);
+      });
+    });
+
+    await Promise.all(closePromises);
+
+    // Clear clients set and close server
+    this.clients.clear();
+    this.wss.close();
+
+    console.log('✅ WebSocket server closed');
+  }
 }

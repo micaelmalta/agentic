@@ -12,7 +12,9 @@ export class JiraService {
   private client: JiraClient;
   private config: JiraConfig;
   private issueCache: Issue[] | null = null;
+  private issueCacheBoardId: string | null = null;
   private pollingInterval: NodeJS.Timeout | null = null;
+  private abortController: AbortController | null = null;
 
   constructor(config: JiraConfig) {
     this.config = config;
@@ -193,6 +195,28 @@ export class JiraService {
 
   invalidateCache(): void {
     this.issueCache = null;
+    this.issueCacheBoardId = null;
+  }
+
+  /**
+   * Gracefully shutdown Jira service by stopping polling and aborting ongoing requests.
+   */
+  async shutdown(): Promise<void> {
+    console.log('🔄 Shutting down Jira service...');
+
+    // Stop polling
+    this.stopPolling();
+
+    // Abort any ongoing requests
+    if (this.abortController) {
+      this.abortController.abort();
+      this.abortController = null;
+    }
+
+    // Clear caches
+    this.invalidateCache();
+
+    console.log('✅ Jira service shut down');
   }
 
   private mapPriority(jiraPriority: string | undefined): 'Critical' | 'High' | 'Medium' | 'Low' {

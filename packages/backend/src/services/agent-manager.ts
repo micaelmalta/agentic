@@ -8,6 +8,8 @@ import type {
 
 export interface AgentManagerConfig {
   maxConcurrent: number;
+  /** Path to Claude CLI executable (e.g. 'claude' or '/usr/local/bin/claude') */
+  cliPath: string;
 }
 
 export class AgentManager {
@@ -153,5 +155,74 @@ export class AgentManager {
     if (agent.logs.length > 1000) {
       agent.logs = agent.logs.slice(-1000);
     }
+  }
+
+  /**
+   * Gracefully shutdown all running agents.
+   * Sends SIGTERM to all processes and waits for them to exit.
+   * Forces SIGKILL after 5 seconds per agent if they don't exit gracefully.
+   */
+  async shutdown(): Promise<void> {
+    const runningAgents = Array.from(this.agents.values()).filter(
+      (agent) => agent.process && (agent.status === 'running' || agent.status === 'waiting')
+    );
+
+    if (runningAgents.length === 0) {
+      return;
+    }
+
+    console.log(`🛑 Shutting down ${runningAgents.length} running agent(s)...`);
+
+    // Stop all agents concurrently
+    const shutdownPromises = runningAgents.map(async (agent) => {
+      if (!agent.process) return;
+
+      const agentId = agent.id;
+      this.addLog(agentId, 'Shutdown signal received, terminating agent...');
+
+      // Send SIGTERM
+      try {
+        agent.process.kill('SIGTERM');
+      } catch (error: any) {
+        this.addLog(agentId, `Failed to send SIGTERM: ${error?.message || error}`);
+        return;
+      }
+
+      // Wait for process to exit with 5s timeout
+      const exitPromise = new Promise<void>((resolve) => {
+        const checkInterval = setInterval(() => {
+          const cp = agent.process as ChildProcess;
+          if (!agent.process || cp?.exitCode != null || cp?.killed) {
+            clearInterval(checkInterval);
+            resolve();
+          }
+        }, 100);
+
+        // Force kill after 5s timeout
+        setTimeout(() => {
+          clearInterval(checkInterval);
+          if (agent.process) {
+            this.addLog(agentId, 'Agent did not exit gracefully, forcing kill...');
+            try {
+              agent.process.kill('SIGKILL');
+            } catch (err) {
+              // Process may have already exited
+            }
+          }
+          resolve();
+        }, 5000);
+      });
+
+      await exitPromise;
+
+      // Clean up agent state
+      agent.process = null;
+      agent.status = 'idle';
+      agent.updatedAt = new Date();
+      this.addLog(agentId, 'Agent terminated');
+    });
+
+    await Promise.all(shutdownPromises);
+    console.log('✅ All agents shut down');
   }
 }
