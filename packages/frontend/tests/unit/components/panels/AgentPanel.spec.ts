@@ -23,8 +23,7 @@ describe('AgentPanel.vue', () => {
     expect(wrapper.find('[data-testid="empty-state"]').exists()).toBe(true)
   })
 
-  it('renders agent cards for each agent', () => {
-    const wrapper = mount(AgentPanel)
+  it('renders agent cards for each agent', async () => {
     const agentsStore = useAgentsStore()
 
     agentsStore.agents = [
@@ -57,6 +56,9 @@ describe('AgentPanel.vue', () => {
         updatedAt: new Date()
       }
     ]
+
+    const wrapper = mount(AgentPanel)
+    await wrapper.vm.$nextTick()
 
     const cards = wrapper.findAll('[data-testid="agent-card"]')
     expect(cards).toHaveLength(2)

@@ -14,8 +14,7 @@ describe('StatusBar.vue', () => {
     expect(wrapper.find('.status-bar').exists()).toBe(true)
   })
 
-  it('displays pending plan review count', () => {
-    const wrapper = mount(StatusBar)
+  it('displays pending plan review count', async () => {
     const plansStore = usePlansStore()
 
     plansStore.plans = [
@@ -39,16 +38,21 @@ describe('StatusBar.vue', () => {
       }
     ]
 
+    const wrapper = mount(StatusBar)
+    await wrapper.vm.$nextTick()
+
     const badge = wrapper.find('[data-testid="plans-badge"]')
     expect(badge.text()).toContain('2')
     expect(badge.text()).toContain('plans')
   })
 
-  it('hides plan badge when no pending plans', () => {
-    const wrapper = mount(StatusBar)
+  it('hides plan badge when no pending plans', async () => {
     const plansStore = usePlansStore()
 
     plansStore.plans = []
+
+    const wrapper = mount(StatusBar)
+    await wrapper.vm.$nextTick()
 
     const badge = wrapper.find('[data-testid="plans-badge"]')
     expect(badge.exists()).toBe(false)

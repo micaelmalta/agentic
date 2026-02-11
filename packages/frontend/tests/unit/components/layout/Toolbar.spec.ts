@@ -18,8 +18,7 @@ describe('Toolbar.vue', () => {
     expect(wrapper.find('[data-testid="settings-btn"]').exists()).toBe(true)
   })
 
-  it('disables add agent button when at max capacity', () => {
-    const wrapper = mount(Toolbar)
+  it('disables add agent button when at max capacity', async () => {
     const agentsStore = useAgentsStore()
 
     // Simulate max agents
@@ -39,6 +38,9 @@ describe('Toolbar.vue', () => {
       updatedAt: new Date()
     }))
 
+    const wrapper = mount(Toolbar)
+    await wrapper.vm.$nextTick()
+
     const addBtn = wrapper.find('[data-testid="add-agent-btn"]')
     expect(addBtn.attributes('disabled')).toBeDefined()
   })
@@ -53,8 +55,7 @@ describe('Toolbar.vue', () => {
     expect(spawnSpy).toHaveBeenCalled()
   })
 
-  it('displays agent count correctly', () => {
-    const wrapper = mount(Toolbar)
+  it('displays agent count correctly', async () => {
     const agentsStore = useAgentsStore()
 
     agentsStore.agents = Array(3).fill(null).map((_, i) => ({
@@ -72,6 +73,9 @@ describe('Toolbar.vue', () => {
       updatedAt: new Date()
     }))
     agentsStore.maxAgents = 4
+
+    const wrapper = mount(Toolbar)
+    await wrapper.vm.$nextTick()
 
     const countDisplay = wrapper.find('[data-testid="agent-count"]')
     expect(countDisplay.text()).toContain('3/4')
