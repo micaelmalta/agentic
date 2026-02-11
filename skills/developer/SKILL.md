@@ -68,6 +68,95 @@ Clean up while keeping tests green:
 
 ---
 
+## Tool Usage for Code Modifications (MANDATORY)
+
+**⛔ CRITICAL: NEVER create temporary bash scripts for file modifications**
+
+When implementing code, you MUST use the correct tools for each operation:
+
+### ✅ File Modification Rules (REQUIRED)
+
+```
+✅ CORRECT - ALWAYS DO THIS:
+# Use Edit tool directly for modifying existing files
+Edit(
+  file_path="src/component.js",
+  old_string="const value = 'old';",
+  new_string="const value = 'new';"
+)
+
+# Use Write tool for creating new files
+Write(
+  file_path="src/new_component.js",
+  content="export function newComponent() { ... }"
+)
+
+# Use Read tool before editing (required by Edit tool)
+Read(file_path="src/component.js")
+```
+
+### ❌ WRONG Approaches (DO NOT DO)
+
+```
+❌ WRONG - Creating temporary bash scripts:
+echo '#!/bin/bash' > fix_lines.sh
+echo 'sed -i "s/old/new/g" src/component.js' >> fix_lines.sh
+chmod +x fix_lines.sh
+./fix_lines.sh
+# ← WRONG: Creates temporary file that might get committed!
+
+❌ WRONG - Using Bash with sed/awk/perl:
+sed -i 's/old/new/g' src/component.js
+# ← WRONG: Not explicit, not reviewable, hard to verify
+
+❌ WRONG - Using echo/heredoc to overwrite files:
+cat > src/component.js <<'EOF'
+... entire file content ...
+EOF
+# ← WRONG: Risk of data loss, not explicit about changes
+```
+
+### Tool Selection Matrix
+
+| Task | Correct Tool | WRONG Tool |
+|------|--------------|------------|
+| Modify existing file | **Edit tool** | ❌ sed, awk, perl, bash scripts |
+| Create new file | **Write tool** | ❌ echo >, cat <<EOF |
+| Read file content | **Read tool** | ❌ cat, head, tail |
+| Search files | **Grep tool** | ❌ grep command |
+| Find files | **Glob tool** | ❌ find, ls |
+| Git operations | **Bash tool** | ✅ Correct usage |
+| Run tests | **Bash tool** | ✅ Correct usage |
+| Build commands | **Bash tool** | ✅ Correct usage |
+
+### Why This Matters
+
+**Using Edit tool:**
+- ✅ Changes are explicit and reviewable (old → new)
+- ✅ No temporary files or artifacts
+- ✅ Atomic operations with clear intent
+- ✅ Works across all encodings and file types
+- ✅ Integrated with permission system
+- ✅ Changes appear in git diff clearly
+
+**Using bash scripts for file modifications:**
+- ❌ Creates temporary files that might get committed
+- ❌ Changes are implicit and hard to review
+- ❌ Risk of leaving artifacts in worktree
+- ❌ Not integrated with permission system
+- ❌ Hard to verify correctness
+- ❌ Pollutes git history with temporary files
+
+### Enforcement
+
+- **ALWAYS** use Edit tool for modifying source code files
+- **NEVER** create temporary bash scripts for sed/awk/perl operations
+- **NEVER** commit temporary scripts, intermediate files, or build artifacts
+- **NEVER** leave uncommitted temporary files in the worktree
+- **READ FIRST** - Edit tool requires reading the file before modifying
+
+---
+
 ## Protocol by Task Type
 
 ### Feature Implementation (TDD)

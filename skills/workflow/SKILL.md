@@ -325,15 +325,41 @@ Once the plan is approved, phases 2-8 execute **fully autonomously** without sto
 
 ---
 
-## Phase 2: Create Feature Branch
+## Phase 2: Create Git Worktree
 
-**Goal:** Set up isolated work environment.
+**Goal:** Set up isolated work environment using git worktree for parallel development.
+
+**Why worktrees:** Git worktrees allow multiple branches to be active simultaneously in separate directories, enabling parallel Claude Code sessions without context switching. Each worktree has isolated file state while sharing the same Git history.
 
 **Actions:**
 
 1. **If a Jira ticket key is provided:** Use **Atlassian MCP** to transition the issue to **In Progress**. Call `jira_get_transitions` with the issue key, find the transition whose name matches "In Progress" (or "In progress"; names vary by project), then call `jira_transition_issue` with that transition ID. This marks the ticket as in progress before implementation starts.
-2. Create feature branch: `git checkout -b feature/<description>` or `fix/<description>`
-3. Confirm branch creation with `git status`
+2. **Determine repo and branch names:**
+   - Get current repo directory name: `basename $(git rev-parse --show-toplevel)`
+   - Create branch name: `feature/<description>` or `fix/<description>`
+3. **Create worktree as sibling directory:**
+   ```bash
+   # Pattern: ../repo-name-branch-name
+   git worktree add ../$(basename $(git rev-parse --show-toplevel))-feature-description -b feature/description
+   ```
+   Example: If repo is `agentic` and branch is `feature/add-auth`, worktree path is `../agentic-feature-add-auth`
+4. **Navigate to worktree directory:**
+   ```bash
+   cd ../agentic-feature-add-auth
+   ```
+5. **Initialize development environment** (if needed):
+   - JavaScript/TypeScript: `npm install` or `yarn`
+   - Python: Setup virtual environment or run package manager
+   - Other languages: Follow project setup process
+6. **Confirm worktree setup:**
+   ```bash
+   git worktree list  # Shows all worktrees
+   git status         # Confirms current branch
+   pwd                # Confirms working directory
+   ```
+7. **Record worktree path** for cleanup in Phase 8
+
+**Note:** All subsequent phases (3-8) operate within this worktree directory. The main repo remains untouched.
 
 ---
 
@@ -392,6 +418,51 @@ IF any gate fails:
 4. Reference plan document during execution
 5. Commit changes atomically with clear messages (one commit per behavior or logical unit)
 6. Document deviations from plan in commit messages
+
+**⛔ CRITICAL: Tool Usage for File Modifications**
+
+**NEVER create temporary bash scripts for file modifications:**
+
+```
+❌ WRONG - DO NOT DO THIS:
+# Creating a bash script to perform sed operations
+echo '#!/bin/bash' > fix_lines.sh
+echo 'sed -i "s/old/new/g" file.js' >> fix_lines.sh
+chmod +x fix_lines.sh
+./fix_lines.sh
+git add fix_lines.sh  # ← WRONG: temporary script committed!
+
+✅ CORRECT - ALWAYS DO THIS:
+# Use Edit tool directly for file modifications
+Edit(
+  file_path="file.js",
+  old_string="old content",
+  new_string="new content"
+)
+```
+
+**File Modification Rules:**
+- ✅ **ALWAYS** use the **Edit tool** for modifying existing files
+- ✅ **ALWAYS** use the **Write tool** for creating new source files
+- ✅ **ALWAYS** use the **Read tool** before editing (required by Edit tool)
+- ❌ **NEVER** create temporary bash scripts that perform sed/awk/perl operations
+- ❌ **NEVER** commit temporary scripts, intermediate files, or build artifacts
+- ❌ **NEVER** use Bash tool with sed/awk/perl for source code modifications
+- ❌ **NEVER** leave uncommitted temporary files in the worktree
+
+**Why Edit tool is mandatory:**
+- Explicit and reviewable changes (old_string → new_string)
+- No temporary file artifacts left behind
+- Atomic operations with clear intent
+- Works across all file types and encodings
+- Integrated with Claude Code's permission system
+
+**When to use Bash tool:**
+- Git operations (`git add`, `git commit`, `git push`)
+- Running tests (`npm test`, `pytest`, etc.)
+- Build commands (`npm run build`, `cargo build`)
+- Installing dependencies (`npm install`, `pip install`)
+- **NOT for modifying source code files**
 
 **Parallel Execution Strategy:**
 
@@ -455,6 +526,18 @@ These gates MUST be met before proceeding to Phase 4:
 **Goal:** Verify all tests pass and coverage is adequate.
 
 **⚠️ BLOCKING REQUIREMENT:** Testing is MANDATORY. Do NOT proceed to Phase 5 until all tests pass.
+
+**⛔ CRITICAL: DO NOT BYPASS THIS GATE**
+
+You MUST use the **phase-testing-agent**. DO NOT manually run test commands:
+- ❌ DO NOT manually run `npm test`, `pytest`, `go test`, `cargo test`, etc.
+- ❌ DO NOT manually run build commands
+- ❌ DO NOT manually check test output and assume it's okay
+- ❌ DO NOT skip tests "because TDD was followed in Phase 3"
+
+✅ ALWAYS spawn phase-testing-agent and wait for structured JSON results.
+
+The agent provides automatic language detection, retry logic for flaky tests, structured failure reporting, and consistent execution. Manual test runs are error-prone and cannot provide the structured output needed for gate validation.
 
 **⛔ PHASE 4 GATE ENFORCEMENT:**
 
@@ -574,6 +657,19 @@ END WHILE
 **Goal:** Ensure quality and security.
 
 **⚠️ BLOCKING REQUIREMENT:** All validation checks are MANDATORY. Do NOT proceed to Phase 6 until all checks pass.
+
+**⛔ CRITICAL: DO NOT BYPASS THIS GATE**
+
+You MUST use the **phase-validation-agent**. DO NOT manually run validation commands:
+- ❌ DO NOT manually run formatter (prettier, gofumpt, black, etc.)
+- ❌ DO NOT manually run linter (eslint, golangci-lint, pylint, etc.)
+- ❌ DO NOT manually run build (npm run build, go build, etc.)
+- ❌ DO NOT manually run tests (npm test, pytest, go test, etc.)
+- ❌ DO NOT manually invoke code-reviewer or security-reviewer skills
+
+✅ ALWAYS spawn phase-validation-agent and wait for structured JSON results.
+
+The agent provides consistent validation, retry logic, structured output, and audit trail. Manual validation is non-reproducible and easy to skip or shortcut.
 
 **⛔ PHASE 5 GATE ENFORCEMENT:**
 
@@ -808,9 +904,9 @@ Task(
 
 ---
 
-## Phase 8: Monitor & Summarize
+## Phase 8: Monitor, Summarize & Cleanup
 
-**Goal:** Document outcomes and capture learnings.
+**Goal:** Document outcomes, capture learnings, and clean up worktree.
 
 **PARA command:** Use `/summarize` once work is complete (e.g. after PR merge).
 
@@ -822,6 +918,21 @@ Task(
 2. Address review comments
 3. Once merged, run `/summarize` to document in `context/summaries/YYYY-MM-DD-<task-name>.md`
 4. Update documentation if needed (README, API docs, ADRs)
+5. **Clean up worktree after PR merge:**
+   ```bash
+   # Return to main repo
+   cd $(git rev-parse --show-toplevel)
+
+   # List worktrees to confirm path
+   git worktree list
+
+   # Remove the worktree (use path from Phase 2)
+   git worktree remove ../agentic-feature-add-auth
+
+   # Optionally delete the merged branch
+   git branch -d feature/add-auth
+   ```
+   **Note:** Keep worktree active if you need to make follow-up changes. Clean up only when completely done.
 
 **Summary Document Contents:**
 
@@ -832,6 +943,7 @@ Task(
 - Known limitations
 - Future improvements
 - Link to merged PR and commits
+- Worktree path used (for reference)
 
 **Note:** The `context/` directory is git-ignored. Summaries are local session artifacts and are not committed to git.
 
@@ -852,7 +964,10 @@ Only launch doc subagents if documentation updates are needed for this change.
 ## Workflow Checklist
 
 - [ ] Phase 1: Plan created and approved (para skill)
-- [ ] Phase 2: Feature branch created
+- [ ] Phase 2: Git worktree created and initialized
+  - [ ] Worktree path recorded for cleanup
+  - [ ] Development environment initialized
+  - [ ] Working from worktree directory
 - [ ] Phase 3: **Implementation complete** (developer skill)
   - [ ] TDD followed (tests before code)
   - [ ] All developer skill quality gates met
@@ -871,7 +986,11 @@ Only launch doc subagents if documentation updates are needed for this change.
   - [ ] Code review passed
 - [ ] Phase 6: Changes committed and pushed
 - [ ] Phase 7: PR created as draft; marked ready with `gh pr ready` after all commits pushed
-- [ ] Phase 8: Summary documented after merge
+- [ ] Phase 8: Summary documented and worktree cleaned up after merge
+  - [ ] Summary created in `context/summaries/`
+  - [ ] Documentation updated (if needed)
+  - [ ] Worktree removed with `git worktree remove`
+  - [ ] Branch deleted (optional)
 
 ---
 

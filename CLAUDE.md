@@ -58,13 +58,17 @@ Each skill lives in `skills/<name>/SKILL.md` with YAML frontmatter defining:
 **Architecture:**
 ```
 Workflow Skill (Orchestrator)
-├── Phase 1-3: Direct orchestration (planning, branching, implementing)
+├── Phase 1: Planning (direct orchestration)
+├── Phase 2: Git Worktree Creation (direct orchestration)
+├── Phase 3: Implementation (direct orchestration - developer skill)
 ├── Phase 4: Testing → phase-testing-agent (background)
 ├── Phase 5: Validation → phase-validation-agent (background)
 ├── Phase 6: Commit & Push (direct orchestration)
 ├── Phase 7: PR Creation → phase-pr-agent (background)
-└── Phase 8: Monitor & Summarize (direct orchestration)
+└── Phase 8: Monitor, Summarize & Cleanup (direct orchestration)
 ```
+
+**Note:** Phases 2-8 execute within the worktree directory created in Phase 2.
 
 **Phase Agents:**
 
@@ -208,14 +212,85 @@ Config locations:
 
 ## Common Patterns
 
+### Git Worktree Usage (Default)
+
+All skills use **git worktree** by default for isolated, parallel development. This allows multiple features to be worked on simultaneously without context switching.
+
+**Worktree Pattern:**
+```bash
+# Phase 2: Create worktree (automated by workflow skill)
+git worktree add ../repo-name-feature-name -b feature/name
+cd ../repo-name-feature-name
+
+# Initialize development environment
+npm install  # or yarn, pip install, etc.
+
+# Phases 3-7: Work in worktree directory
+# All git operations work normally
+
+# Phase 8: Cleanup after PR merge
+cd $(git rev-parse --show-toplevel)  # Return to main repo
+git worktree remove ../repo-name-feature-name
+git branch -d feature/name  # Optional
+```
+
+**Benefits:**
+- Multiple Claude Code sessions can work on different features simultaneously
+- No branch switching or stashing required
+- Complete file isolation between features
+- Shared git history across all worktrees
+
+**Location:** Worktrees are created as sibling directories following the pattern `../repo-name-branch-name` (recommended by [Claude Code docs](https://code.claude.com/docs/en/common-workflows#run-parallel-claude-code-sessions-with-git-worktrees))
+
+### Tool Usage for File Modifications (CRITICAL)
+
+**⛔ NEVER create temporary bash scripts for file modifications**
+
+| Operation | Correct Tool | WRONG Approach |
+|-----------|--------------|----------------|
+| Modify existing file | **Edit tool** | ❌ sed, awk, bash scripts |
+| Create new file | **Write tool** | ❌ echo >, cat <<EOF |
+| Read file | **Read tool** | ❌ cat, head, tail |
+| Search content | **Grep tool** | ❌ grep command |
+| Find files | **Glob tool** | ❌ find, ls |
+| Git operations | **Bash tool** | ✅ Correct |
+| Run tests | **Bash tool** | ✅ Correct |
+| Build commands | **Bash tool** | ✅ Correct |
+
+**Why this matters:**
+- Edit tool provides explicit, reviewable changes (old → new)
+- No temporary files or artifacts left in repository
+- Atomic operations with clear intent
+- Prevents accidental commits of temporary scripts
+
+**NEVER do this:**
+```bash
+# ❌ WRONG: Creates temporary script that gets committed
+echo 'sed -i "s/old/new/g" file.js' > fix.sh
+chmod +x fix.sh && ./fix.sh
+```
+
+**ALWAYS do this:**
+```python
+# ✅ CORRECT: Use Edit tool directly
+Edit(
+  file_path="file.js",
+  old_string="old content",
+  new_string="new content"
+)
+```
+
+See [skills/workflow/SKILL.md](skills/workflow/SKILL.md) and [skills/developer/SKILL.md](skills/developer/SKILL.md) for complete tool usage guidelines.
+
 ### Starting New Work
 
 1. Check if PARA needed: `/check <task>`
 2. Create plan: `/plan <task>`
 3. Review and approve plan
-4. Execute: `/execute`
+4. Execute: `/execute` (creates worktree in Phase 2)
 5. After completion: `/summarize`
 6. Archive when done: `/archive`
+7. Clean up worktree: `git worktree remove <path>`
 
 ### Large Codebase Work
 
@@ -228,13 +303,14 @@ Config locations:
 
 1. Read workflow skill: `skills/workflow/SKILL.md`
 2. Follow 8-phase protocol with hybrid architecture:
-   - Phase 1-2: Plan (para) → Branch (git)
+   - Phase 1: Plan (para skill)
+   - Phase 2: Create Git Worktree (isolated workspace in sibling directory)
    - Phase 3: Execute (developer skill - TDD)
    - Phase 4: Testing → **phase-testing-agent** (background)
    - Phase 5: Validation → **phase-validation-agent** (background)
    - Phase 6: Commit & Push (git-commits skill)
    - Phase 7: PR Creation → **phase-pr-agent** (background)
-   - Phase 8: Monitor & Summarize (para)
+   - Phase 8: Monitor, Summarize & Cleanup (para + worktree removal)
 
 ### Code Review
 
