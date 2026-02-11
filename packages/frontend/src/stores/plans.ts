@@ -59,6 +59,22 @@ export const usePlansStore = defineStore('plans', () => {
     selectedPlanId.value = planId
   }
 
+  function addPlan(plan: PlanReview) {
+    // Convert date strings to Date objects if needed
+    const processedPlan = {
+      ...plan,
+      createdAt: plan.createdAt instanceof Date ? plan.createdAt : new Date(plan.createdAt)
+    }
+    plans.value.push(processedPlan)
+  }
+
+  function updatePlanStatus(planId: string, status: string) {
+    const plan = plans.value.find(p => p.id === planId)
+    if (plan) {
+      plan.status = status
+    }
+  }
+
   return {
     plans,
     selectedPlanId,
@@ -66,6 +82,8 @@ export const usePlansStore = defineStore('plans', () => {
     fetchPlans,
     approvePlan,
     rejectPlan,
-    selectPlan
+    selectPlan,
+    addPlan,
+    updatePlanStatus
   }
 })

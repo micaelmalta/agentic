@@ -99,6 +99,23 @@ export const useAgentsStore = defineStore('agents', () => {
     selectedAgentId.value = agentId
   }
 
+  function addAgent(agent: Agent) {
+    // Convert date strings to Date objects if needed
+    const processedAgent = {
+      ...agent,
+      createdAt: agent.createdAt instanceof Date ? agent.createdAt : new Date(agent.createdAt),
+      updatedAt: agent.updatedAt instanceof Date ? agent.updatedAt : new Date(agent.updatedAt)
+    }
+    agents.value.push(processedAgent)
+  }
+
+  function removeAgent(agentId: string) {
+    const index = agents.value.findIndex(a => a.id === agentId)
+    if (index !== -1) {
+      agents.value.splice(index, 1)
+    }
+  }
+
   function updateAgent(agentId: string, updates: Partial<Agent>) {
     const agent = agents.value.find(a => a.id === agentId)
     if (agent) {
@@ -200,6 +217,8 @@ export const useAgentsStore = defineStore('agents', () => {
     stopAllAgents,
     assignIssue,
     selectAgent,
+    addAgent,
+    removeAgent,
     updateAgent,
     addLogLine,
     sendChatMessage,

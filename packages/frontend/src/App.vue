@@ -22,6 +22,13 @@ import StatusBar from './components/layout/StatusBar.vue'
 import AgentPanel from './components/panels/AgentPanel.vue'
 import KanbanPanel from './components/panels/KanbanPanel.vue'
 import ChatPanel from './components/panels/ChatPanel.vue'
+import { useWebSocket } from './composables/useWebSocket'
+
+// Establish WebSocket connection for real-time updates
+const { isConnected } = useWebSocket()
+
+// Log connection status (can be removed in production)
+console.log('WebSocket connection initiated')
 </script>
 
 <style scoped>
