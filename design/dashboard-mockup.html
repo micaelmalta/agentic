@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agentic Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg-primary: #0a0c10;
+    --bg-surface: #12151a;
+    --bg-elevated: #1a1e25;
+    --bg-hover: #1e232b;
+    --border: #252a33;
+    --border-subtle: #1e232b;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #4a5568;
+    --accent: #60a5fa;
+    --accent-dim: rgba(96,165,250,0.08);
+    --accent-glow: rgba(96,165,250,0.15);
+    --success: #4ade80;
+    --success-dim: rgba(74,222,128,0.1);
+    --warning: #fbbf24;
+    --warning-dim: rgba(251,191,36,0.1);
+    --danger: #f87171;
+    --danger-dim: rgba(248,113,113,0.1);
+    --btn-primary-text: #0a0c10;
+    --shadow-overlay: rgba(0,0,0,0.4);
+    --shadow-dropdown: rgba(0,0,0,0.5);
+    --done-opacity: 0.5;
+  }
+
+  [data-theme="light"] {
+    --bg-primary: #f8f9fb;
+    --bg-surface: #ffffff;
+    --bg-elevated: #f1f3f5;
+    --bg-hover: #e9ecef;
+    --border: #dee2e6;
+    --border-subtle: #e9ecef;
+    --text-primary: #1a1d23;
+    --text-secondary: #495057;
+    --text-muted: #868e96;
+    --accent: #3b82f6;
+    --accent-dim: rgba(59,130,246,0.06);
+    --accent-glow: rgba(59,130,246,0.12);
+    --success: #16a34a;
+    --success-dim: rgba(22,163,74,0.08);
+    --warning: #d97706;
+    --warning-dim: rgba(217,119,6,0.08);
+    --danger: #dc2626;
+    --danger-dim: rgba(220,38,38,0.08);
+    --btn-primary-text: #ffffff;
+    --shadow-overlay: rgba(0,0,0,0.15);
+    --shadow-dropdown: rgba(0,0,0,0.12);
+    --done-opacity: 0.45;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    font-size: 13px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ═══ TOOLBAR ═══ */
+  .toolbar {
+    height: 52px;
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+  .logo {
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--text-primary);
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .logo-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent-glow);
+  }
+  .toolbar-sep {
+    width: 1px;
+    height: 20px;
+    background: var(--border);
+  }
+  .toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-elevated);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-family: inherit;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn:hover { color: var(--text-primary); border-color: var(--text-muted); background: var(--bg-hover); }
+  .btn-primary { background: var(--accent); border-color: transparent; color: var(--btn-primary-text); font-weight: 600; }
+  .btn-primary:hover { background: #7cb7fc; }
+  .btn-ghost { border: none; background: none; padding: 6px 8px; }
+  .btn-ghost:hover { background: var(--bg-hover); }
+  .btn-sm { padding: 4px 10px; font-size: 11px; }
+  .btn-icon {
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    border: none;
+    background: none;
+    color: var(--text-muted);
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .btn-icon:hover { color: var(--text-primary); background: var(--bg-hover); }
+
+  .select-minimal {
+    background: none;
+    color: var(--text-primary);
+    border: none;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    outline: none;
+    padding: 4px 0;
+  }
+  .select-minimal option { background: var(--bg-surface); color: var(--text-primary); }
+  .select-label { font-size: 11px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .auto-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 4px 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .auto-pill.on { background: var(--success-dim); color: var(--success); }
+  .auto-pill.off { background: var(--bg-elevated); color: var(--text-muted); }
+  .auto-pill .dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+  }
+  .auto-pill.on .dot { background: var(--success); color: var(--btn-primary-text); }
+  .auto-pill.off .dot { background: var(--bg-hover); color: var(--text-muted); }
+
+  .pool-count {
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+  }
+  .pool-count strong { color: var(--text-secondary); }
+
+  .badge-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    position: absolute;
+    top: 4px;
+    right: 4px;
+  }
+  .badge-dot.warn { background: var(--warning); }
+  .badge-dot.danger { background: var(--danger); }
+
+  .spacer { flex: 1; }
+
+  /* ═══ PANELS ═══ */
+  .panels {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 260px 1fr 380px;
+    overflow: hidden;
+  }
+
+  .panel {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-right: 1px solid var(--border);
+  }
+  .panel:last-child { border-right: none; }
+
+  .panel-header {
+    padding: 16px 20px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .panel-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-muted);
+  }
+  .panel-body {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  .panel-body::-webkit-scrollbar { width: 5px; }
+  .panel-body::-webkit-scrollbar-track { background: transparent; }
+  .panel-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* ═══ AGENT CARDS (compact) ═══ */
+  .agent-list { padding: 8px 12px; }
+
+  .agent-card {
+    padding: 12px 14px;
+    border-radius: 10px;
+    margin-bottom: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1px solid transparent;
+  }
+  .agent-card:hover { background: var(--bg-elevated); }
+  .agent-card.selected { background: var(--accent-dim); border-color: rgba(96,165,250,0.2); }
+
+  .agent-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .status-dot.running { background: var(--success); box-shadow: 0 0 6px rgba(74,222,128,0.5); }
+  .status-dot.idle { background: var(--text-muted); }
+  .status-dot.error { background: var(--danger); }
+  .status-dot.waiting { background: var(--warning); animation: blink 2s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .agent-name {
+    font-weight: 600;
+    font-size: 13px;
+    flex: 1;
+  }
+  .agent-issue {
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .agent-detail {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+    padding-left: 18px;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .agent-detail .phase-tag {
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+  .mini-progress {
+    flex: 1;
+    height: 2px;
+    background: var(--border);
+    border-radius: 1px;
+    overflow: hidden;
+    max-width: 60px;
+  }
+  .mini-progress-fill {
+    height: 100%;
+    border-radius: 1px;
+    transition: width 0.5s ease-out;
+  }
+  .mini-progress-fill.running { background: var(--success); }
+  .mini-progress-fill.waiting { background: var(--warning); }
+
+  /* Agent expanded */
+  .agent-expanded {
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: var(--bg-primary);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .agent-expanded-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .agent-expanded-meta span { display: flex; align-items: center; gap: 4px; }
+  .progress-full {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .progress-full-fill { height: 100%; border-radius: 2px; background: var(--success); }
+  .agent-step {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    line-height: 1.5;
+  }
+  .log-mini {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    line-height: 1.7;
+    color: var(--text-muted);
+    max-height: 80px;
+    overflow-y: auto;
+    padding: 8px;
+    background: var(--bg-surface);
+    border-radius: 6px;
+    margin-bottom: 8px;
+  }
+  .log-mini .ok { color: var(--success); }
+  .log-mini .warn { color: var(--warning); }
+  .agent-actions-row {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+  }
+
+  /* ═══ KANBAN ═══ */
+  .kanban {
+    display: flex;
+    height: 100%;
+    overflow-x: auto;
+  }
+  .kanban-col {
+    min-width: 220px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border-subtle);
+    overflow: hidden;
+  }
+  .kanban-col:last-child { border-right: none; }
+
+  .col-header {
+    padding: 14px 16px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .col-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+  .col-count {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+  .col-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 8px 8px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .issue-card {
+    padding: 12px 14px;
+    border-radius: 10px;
+    margin-bottom: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1px solid transparent;
+    border-left: 3px solid transparent;
+  }
+  .issue-card:hover { background: var(--bg-elevated); border-color: var(--border); border-left-color: inherit; }
+  .issue-card.p-critical { border-left-color: var(--danger); }
+  .issue-card.p-high { border-left-color: var(--warning); }
+  .issue-card.p-medium { border-left-color: var(--accent); }
+  .issue-card.p-low { border-left-color: var(--text-muted); }
+  .issue-card.active-issue { background: var(--accent-dim); border-color: rgba(96,165,250,0.15); }
+
+  .issue-top-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+  .issue-key {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .issue-type-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+  .issue-type-dot.story { background: var(--success); }
+  .issue-type-dot.bug { background: var(--danger); }
+  .issue-type-dot.task { background: var(--accent); }
+
+  .issue-title {
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .issue-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .avatar-sm {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .avatar-sm.v1 { background: #6d28d9; }
+  .avatar-sm.v2 { background: #0e7490; }
+  .avatar-sm.v3 { background: #b45309; }
+  .avatar-sm.v4 { background: #047857; }
+  .avatar-sm.v5 { background: #b91c1c; }
+
+  .agent-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .agent-chip.running { background: var(--success-dim); color: var(--success); }
+  .agent-chip.waiting { background: var(--warning-dim); color: var(--warning); }
+  .issue-extra { font-size: 11px; color: var(--text-muted); }
+
+  /* ═══ CHAT ═══ */
+  .chat-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .msg {
+    max-width: 100%;
+  }
+  .msg-system {
+    padding: 12px 14px;
+    background: var(--bg-elevated);
+    border-radius: 12px;
+    border: 1px solid var(--border-subtle);
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  .msg-system.success { border-left: 2px solid var(--success); }
+  .msg-system.info { border-left: 2px solid var(--accent); }
+  .msg-system.warn { border-left: 2px solid var(--warning); }
+  .msg-system.error { border-left: 2px solid var(--danger); }
+
+  .msg-user {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-primary);
+  }
+
+  .msg-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+  .msg-header .icon { font-size: 13px; }
+  .msg-time { margin-left: auto; font-weight: 400; }
+
+  .msg-body { color: var(--text-secondary); }
+  .msg-body strong { color: var(--text-primary); }
+  .msg-body .link { color: var(--accent); cursor: pointer; font-weight: 500; }
+  .msg-body .link:hover { text-decoration: underline; }
+  .msg-body code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: var(--bg-primary);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+
+  .msg-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .chat-input-area {
+    padding: 12px 16px 16px;
+    flex-shrink: 0;
+  }
+  .chat-input-box {
+    display: flex;
+    align-items: center;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 14px;
+    transition: border-color 0.15s;
+  }
+  .chat-input-box:focus-within { border-color: var(--accent); }
+  .chat-input {
+    flex: 1;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+  }
+  .chat-input::placeholder { color: var(--text-muted); }
+  .send-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    border: none;
+    background: var(--accent);
+    color: var(--btn-primary-text);
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    flex-shrink: 0;
+    margin-left: 8px;
+  }
+  .send-btn:hover { background: #7cb7fc; }
+
+  /* ═══ STATUS BAR ═══ */
+  .statusbar {
+    height: 30px;
+    background: var(--bg-surface);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 20px;
+    font-size: 11px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+  .status-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+  }
+  .status-item:hover { color: var(--text-secondary); }
+  .status-dot-sm {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+
+  /* ═══ SLIDE-OVER ═══ */
+  .overlay { position: fixed; inset: 0; background: var(--shadow-overlay); z-index: 30; display: flex; justify-content: flex-end; animation: fadeIn 0.15s; }
+  .slideout { width: 520px; background: var(--bg-surface); border-left: 1px solid var(--border); display: flex; flex-direction: column; animation: slideIn 0.2s ease-out; }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  @keyframes slideIn { from{transform:translateX(100%)} to{transform:translateX(0)} }
+
+  .slideout-header { padding: 20px 24px 16px; display: flex; align-items: center; justify-content: space-between; }
+  .slideout-title { font-size: 15px; font-weight: 600; }
+  .slideout-body { flex: 1; overflow-y: auto; padding: 0 24px 24px; }
+  .slideout-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 8px; }
+
+  .section-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); margin: 20px 0 8px; }
+  .section-label:first-child { margin-top: 0; }
+
+  .context-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  .context-card .title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+  .context-card .meta { color: var(--text-muted); font-size: 11px; margin-bottom: 10px; }
+  .context-card p { color: var(--text-secondary); margin-bottom: 6px; }
+
+  .plan-block {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    padding: 16px;
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+  }
+  .plan-block h4 { color: var(--text-primary); font-size: 12px; font-weight: 600; margin: 14px 0 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .plan-block h4:first-child { margin-top: 0; }
+  .plan-block ul { padding-left: 18px; margin: 0; }
+  .plan-block li { margin-bottom: 3px; }
+  .plan-block .file { color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+
+  .feedback-area {
+    width: 100%;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 12px;
+    outline: none;
+    resize: vertical;
+    min-height: 50px;
+    margin-top: 8px;
+  }
+  .feedback-area:focus { border-color: var(--accent); }
+  .feedback-area::placeholder { color: var(--text-muted); }
+
+  .done-card { opacity: var(--done-opacity); }
+  .hidden { display: none !important; }
+
+  /* Subtle scrollbar for kanban */
+  .col-body::-webkit-scrollbar { width: 4px; }
+  .col-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- ═══ TOOLBAR ═══ -->
+<div class="toolbar">
+  <div class="logo">
+    <span class="logo-dot"></span>
+    Agentic
+  </div>
+
+  <div class="toolbar-sep"></div>
+
+  <div class="toolbar-group">
+    <div>
+      <div class="select-label">Project</div>
+      <select class="select-minimal"><option>PROJ-X</option><option>AUTH-SVC</option></select>
+    </div>
+    <div>
+      <div class="select-label">Sprint</div>
+      <select class="select-minimal"><option>Sprint 12</option><option>Sprint 11</option></select>
+    </div>
+  </div>
+
+  <div class="toolbar-sep"></div>
+
+  <button class="btn btn-primary" style="padding:6px 12px;">+ Agent</button>
+  <span class="pool-count"><strong>3</strong>/4</span>
+
+  <div class="spacer"></div>
+
+  <div class="auto-pill on" onclick="this.classList.toggle('on');this.classList.toggle('off');this.querySelector('.label').textContent=this.classList.contains('on')?'Auto':'Manual';">
+    <span class="label">Auto</span>
+    <span class="dot">⚡</span>
+  </div>
+
+  <div class="toolbar-sep"></div>
+
+  <button class="btn-icon" title="Search (⌘K)" onclick="document.getElementById('cmd-palette').classList.toggle('hidden')">🔍</button>
+  <button class="btn-icon" title="Notifications" onclick="document.getElementById('notif-panel').classList.toggle('hidden')">
+    🔔
+    <span class="badge-dot warn"></span>
+  </button>
+  <button class="btn-icon" title="Settings">⚙</button>
+  <button class="btn-icon" id="theme-toggle" title="Toggle light/dark mode" onclick="toggleTheme()">🌙</button>
+</div>
+
+<!-- ═══ PANELS ═══ -->
+<div class="panels">
+
+  <!-- LEFT: Agents -->
+  <div class="panel" style="background:var(--bg-primary);">
+    <div class="panel-header">
+      <span class="panel-title">Agents</span>
+      <span style="font-size:11px;color:var(--text-muted);">3 active</span>
+    </div>
+    <div class="panel-body agent-list">
+
+      <!-- Agent 1: running, expanded -->
+      <div class="agent-card selected">
+        <div class="agent-row">
+          <span class="status-dot running"></span>
+          <span class="agent-name">agent-01</span>
+          <span class="agent-issue">PROJ-42</span>
+        </div>
+        <div class="agent-detail">
+          <span class="phase-tag">Phase 3 · Execute</span>
+          <div class="mini-progress"><div class="mini-progress-fill running" style="width:38%"></div></div>
+          <span>12m</span>
+        </div>
+
+        <!-- Expanded detail (shown on click) -->
+        <div class="agent-expanded">
+          <div class="agent-expanded-meta">
+            <span>🧩 developer</span>
+            <span>~8.2k tokens</span>
+            <span>$0.12</span>
+          </div>
+          <div class="progress-full"><div class="progress-full-fill" style="width:38%"></div></div>
+          <div class="agent-step">Writing tests for auth middleware (TDD red phase)</div>
+          <div class="log-mini">
+<span class="ok">✓</span> Created auth.middleware.test.ts
+  Writing test: should reject expired tokens
+  Writing test: should accept valid JWT
+<span class="ok">✓</span> 2 tests written
+  Implementing auth middleware...
+<span class="warn">⚠</span> Test failing: expected 401, got 500
+  Fixing error handler...</div>
+          <div class="agent-actions-row">
+            <button class="btn btn-sm btn-ghost">View Logs</button>
+            <button class="btn btn-sm" style="border-color:rgba(248,113,113,0.3);color:var(--danger);">Stop</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Agent 2: running, collapsed -->
+      <div class="agent-card">
+        <div class="agent-row">
+          <span class="status-dot running"></span>
+          <span class="agent-name">agent-02</span>
+          <span class="agent-issue">PROJ-15</span>
+        </div>
+        <div class="agent-detail">
+          <span class="phase-tag">Phase 4 · Testing</span>
+          <div class="mini-progress"><div class="mini-progress-fill running" style="width:50%"></div></div>
+          <span>5m</span>
+        </div>
+      </div>
+
+      <!-- Agent 3: waiting -->
+      <div class="agent-card">
+        <div class="agent-row">
+          <span class="status-dot waiting"></span>
+          <span class="agent-name">agent-03</span>
+          <span class="agent-issue">PROJ-78</span>
+        </div>
+        <div class="agent-detail">
+          <span class="phase-tag">Plan Review</span>
+          <span style="color:var(--warning);font-size:10px;font-weight:500;">Needs approval</span>
+        </div>
+      </div>
+
+      <!-- Agent 4: idle -->
+      <div class="agent-card">
+        <div class="agent-row">
+          <span class="status-dot idle"></span>
+          <span class="agent-name">agent-04</span>
+          <span style="font-size:11px;color:var(--text-muted);">idle</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CENTER: Kanban -->
+  <div class="panel" style="background:var(--bg-primary);">
+    <div class="panel-header">
+      <span class="panel-title">Board</span>
+      <button class="btn btn-sm btn-ghost" style="font-size:11px;color:var(--text-muted);">Filter</button>
+    </div>
+    <div class="kanban">
+
+      <!-- To Do -->
+      <div class="kanban-col">
+        <div class="col-header">
+          <span class="col-title">To Do</span>
+          <span class="col-count">4</span>
+        </div>
+        <div class="col-body">
+          <div class="issue-card p-critical">
+            <div class="issue-top-row">
+              <span class="issue-type-dot bug"></span>
+              <span class="issue-key">PROJ-95</span>
+            </div>
+            <div class="issue-title">Login fails silently when session cookie is expired</div>
+            <div class="issue-bottom">
+              <span style="font-size:11px;color:var(--text-muted);">Unassigned</span>
+            </div>
+          </div>
+
+          <div class="issue-card p-high">
+            <div class="issue-top-row">
+              <span class="issue-type-dot story"></span>
+              <span class="issue-key">PROJ-88</span>
+            </div>
+            <div class="issue-title">Add rate limiting to public API endpoints</div>
+            <div class="issue-bottom">
+              <div class="avatar-sm v2">SM</div>
+            </div>
+          </div>
+
+          <div class="issue-card p-medium">
+            <div class="issue-top-row">
+              <span class="issue-type-dot task"></span>
+              <span class="issue-key">PROJ-91</span>
+            </div>
+            <div class="issue-title">Migrate user preferences to new schema</div>
+            <div class="issue-bottom">
+              <span style="font-size:11px;color:var(--text-muted);">Unassigned</span>
+            </div>
+          </div>
+
+          <div class="issue-card p-low">
+            <div class="issue-top-row">
+              <span class="issue-type-dot task"></span>
+              <span class="issue-key">PROJ-93</span>
+            </div>
+            <div class="issue-title">Update onboarding flow copy</div>
+            <div class="issue-bottom">
+              <div class="avatar-sm v3">JK</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- In Progress -->
+      <div class="kanban-col">
+        <div class="col-header">
+          <span class="col-title">In Progress</span>
+          <span class="col-count">3</span>
+        </div>
+        <div class="col-body">
+          <div class="issue-card p-high active-issue">
+            <div class="issue-top-row">
+              <span class="issue-type-dot story"></span>
+              <span class="issue-key">PROJ-42</span>
+            </div>
+            <div class="issue-title">Implement user authentication with JWT</div>
+            <div class="issue-bottom">
+              <div class="avatar-sm v1">JD</div>
+              <span class="agent-chip running">agent-01</span>
+            </div>
+          </div>
+
+          <div class="issue-card p-medium">
+            <div class="issue-top-row">
+              <span class="issue-type-dot story"></span>
+              <span class="issue-key">PROJ-15</span>
+            </div>
+            <div class="issue-title">Add pagination to user listing endpoint</div>
+            <div class="issue-bottom">
+              <div class="avatar-sm v4">AL</div>
+              <span class="agent-chip running">agent-02</span>
+            </div>
+          </div>
+
+          <div class="issue-card p-high">
+            <div class="issue-top-row">
+              <span class="issue-type-dot story"></span>
+              <span class="issue-key">PROJ-78</span>
+              <span style="font-size:11px;color:var(--text-muted);margin-left:auto;">🔒</span>
+            </div>
+            <div class="issue-title">Refactor payment processing pipeline</div>
+            <div class="issue-bottom">
+              <div class="avatar-sm v5">RV</div>
+              <span class="agent-chip waiting">agent-03 · 📋</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Code Review -->
+      <div class="kanban-col">
+        <div class="col-header">
+          <span class="col-title">Code Review</span>
+          <span class="col-count">2</span>
+        </div>
+        <div class="col-body">
+          <div class="issue-card p-medium">
+            <div class="issue-top-row">
+              <span class="issue-type-dot story"></span>
+              <span class="issue-key">PROJ-31</span>
+            </div>
+            <div class="issue-title">Add email notification preferences</div>
+            <div class="issue-bottom">
+              <div class="avatar-sm v2">SM</div>
+              <span class="issue-extra">PR #118</span>
+            </div>
+          </div>
+
+          <div class="issue-card p-low">
+            <div class="issue-top-row">
+              <span class="issue-type-dot task"></span>
+              <span class="issue-key">PROJ-29</span>
+            </div>
+            <div class="issue-title">Optimize database queries for dashboard</div>
+            <div class="issue-bottom">
+              <div class="avatar-sm v3">JK</div>
+              <span class="issue-extra">PR #115</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Done -->
+      <div class="kanban-col">
+        <div class="col-header">
+          <span class="col-title">Done</span>
+          <span class="col-count">3</span>
+        </div>
+        <div class="col-body">
+          <div class="issue-card p-high done-card">
+            <div class="issue-top-row">
+              <span class="issue-type-dot story"></span>
+              <span class="issue-key">PROJ-22</span>
+            </div>
+            <div class="issue-title">Set up CI/CD pipeline with GitHub Actions</div>
+            <div class="issue-bottom">
+              <div class="avatar-sm v1">JD</div>
+              <span class="issue-extra" style="color:var(--success);">✓ Merged</span>
+            </div>
+          </div>
+
+          <div class="issue-card p-medium done-card">
+            <div class="issue-top-row">
+              <span class="issue-type-dot task"></span>
+              <span class="issue-key">PROJ-18</span>
+            </div>
+            <div class="issue-title">Configure ESLint and Prettier</div>
+            <div class="issue-bottom">
+              <div class="avatar-sm v4">AL</div>
+              <span class="issue-extra" style="color:var(--success);">✓ Merged</span>
+            </div>
+          </div>
+
+          <div class="issue-card p-critical done-card">
+            <div class="issue-top-row">
+              <span class="issue-type-dot bug"></span>
+              <span class="issue-key">PROJ-10</span>
+            </div>
+            <div class="issue-title">Fix XSS vulnerability in search input</div>
+            <div class="issue-bottom">
+              <div class="avatar-sm v5">RV</div>
+              <span class="issue-extra" style="color:var(--success);">✓ Merged</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- RIGHT: Chat -->
+  <div class="panel" style="background:var(--bg-primary);">
+    <div class="panel-header">
+      <span class="panel-title">Chat</span>
+    </div>
+    <div class="panel-body chat-body">
+
+      <div class="msg">
+        <div class="msg-system info">
+          <div class="msg-header">
+            <span class="icon">⚡</span> System
+            <span class="msg-time">12:20 PM</span>
+          </div>
+          <div class="msg-body">
+            <strong>Autonomous mode enabled.</strong> 4 agents online, monitoring Sprint 12.
+          </div>
+        </div>
+      </div>
+
+      <div class="msg">
+        <div class="msg-system info">
+          <div class="msg-header">
+            <span class="icon">🤖</span> Orchestrator
+            <span class="msg-time">12:21 PM</span>
+          </div>
+          <div class="msg-body">
+            <span class="link">agent-01</span> assigned to <span class="link">PROJ-42</span> (High priority)<br>
+            Skill: <strong>developer</strong> · Starting workflow...
+          </div>
+        </div>
+      </div>
+
+      <div class="msg">
+        <div class="msg-system warn">
+          <div class="msg-header">
+            <span class="icon">📋</span> Plan Review
+            <span class="msg-time">12:25 PM</span>
+          </div>
+          <div class="msg-body">
+            <span class="link">agent-03</span> needs plan approval for <span class="link">PROJ-78</span><br>
+            <span style="color:var(--text-muted);">Pinned to manual mode 🔒</span>
+          </div>
+          <div class="msg-actions">
+            <button class="btn btn-sm btn-primary" onclick="document.getElementById('plan-review').classList.remove('hidden')">Review Plan</button>
+            <button class="btn btn-sm btn-ghost">Later</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="msg">
+        <div class="msg-user">
+          <div class="msg-header">
+            <span class="icon">👤</span> You
+            <span class="msg-time">12:28 PM</span>
+          </div>
+          <code>/status</code>
+        </div>
+      </div>
+
+      <div class="msg">
+        <div class="msg-system info">
+          <div class="msg-header">
+            <span class="icon">⚡</span> System
+            <span class="msg-time">12:28 PM</span>
+          </div>
+          <div class="msg-body" style="font-family:'JetBrains Mono',monospace;font-size:11px;line-height:2;">
+            <span style="color:var(--success);">●</span> agent-01  PROJ-42  Phase 3<br>
+            <span style="color:var(--success);">●</span> agent-02  PROJ-15  Phase 4<br>
+            <span style="color:var(--warning);">●</span> agent-03  PROJ-78  Waiting<br>
+            <span style="color:var(--text-muted);">●</span> agent-04  idle
+          </div>
+        </div>
+      </div>
+
+      <div class="msg">
+        <div class="msg-system error">
+          <div class="msg-header">
+            <span class="icon">⚠</span> Datadog
+            <span class="msg-time">12:31 PM</span>
+          </div>
+          <div class="msg-body">
+            <strong>auth-service</strong> · production<br>
+            <code>TypeError: Cannot read property 'exp' of undefined</code><br>
+            <span style="font-size:11px;color:var(--text-muted);">Correlation: <strong style="color:var(--warning);">Medium</strong> — same service as <span class="link">PROJ-42</span></span>
+          </div>
+          <div class="msg-actions">
+            <button class="btn btn-sm btn-ghost">Details</button>
+            <button class="btn btn-sm btn-ghost">Create Issue</button>
+            <button class="btn btn-sm btn-ghost">Snooze</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="msg">
+        <div class="msg-system success">
+          <div class="msg-header">
+            <span class="icon">✓</span> Complete
+            <span class="msg-time">12:33 PM</span>
+          </div>
+          <div class="msg-body">
+            <span class="link">PROJ-15</span> done — <span class="link">PR #121</span> created<br>
+            <span style="font-size:11px;color:var(--text-muted);">4 files · 127 additions · 12.4k tokens</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="chat-input-area">
+      <div class="chat-input-box">
+        <input class="chat-input" type="text" placeholder="Message or /command...">
+        <button class="send-btn">↑</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ STATUS BAR ═══ -->
+<div class="statusbar">
+  <div class="status-item">
+    <span class="status-dot-sm" style="background:var(--warning);"></span>
+    1 plan review
+  </div>
+  <div class="status-item">
+    <span class="status-dot-sm" style="background:var(--danger);"></span>
+    1 alert
+  </div>
+  <div class="status-item">
+    <span class="status-dot-sm" style="background:var(--success);"></span>
+    3 agents running
+  </div>
+  <div class="spacer"></div>
+  <span>32.1k tokens · ~$0.48</span>
+  <span>Synced 3s ago</span>
+</div>
+
+<!-- ═══ PLAN REVIEW SLIDE-OVER ═══ -->
+<div class="overlay hidden" id="plan-review" onclick="if(event.target===this)this.classList.add('hidden')">
+  <div class="slideout">
+    <div class="slideout-header">
+      <span class="slideout-title">Plan Review · PROJ-78</span>
+      <button class="btn-icon" onclick="document.getElementById('plan-review').classList.add('hidden')">✕</button>
+    </div>
+    <div class="slideout-body">
+      <div class="section-label">Issue</div>
+      <div class="context-card">
+        <div class="title">Refactor payment processing pipeline</div>
+        <div class="meta">High · Sprint 12 · Story · Ryan V. · agent-03</div>
+        <p>Replace conditional chain with Strategy pattern for cleaner separation of payment methods. All existing API contracts must be preserved.</p>
+      </div>
+
+      <div class="section-label">Plan</div>
+      <div class="plan-block">
+        <h4>Objectives</h4>
+        <ul>
+          <li>Replace conditional chain with Strategy pattern</li>
+          <li>Extract each payment method into its own processor</li>
+          <li>Add processor registry for dynamic resolution</li>
+        </ul>
+        <h4>Affected Files</h4>
+        <ul>
+          <li><span class="file">src/payments/pipeline.ts</span> (modify)</li>
+          <li><span class="file">src/payments/processors/stripe.ts</span> (new)</li>
+          <li><span class="file">src/payments/processors/paypal.ts</span> (new)</li>
+          <li><span class="file">src/payments/processors/ach.ts</span> (new)</li>
+          <li><span class="file">src/payments/registry.ts</span> (new)</li>
+        </ul>
+        <h4>Risks</h4>
+        <ul>
+          <li style="color:var(--warning);">High — integration tests must all pass</li>
+          <li>Medium — PayPal webhook has undocumented behavior</li>
+        </ul>
+      </div>
+
+      <div class="section-label">Feedback</div>
+      <textarea class="feedback-area" placeholder="Optional comments for the agent..."></textarea>
+    </div>
+    <div class="slideout-footer">
+      <button class="btn btn-primary">Approve</button>
+      <button class="btn" style="color:var(--success);border-color:rgba(74,222,128,0.3);">Approve + Note</button>
+      <button class="btn" style="color:var(--warning);border-color:rgba(251,191,36,0.3);">Request Changes</button>
+      <div class="spacer"></div>
+      <button class="btn" style="color:var(--danger);border-color:rgba(248,113,113,0.3);">Reject</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ NOTIFICATION PANEL ═══ -->
+<div class="hidden" id="notif-panel" style="position:fixed;top:56px;right:60px;width:380px;max-height:420px;background:var(--bg-surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 40px var(--shadow-dropdown);z-index:60;overflow:hidden;">
+  <div style="padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);">
+    <span style="font-weight:600;font-size:13px;">Notifications</span>
+    <button class="btn btn-sm btn-ghost" style="font-size:10px;color:var(--text-muted);">Mark all read</button>
+  </div>
+  <div style="overflow-y:auto;max-height:340px;padding:8px;">
+    <div style="padding:10px 12px;border-radius:8px;cursor:pointer;display:flex;gap:10px;align-items:flex-start;" onmouseover="this.style.background='var(--bg-elevated)'" onmouseout="this.style.background=''">
+      <span style="margin-top:4px;width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0;"></span>
+      <div><div style="font-size:12px;">⚠ TypeError in <strong>auth-service</strong></div><div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Datadog · 12:31 PM</div></div>
+    </div>
+    <div style="padding:10px 12px;border-radius:8px;cursor:pointer;display:flex;gap:10px;align-items:flex-start;" onmouseover="this.style.background='var(--bg-elevated)'" onmouseout="this.style.background=''">
+      <span style="margin-top:4px;width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0;"></span>
+      <div><div style="font-size:12px;">📋 Plan ready — <strong>PROJ-78</strong></div><div style="font-size:10px;color:var(--text-muted);margin-top:2px;">agent-03 · 12:25 PM</div></div>
+    </div>
+    <div style="padding:10px 12px;border-radius:8px;cursor:pointer;display:flex;gap:10px;align-items:flex-start;" onmouseover="this.style.background='var(--bg-elevated)'" onmouseout="this.style.background=''">
+      <span style="margin-top:4px;width:6px;height:6px;border-radius:50%;background:var(--text-muted);flex-shrink:0;"></span>
+      <div><div style="font-size:12px;color:var(--text-secondary);">✓ PROJ-22 complete · PR #115</div><div style="font-size:10px;color:var(--text-muted);margin-top:2px;">agent-01 · 12:18 PM</div></div>
+    </div>
+    <div style="padding:10px 12px;border-radius:8px;cursor:pointer;display:flex;gap:10px;align-items:flex-start;" onmouseover="this.style.background='var(--bg-elevated)'" onmouseout="this.style.background=''">
+      <span style="margin-top:4px;width:6px;height:6px;border-radius:50%;background:var(--text-muted);flex-shrink:0;"></span>
+      <div><div style="font-size:12px;color:var(--text-secondary);">⚡ Autonomous mode enabled</div><div style="font-size:10px;color:var(--text-muted);margin-top:2px;">System · 12:20 PM</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ COMMAND PALETTE ═══ -->
+<div class="overlay hidden" id="cmd-palette" onclick="if(event.target===this)this.classList.add('hidden')" style="justify-content:center;align-items:flex-start;padding-top:18vh;">
+  <div style="width:500px;background:var(--bg-surface);border:1px solid var(--border);border-radius:14px;box-shadow:0 20px 60px var(--shadow-dropdown);overflow:hidden;">
+    <div style="padding:14px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);">
+      <span style="color:var(--text-muted);">🔍</span>
+      <input type="text" placeholder="Search..." style="flex:1;background:none;border:none;color:var(--text-primary);font-family:inherit;font-size:14px;outline:none;">
+    </div>
+    <div style="padding:8px;max-height:320px;overflow-y:auto;">
+      <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);padding:8px 10px 4px;">Issues</div>
+      <div style="padding:8px 12px;border-radius:8px;display:flex;align-items:center;gap:10px;background:var(--bg-elevated);cursor:pointer;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);font-weight:600;width:60px;">PROJ-42</span>
+        <span style="flex:1;font-size:12px;">Implement user authentication</span>
+      </div>
+      <div style="padding:8px 12px;border-radius:8px;display:flex;align-items:center;gap:10px;cursor:pointer;" onmouseover="this.style.background='var(--bg-elevated)'" onmouseout="this.style.background=''">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);font-weight:600;width:60px;">PROJ-78</span>
+        <span style="flex:1;font-size:12px;">Refactor payment pipeline</span>
+      </div>
+      <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);padding:12px 10px 4px;">Commands</div>
+      <div style="padding:8px 12px;border-radius:8px;display:flex;align-items:center;gap:10px;cursor:pointer;" onmouseover="this.style.background='var(--bg-elevated)'" onmouseout="this.style.background=''">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);width:60px;">/status</span>
+        <span style="font-size:11px;color:var(--text-muted);">Check agent status</span>
+      </div>
+      <div style="padding:8px 12px;border-radius:8px;display:flex;align-items:center;gap:10px;cursor:pointer;" onmouseover="this.style.background='var(--bg-elevated)'" onmouseout="this.style.background=''">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);width:60px;">/plan</span>
+        <span style="font-size:11px;color:var(--text-muted);">Create implementation plan</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleTheme() {
+    const html = document.documentElement;
+    const btn = document.getElementById('theme-toggle');
+    const current = html.getAttribute('data-theme') || 'dark';
+    const next = current === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    btn.textContent = next === 'dark' ? '🌙' : '☀️';
+    btn.title = next === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+    localStorage.setItem('agentic-theme', next);
+  }
+  // Restore saved theme
+  (function() {
+    const saved = localStorage.getItem('agentic-theme');
+    if (saved) {
+      document.documentElement.setAttribute('data-theme', saved);
+      const btn = document.getElementById('theme-toggle');
+      if (btn) { btn.textContent = saved === 'dark' ? '🌙' : '☀️'; }
+    }
+  })();
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.overlay:not(.hidden), #notif-panel:not(.hidden)').forEach(el => el.classList.add('hidden'));
+    }
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      document.getElementById('cmd-palette').classList.toggle('hidden');
+    }
+  });
+  document.addEventListener('click', e => {
+    const np = document.getElementById('notif-panel');
+    if (!np.classList.contains('hidden') && !np.contains(e.target) && !e.target.closest('[title="Notifications"]')) {
+      np.classList.add('hidden');
+    }
+  });
+</script>
+
+</body>
+</html>
