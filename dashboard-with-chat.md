@@ -1,0 +1,95 @@
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - button "+ Agent" [ref=e5] [cursor=pointer]
+      - generic [ref=e6]: 0/4 agents
+      - button "Stop All" [disabled] [ref=e7]
+      - generic [ref=e8] [cursor=pointer]:
+        - generic [ref=e9]: Autonomous
+        - button "Autonomous OFF" [ref=e10]
+        - generic [ref=e12]: "OFF"
+      - button [ref=e13] [cursor=pointer]:
+        - img [ref=e14]
+    - generic [ref=e17]:
+      - generic [ref=e18]:
+        - generic [ref=e19]:
+          - heading "Agents" [level=2] [ref=e20]
+          - generic [ref=e21]:
+            - button "All" [ref=e22] [cursor=pointer]
+            - button "Running" [ref=e23] [cursor=pointer]
+            - button "Idle" [ref=e24] [cursor=pointer]
+        - generic [ref=e26]:
+          - img [ref=e27]
+          - paragraph [ref=e30]: No agents spawned
+      - generic [ref=e31]:
+        - generic [ref=e32]:
+          - heading "Kanban Board" [level=2] [ref=e33]
+          - generic [ref=e35] [cursor=pointer]:
+            - checkbox "My Tickets Only" [checked] [active] [ref=e36]
+            - generic [ref=e37]: My Tickets Only
+        - generic [ref=e39]:
+          - generic [ref=e40]:
+            - generic [ref=e41]:
+              - heading "To Do" [level=3] [ref=e42]
+              - generic [ref=e43]: "0"
+            - generic [ref=e45]:
+              - paragraph [ref=e46]: No issues
+              - paragraph [ref=e47]: in this column
+              - paragraph [ref=e49]: Drop card here
+          - generic [ref=e50]:
+            - generic [ref=e51]:
+              - heading "In Progress" [level=3] [ref=e52]
+              - generic [ref=e53]: "0"
+            - generic [ref=e55]:
+              - paragraph [ref=e56]: No issues
+              - paragraph [ref=e57]: in this column
+              - paragraph [ref=e59]: Drop card here
+          - generic [ref=e60]:
+            - generic [ref=e61]:
+              - heading "In Code Review" [level=3] [ref=e62]
+              - generic [ref=e63]: "0"
+            - generic [ref=e65]:
+              - paragraph [ref=e66]: No issues
+              - paragraph [ref=e67]: in this column
+              - paragraph [ref=e69]: Drop card here
+          - generic [ref=e70]:
+            - generic [ref=e71]:
+              - heading "Done" [level=3] [ref=e72]
+              - generic [ref=e73]: "2"
+            - generic [ref=e75]:
+              - generic [ref=e76] [cursor=pointer]:
+                - generic [ref=e78]:
+                  - generic "Medium" [ref=e79]:
+                    - img [ref=e80]
+                  - generic [ref=e81]: RNA-333
+                - paragraph [ref=e82]: Generate International Payment Reports has unhandled errors
+                - generic [ref=e84]:
+                  - img "Micael Malta" [ref=e86]
+                  - generic [ref=e87]: Micael Malta
+              - generic [ref=e88] [cursor=pointer]:
+                - generic [ref=e90]:
+                  - generic "Medium" [ref=e91]:
+                    - img [ref=e92]
+                  - generic [ref=e93]: RNA-57
+                - paragraph [ref=e94]: Provision RDS instance for staging
+                - generic [ref=e96]:
+                  - img "Micael Malta" [ref=e98]
+                  - generic [ref=e99]: Micael Malta
+      - generic [ref=e100]:
+        - heading "Chat" [level=2] [ref=e102]
+        - paragraph [ref=e104]: Chat interface coming soon...
+    - generic [ref=e106]: 0 agents active
+  - generic [ref=e109]:
+    - generic [ref=e110]: "[plugin:vite:css] [postcss] /Users/mmalta/projects/poc/agentic/packages/frontend/src/components/panels/ChatPanel.vue?vue&type=style&index=0&scoped=4025c6db&lang.css:39:3: The `border-l-status-info` class does not exist. If `border-l-status-info` is a custom class, make sure it is defined within a `@layer` directive."
+    - generic [ref=e111]: /Users/mmalta/projects/poc/agentic/packages/frontend/src/components/panels/ChatPanel.vue:319:2
+    - generic [ref=e112]: "37 | 38 | .message-notification .message-content { 39 | @apply border-l-2 border-l-status-info; | ^ 40 | } 41 |"
+    - generic [ref=e113]: at Input.error (/Users/mmalta/projects/poc/agentic/node_modules/postcss/lib/input.js:135:16) at AtRule.error (/Users/mmalta/projects/poc/agentic/node_modules/postcss/lib/node.js:146:32) at processApply (/Users/mmalta/projects/poc/agentic/node_modules/tailwindcss/lib/lib/expandApplyAtRules.js:380:29) at /Users/mmalta/projects/poc/agentic/node_modules/tailwindcss/lib/lib/expandApplyAtRules.js:551:9 at /Users/mmalta/projects/poc/agentic/node_modules/tailwindcss/lib/processTailwindFeatures.js:55:50 at process.processTicksAndRejections (node:internal/process/task_queues:103:5) at async plugins (/Users/mmalta/projects/poc/agentic/node_modules/tailwindcss/lib/plugin.js:38:17) at async LazyResult.runAsync (/Users/mmalta/projects/poc/agentic/node_modules/postcss/lib/lazy-result.js:293:11) at async compileCSS (file:///Users/mmalta/projects/poc/agentic/node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:36898:21) at async TransformPluginContext.transform (file:///Users/mmalta/projects/poc/agentic/node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:36171:11
+    - generic [ref=e114]:
+      - text: Click outside, press Esc key, or fix the code to dismiss.
+      - text: You can also disable this overlay by setting
+      - code [ref=e115]: server.hmr.overlay
+      - text: to
+      - code [ref=e116]: "false"
+      - text: in
+      - code [ref=e117]: vite.config.ts
+      - text: .

@@ -61,14 +61,23 @@
     >
       <Settings :size="20" />
     </button>
+
+    <SettingsModal
+      :is-open="showSettings"
+      @close="closeSettings"
+      @save="saveSettings"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { Settings } from 'lucide-vue-next'
 import { useAgentsStore } from '../../stores/agents'
+import SettingsModal from '../modals/SettingsModal.vue'
 
 const agentsStore = useAgentsStore()
+const showSettings = ref(false)
 
 function handleStopAll() {
   if (confirm('Are you sure you want to stop all running agents?')) {
@@ -77,8 +86,20 @@ function handleStopAll() {
 }
 
 function openSettings() {
-  // TODO: Implement settings modal
-  console.log('Open settings')
+  showSettings.value = true
+}
+
+function closeSettings() {
+  showSettings.value = false
+}
+
+function saveSettings(config: any) {
+  console.log('Saving settings:', config)
+  // Update stores with new config
+  if (config.agents) {
+    agentsStore.maxAgents = config.agents.maxAgents
+  }
+  // TODO: Save to backend API
 }
 </script>
 
