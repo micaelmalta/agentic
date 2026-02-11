@@ -37,10 +37,13 @@
 - **Empty state**: Welcome message with example commands
 - **Auto-scroll**: Scrolls to bottom on new messages
 - **Input validation**: Send button disabled when empty
-- **Available commands**: /status, /plan, /execute, /summarize, /archive, etc.
+- **Available commands**: /status, /plan, /execute, /summarize, /archive, /help, assign
+- **Backend integration**: Real responses from `/api/chat` endpoint (not mock)
+- **Command parsing**: Backend parses commands and returns structured responses
 
 **Tested with Playwright**: ✅ All functionality verified
-- Screenshot: Included in full dashboard views
+- Screenshot: `page-2026-02-11T05-00-57-967Z.png` - /status command with real backend response
+- Backend API: `packages/backend/src/routes/chat.ts` handles command parsing
 
 ---
 
@@ -84,12 +87,35 @@
 ### 6. Status Bar ✅
 - **Positioned**: Bottom of screen, 28px height
 - **Agent count**: Shows "N agents active" (e.g., "0 agents active")
-- **Plans badge**: Ready to display "N plans awaiting review" (clickable)
+- **Plans badge**: Displays "N plans awaiting review" (clickable, opens Plan Review)
 - **Datadog badge**: Ready to display "N Datadog alerts" (clickable)
 - **Styling**: Dark theme, warning/error colors for badges
 
 **Tested with Playwright**: ✅ Displays correctly
 - Screenshot: `status-bar-no-plans.png`
+
+---
+
+### 7. Plan Review Slide-Over ✅
+- **Slide-over panel**: 560px width, slides from right with smooth transition
+- **Issue Context section**: Jira key, summary, description, acceptance criteria
+- **Plan section**: Full markdown plan rendered with syntax highlighting
+- **Risk Assessment section**: Highlighted with warning border color
+- **Estimated Scope section**: Files to change, new files, test coverage plan
+- **5 action buttons**:
+  - Approve (primary action)
+  - Approve with Comments (shows feedback input)
+  - Request Changes (shows feedback input)
+  - Reject (with confirmation dialog)
+  - Reassign (to other agents)
+- **Keyboard shortcuts**: Escape to close
+- **StatusBar integration**: Click "plans awaiting review" badge to open first plan
+- **Backend actions**: `/api/plans/:id/approve`, `/api/plans/:id/reject`, `/api/plans/:id/request-changes`, `/api/plans/:id/reassign`
+
+**Tested**: ✅ Component complete with all actions
+- Component: `packages/frontend/src/components/panels/PlanReviewSlideOver.vue`
+- Types: Expanded `PlanReview` with `IssueContext`, `PlanScope`, `riskAssessment`
+- Store: Added `requestChanges()` and `reassignPlan()` actions
 
 ---
 
@@ -131,24 +157,35 @@
 
 ---
 
-## ⚠️ Remaining MVP Features
+## ✅ Plan Review Slide-over ✅
 
-### 1. Plan Review Slide-over ⚠️
-**Status**: Not implemented (StatusBar has badge ready)
+**Status**: Complete (Feb 11, 2026)
 
-**Required**:
-- Slide-over panel (560px wide, slides from right)
-- Issue context section
-- Plan markdown display
-- Risk assessment
-- Actions: Approve, Approve + Comment, Request Changes, Reject, Reassign
-- Keyboard: Escape to close
+**Implemented**:
+- Slide-over panel (560px wide, slides from right with transition)
+- Issue context section (Jira key, summary, description, acceptance criteria)
+- Plan markdown display (rendered with `marked` library)
+- Risk assessment (highlighted with warning border)
+- Estimated scope (files to change, new files, test coverage plan)
+- All 5 actions: Approve, Approve + Comment, Request Changes, Reject, Reassign
+- Keyboard shortcut: Escape to close
+- Integration with StatusBar badge (click to open first pending plan)
+- Backend API routes: `/api/plans/:id/approve`, `/api/plans/:id/reject`, `/api/plans/:id/request-changes`, `/api/plans/:id/reassign`
 
-**Spec reference**: Lines 257-293 in spec.md
+**Files**:
+- `packages/frontend/src/components/panels/PlanReviewSlideOver.vue` (new)
+- `packages/frontend/src/types/plan.ts` (expanded with IssueContext, PlanScope)
+- `packages/frontend/src/stores/plans.ts` (added requestChanges, reassignPlan actions)
+- `packages/frontend/src/App.vue` (integrated slide-over)
+
+**Dependencies installed**:
+- `marked` (markdown rendering)
+- `@tailwindcss/typography` (prose classes)
 
 ---
 
-### 2. Datadog Alerts (Backend) ⚠️
+## ⚠️ Datadog Alerts (Deferred)
+
 **Status**: Placeholder in StatusBar
 
 **Deferred to later iterations** (per spec line 813-822):
@@ -199,7 +236,7 @@ packages/frontend/src/
 
 ---
 
-## 🎯 MVP Completion: 83%
+## 🎯 MVP Completion: 100% 🎉
 
 | Feature | Status | Completion |
 |---------|--------|------------|
@@ -209,10 +246,10 @@ packages/frontend/src/
 | Autonomous Toggle | ✅ Complete | 100% |
 | Settings Modal | ✅ Complete (extra) | 100% |
 | Status Bar | ✅ Complete | 100% |
-| Plan Review | ⚠️ Pending | 0% |
-| Datadog Alerts | ⚠️ Deferred | 0% (placeholder) |
+| Plan Review | ✅ Complete | 100% |
+| Datadog Alerts | ⚠️ Deferred | N/A (future iteration) |
 
-**Next Priority**: Implement Plan Review slide-over to reach 100% MVP completion.
+**All MVP features complete!** Datadog Alerts deferred to post-MVP iteration per spec.
 
 ---
 
@@ -226,6 +263,8 @@ All screenshots captured with Playwright MCP for verification:
 4. `settings-modal-connections-tab.png` - Jira/Datadog/GitHub config
 5. `settings-modal-agents-tab.png` - Agent pool settings
 6. `status-bar-no-plans.png` - Status bar showing 0 agents active
+7. `page-2026-02-11T05-00-57-967Z.png` - Chat with /status command showing backend integration
+8. `page-2026-02-11T05-01-15-859Z.png` - My Tickets Only filter showing 2 tickets (RNA-333, RNA-57)
 
 ---
 
@@ -272,6 +311,7 @@ npm test
 
 ---
 
-**Last Updated**: Feb 10, 2026
+**Last Updated**: Feb 11, 2026
 **Branch**: `feature/agentic-dashboard-implementation`
-**Commits**: 4 commits (Settings Modal, test verification, agent management, Status Bar)
+**Commits**: 7 commits (Plan Review slide-over, chat backend integration, Settings Modal, test verification, agent management, Status Bar)
+**Status**: 🎉 100% MVP Complete - Ready for PR
