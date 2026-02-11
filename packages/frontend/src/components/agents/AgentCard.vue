@@ -155,8 +155,23 @@ async function handleStop() {
 }
 
 .logs-viewer {
-  @apply max-h-48 overflow-y-auto scrollbar-thin;
+  @apply max-h-48 overflow-y-auto;
   @apply bg-background-primary p-2 rounded border border-border-primary;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-primary) transparent;
+}
+
+.logs-viewer::-webkit-scrollbar {
+  width: 6px;
+}
+
+.logs-viewer::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.logs-viewer::-webkit-scrollbar-thumb {
+  background: var(--border-primary);
+  border-radius: 3px;
 }
 
 .log-line {

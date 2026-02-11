@@ -165,6 +165,16 @@ export const useAgentsStore = defineStore('agents', () => {
       if (!response.ok) {
         throw new Error('Failed to send chat message')
       }
+
+      // Parse and add the backend response to chat
+      const responseData = await response.json()
+      const responseMessage: ChatMessage = {
+        id: responseData.id || crypto.randomUUID(),
+        type: responseData.type || 'system',
+        content: responseData.content,
+        timestamp: responseData.timestamp ? new Date(responseData.timestamp) : new Date()
+      }
+      chatMessages.value.push(responseMessage)
     } catch (error) {
       console.error('Failed to send chat message:', error)
 

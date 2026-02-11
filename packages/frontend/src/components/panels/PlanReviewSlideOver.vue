@@ -423,8 +423,8 @@ watch(() => props.isOpen, (open) => {
 
 .risk-content {
   @apply p-3 rounded;
-  @apply bg-background-elevated border-l-2 border-l-status-warning;
-  @apply whitespace-pre-wrap;
+  @apply bg-background-elevated border-l-2 whitespace-pre-wrap;
+  border-left-color: #d29922;
 }
 
 .scope-item {
