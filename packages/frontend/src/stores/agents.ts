@@ -1,12 +1,15 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { Agent } from '../types/agent'
+import type { ChatMessage } from '../types/chat'
 
 export const useAgentsStore = defineStore('agents', () => {
   const agents = ref<Agent[]>([])
   const selectedAgentId = ref<string | null>(null)
   const maxAgents = ref(4)
   const autonomousMode = ref(false)
+  const chatMessages = ref<ChatMessage[]>([])
+  const chatMessagesByAgent = ref<Map<string, ChatMessage[]>>(new Map())
 
   const runningAgents = computed(() =>
     agents.value.filter(a => a.status === 'running')
@@ -114,14 +117,83 @@ export const useAgentsStore = defineStore('agents', () => {
     }
   }
 
+  async function sendChatMessage(content: string) {
+    const message: ChatMessage = {
+      id: crypto.randomUUID(),
+      type: 'user',
+      content,
+      timestamp: new Date()
+    }
+
+    chatMessages.value.push(message)
+
+    // Store message for selected agent if one is selected
+    if (selectedAgentId.value) {
+      const agentMessages = chatMessagesByAgent.value.get(selectedAgentId.value) || []
+      agentMessages.push(message)
+      chatMessagesByAgent.value.set(selectedAgentId.value, agentMessages)
+    }
+
+    try {
+      // Send to backend via WebSocket or API
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          agentId: selectedAgentId.value,
+          content
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to send chat message')
+      }
+    } catch (error) {
+      console.error('Failed to send chat message:', error)
+
+      // Add error message to chat
+      const errorMessage: ChatMessage = {
+        id: crypto.randomUUID(),
+        type: 'error',
+        content: 'Failed to send message. Please try again.',
+        timestamp: new Date()
+      }
+      chatMessages.value.push(errorMessage)
+    }
+  }
+
+  function addChatMessage(message: ChatMessage) {
+    chatMessages.value.push(message)
+
+    // Store message for the associated agent if specified in metadata
+    const agentId = message.metadata?.agentId
+    if (agentId) {
+      const agentMessages = chatMessagesByAgent.value.get(agentId) || []
+      agentMessages.push(message)
+      chatMessagesByAgent.value.set(agentId, agentMessages)
+    }
+  }
+
+  function clearChatMessages() {
+    chatMessages.value = []
+  }
+
+  const selectedAgentMessages = computed(() => {
+    if (!selectedAgentId.value) return []
+    return chatMessagesByAgent.value.get(selectedAgentId.value) || []
+  })
+
   return {
     agents,
     selectedAgentId,
     maxAgents,
     autonomousMode,
+    chatMessages,
+    chatMessagesByAgent,
     runningAgents,
     idleAgents,
     canSpawnMore,
+    selectedAgentMessages,
     fetchAgents,
     spawnAgent,
     stopAgent,
@@ -129,6 +201,9 @@ export const useAgentsStore = defineStore('agents', () => {
     assignIssue,
     selectAgent,
     updateAgent,
-    addLogLine
+    addLogLine,
+    sendChatMessage,
+    addChatMessage,
+    clearChatMessages
   }
 })
