@@ -1,5 +1,5 @@
 <template>
-  <div class="kanban-column flex flex-col min-w-[240px] h-full">
+  <div class="kanban-column flex flex-col w-[280px] flex-shrink-0">
     <!-- Column Header -->
     <div
       data-testid="column-header"
@@ -19,7 +19,7 @@
     <!-- Drop Zone -->
     <div
       data-testid="drop-zone"
-      class="flex-1 p-4 overflow-y-auto"
+      class="p-4"
       :class="{ 'drag-over': isDragOver }"
       @dragover.prevent="handleDragOver"
       @dragleave="handleDragLeave"
