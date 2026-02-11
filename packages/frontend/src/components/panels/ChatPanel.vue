@@ -127,9 +127,13 @@
 import { ref, computed, nextTick, onMounted, watch } from 'vue'
 import { MessageSquare, Bot, Bell, AlertTriangle, Send } from 'lucide-vue-next'
 import type { ChatMessage, Action } from '../../types/chat'
+import { useAgentsStore } from '../../stores/agents'
 
-// State
-const messages = ref<ChatMessage[]>([])
+// Store
+const agentsStore = useAgentsStore()
+
+// State - use store's chat messages
+const messages = computed(() => agentsStore.chatMessages)
 const inputText = ref('')
 const messagesContainer = ref<HTMLElement | null>(null)
 const showAutocomplete = ref(false)
@@ -160,6 +164,12 @@ watch(filteredCommands, (newCommands) => {
     autocompleteIndex.value = 0
   }
 })
+
+// Watch for new messages and auto-scroll
+watch(messages, async () => {
+  await nextTick()
+  await scrollToBottom()
+}, { deep: true })
 
 // Format timestamp
 function formatTime(date: Date): string {
@@ -224,32 +234,16 @@ async function sendMessage() {
   const content = inputText.value.trim()
   if (!content) return
 
-  // Add user message
-  const userMessage: ChatMessage = {
-    id: `msg-${Date.now()}`,
-    type: 'user',
-    content,
-    timestamp: new Date()
-  }
-  messages.value.push(userMessage)
+  // Clear input immediately
   inputText.value = ''
   showAutocomplete.value = false
 
-  // Scroll to bottom
-  await scrollToBottom()
+  // Send to backend via agents store
+  await agentsStore.sendChatMessage(content)
 
-  // TODO: Send message to backend via WebSocket
-  // For now, add a mock system response
-  setTimeout(() => {
-    const systemMessage: ChatMessage = {
-      id: `msg-${Date.now()}`,
-      type: 'system',
-      content: `Received: ${content}`,
-      timestamp: new Date()
-    }
-    messages.value.push(systemMessage)
-    scrollToBottom()
-  }, 500)
+  // Scroll to bottom after message is added to store
+  await nextTick()
+  await scrollToBottom()
 }
 
 // Handle action button clicks
