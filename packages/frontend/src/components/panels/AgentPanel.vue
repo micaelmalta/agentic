@@ -1,88 +1,83 @@
 <template>
-  <div class="agent-panel flex flex-col h-full bg-background-secondary border-r border-border-primary">
-    <div data-testid="panel-header" class="panel-header flex items-center justify-between px-4 py-3 border-b border-border-primary">
-      <h2 class="text-sm font-semibold text-text-primary">Agents</h2>
-      <div class="flex gap-1">
-        <button
-          data-testid="filter-all"
-          @click="statusFilter = null"
-          :class="['filter-btn', { active: statusFilter === null }]"
-        >
-          All
-        </button>
-        <button
-          data-testid="filter-running"
-          @click="statusFilter = 'running'"
-          :class="['filter-btn', { active: statusFilter === 'running' }]"
-        >
-          Running
-        </button>
-        <button
-          data-testid="filter-idle"
-          @click="statusFilter = 'idle'"
-          :class="['filter-btn', { active: statusFilter === 'idle' }]"
-        >
-          Idle
-        </button>
-      </div>
+  <div class="panel" data-testid="agent-panel">
+    <div class="panel-header" data-testid="panel-header">
+      <span class="panel-title">Agents</span>
+      <span class="panel-subtitle" style="font-size: 11px; color: var(--text-muted);">
+        {{ activeCount }} active
+      </span>
     </div>
 
-    <div class="flex-1 overflow-y-auto scrollbar-thin p-4 space-y-2">
+    <div class="panel-body agent-list">
       <div
         v-if="filteredAgents.length === 0"
         data-testid="empty-state"
         class="empty-state"
+        style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; color: var(--text-muted); font-size: 12px;"
       >
-        <Bot :size="48" class="text-text-secondary opacity-50" />
-        <p class="text-sm text-text-secondary mt-2">
-          {{ agentsStore.agents.length === 0 ? 'No agents spawned' : 'No agents match filter' }}
-        </p>
+        <Bot :size="48" style="opacity: 0.5; margin-bottom: 8px;" />
+        <p>{{ agentsStore.agents.length === 0 ? 'No agents spawned' : 'No agents match filter' }}</p>
       </div>
 
       <AgentCard
         v-for="agent in filteredAgents"
         :key="agent.id"
         :agent="agent"
+        :selected="agentsStore.selectedAgentId === agent.id"
         data-testid="agent-card"
+        @view-logs="openLogsFor(agent.id)"
       />
     </div>
+
+    <AgentLogsModal
+      :agent="logsModalAgent"
+      @close="logsModalAgentId = null"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch, onUnmounted } from 'vue'
 import { Bot } from 'lucide-vue-next'
 import { useAgentsStore } from '../../stores/agents'
 import AgentCard from '../agents/AgentCard.vue'
+import AgentLogsModal from '../modals/AgentLogsModal.vue'
 import type { AgentStatus } from '../../types/agent'
 
 const agentsStore = useAgentsStore()
 const statusFilter = ref<AgentStatus | null>(null)
+const logsModalAgentId = ref<string | null>(null)
+
+const logsModalAgent = computed(() => {
+  if (!logsModalAgentId.value) return null
+  return agentsStore.agents.find(a => a.id === logsModalAgentId.value) ?? null
+})
+
+function openLogsFor(agentId: string) {
+  logsModalAgentId.value = agentId
+}
+
+const activeCount = computed(() =>
+  agentsStore.agents.filter(a => a.status === 'running' || a.status === 'waiting').length
+)
 
 const filteredAgents = computed(() => {
-  if (!statusFilter.value) {
-    return agentsStore.agents
-  }
+  if (!statusFilter.value) return agentsStore.agents
   return agentsStore.agents.filter(a => a.status === statusFilter.value)
 })
+
+// When any agent is running, refresh agent list periodically so logs and processAlive stay updated
+let refreshInterval: ReturnType<typeof setInterval> | null = null
+watch(activeCount, (n) => {
+  if (refreshInterval) {
+    clearInterval(refreshInterval)
+    refreshInterval = null
+  }
+  if (n > 0) {
+    refreshInterval = setInterval(() => agentsStore.fetchAgents(), 2000)
+  }
+}, { immediate: true })
+
+onUnmounted(() => {
+  if (refreshInterval) clearInterval(refreshInterval)
+})
 </script>
-
-<style scoped>
-.panel-header {
-  flex-shrink: 0;
-}
-
-.filter-btn {
-  @apply px-2 py-1 text-xs rounded transition-colors;
-  @apply text-text-secondary bg-transparent;
-  @apply hover:bg-background-elevated hover:text-text-primary;
-}
-
-.filter-btn.active {
-  @apply bg-border-accent text-white;
-}
-
-.empty-state {
-  @apply flex flex-col items-center justify-center py-12;
-}
-</style>

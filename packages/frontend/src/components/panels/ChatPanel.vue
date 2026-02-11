@@ -1,59 +1,44 @@
 <template>
-  <div class="chat-panel flex flex-col h-full bg-background-secondary border-l border-border-primary">
-    <!-- Header -->
-    <div data-testid="panel-header" class="panel-header px-4 py-3 border-b border-border-primary flex-shrink-0">
-      <h2 class="text-sm font-semibold text-text-primary">Chat</h2>
+  <div class="panel" style="min-width: 0;">
+    <div class="panel-header" data-testid="panel-header">
+      <span class="panel-title">Chat</span>
     </div>
 
-    <!-- Messages Container -->
-    <div
-      ref="messagesContainer"
-      data-testid="messages-container"
-      class="flex-1 overflow-y-auto p-4 space-y-3 min-h-0"
-    >
-      <!-- Empty State -->
+    <div ref="messagesContainer" data-testid="messages-container" class="chat-body">
       <div
         v-if="messages.length === 0"
         data-testid="empty-state"
-        class="flex flex-col items-center justify-center h-full text-center py-12"
+        class="empty-chat"
       >
-        <MessageSquare :size="48" class="text-text-secondary opacity-50 mb-3" />
-        <p class="text-sm font-medium text-text-primary mb-2">Welcome to Agentic</p>
-        <p class="text-xs text-text-secondary mb-4 max-w-xs">
+        <MessageSquare :size="48" style="opacity: 0.5; margin-bottom: 12px; color: var(--text-secondary);" />
+        <p style="font-size: 13px; font-weight: 500; color: var(--text-primary); margin-bottom: 8px;">Welcome to Agentic</p>
+        <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; max-width: 240px;">
           Chat with the orchestrator to control your agents.
         </p>
-        <div class="text-xs text-text-secondary space-y-1">
+        <div style="font-size: 12px; color: var(--text-secondary);">
           <p>Try:</p>
-          <p class="font-mono text-text-accent">/status — check agent state</p>
-          <p class="font-mono text-text-accent">/plan — create a plan</p>
-          <p class="font-mono text-text-accent">assign PROJ-42</p>
+          <p style="font-family: 'JetBrains Mono', monospace; color: var(--accent);">/status — check agent state</p>
+          <p style="font-family: 'JetBrains Mono', monospace; color: var(--accent);">/plan — create a plan</p>
+          <p style="font-family: 'JetBrains Mono', monospace; color: var(--accent);">assign PROJ-42</p>
         </div>
       </div>
 
-      <!-- Messages -->
       <div
         v-for="message in messages"
         :key="message.id"
         data-testid="chat-message"
         :class="[
-          'message',
-          `message-${message.type}`,
-          { 'message-user': message.type === 'user' }
+          'msg',
+          message.type === 'user' ? 'msg-user' : 'msg-system',
+          message.type === 'system' && 'info',
+          message.type === 'notification' && 'success',
+          message.type === 'error' && 'error'
         ]"
       >
-        <!-- Message Icon -->
-        <div v-if="message.type !== 'user'" class="message-icon">
-          <Bot v-if="message.type === 'system'" :size="14" />
-          <Bell v-else-if="message.type === 'notification'" :size="14" />
-          <AlertTriangle v-else-if="message.type === 'error'" :size="14" />
-        </div>
+        <div class="msg-body">
+          <p>{{ message.content }}</p>
 
-        <!-- Message Content -->
-        <div class="message-content">
-          <p class="message-text">{{ message.content }}</p>
-
-          <!-- Action Buttons -->
-          <div v-if="message.actions && message.actions.length > 0" class="message-actions">
+          <div v-if="message.actions && message.actions.length > 0" class="msg-actions">
             <button
               v-for="action in message.actions"
               :key="action.label"
@@ -67,53 +52,44 @@
             </button>
           </div>
 
-          <!-- Timestamp -->
-          <span class="message-timestamp">
+          <span style="display: block; font-size: 11px; color: var(--text-muted); margin-top: 6px;">
             {{ formatTime(message.timestamp) }}
           </span>
         </div>
       </div>
     </div>
 
-    <!-- Input Container -->
-    <div class="input-container px-4 py-3 border-t border-border-primary flex-shrink-0">
-      <!-- Command Autocomplete -->
-      <div
-        v-if="showAutocomplete"
-        data-testid="autocomplete"
-        class="autocomplete-popup"
-      >
+    <div class="chat-input-area">
+      <div v-if="showAutocomplete" data-testid="autocomplete" class="autocomplete-popup">
         <div
           v-for="(cmd, index) in filteredCommands"
           :key="cmd.command"
           @click="selectCommand(cmd.command)"
           @mouseenter="autocompleteIndex = index"
-          :class="[
-            'autocomplete-item',
-            { 'autocomplete-item-active': index === autocompleteIndex }
-          ]"
+          :class="['autocomplete-item', { 'autocomplete-item-active': index === autocompleteIndex }]"
         >
-          <span class="font-mono text-text-accent">{{ cmd.command }}</span>
-          <span class="text-text-secondary ml-2">— {{ cmd.description }}</span>
+          <span style="font-family: 'JetBrains Mono', monospace; color: var(--accent);">{{ cmd.command }}</span>
+          <span style="color: var(--text-secondary); margin-left: 8px;">— {{ cmd.description }}</span>
         </div>
       </div>
 
-      <!-- Input Field -->
-      <div class="flex gap-2">
+      <div class="chat-input-box">
         <input
+          ref="inputRef"
           v-model="inputText"
           @keydown="handleKeyDown"
           @input="handleInput"
           data-testid="chat-input"
           type="text"
           placeholder="/  Type a message or command..."
-          class="chat-input flex-1"
+          class="chat-input"
         />
         <button
           @click="sendMessage"
-          :disabled="!inputText.trim()"
           data-testid="send-button"
-          class="send-button"
+          class="send-btn"
+          :class="{ 'opacity-50': !canSend }"
+          :aria-disabled="!canSend"
           title="Send message"
         >
           <Send :size="16" />
@@ -135,7 +111,10 @@ const agentsStore = useAgentsStore()
 // State - use store's chat messages
 const messages = computed(() => agentsStore.chatMessages)
 const inputText = ref('')
+const inputRef = ref<HTMLInputElement | null>(null)
 const messagesContainer = ref<HTMLElement | null>(null)
+
+const canSend = computed(() => inputText.value.trim().length > 0)
 const showAutocomplete = ref(false)
 const autocompleteIndex = ref(0)
 
@@ -229,13 +208,15 @@ function selectCommand(command: string) {
   })
 }
 
-// Send message
+// Send message (read from input ref so programmatic fill in e2e works)
 async function sendMessage() {
-  const content = inputText.value.trim()
+  const raw = inputRef.value?.value ?? inputText.value
+  const content = (typeof raw === 'string' ? raw : '').trim()
   if (!content) return
 
   // Clear input immediately
   inputText.value = ''
+  if (inputRef.value) inputRef.value.value = ''
   showAutocomplete.value = false
 
   // Send to backend via agents store
@@ -273,139 +254,46 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.chat-panel {
-  min-width: 0;
-}
-
-.panel-header {
-  flex-shrink: 0;
-}
-
-/* Messages */
-.message {
-  @apply flex gap-2 items-start;
-}
-
-.message-user {
-  @apply flex-row-reverse;
-}
-
-.message-user .message-content {
-  @apply bg-transparent border-transparent;
-  @apply text-right;
-}
-
-.message-icon {
-  @apply flex-shrink-0 w-6 h-6 rounded flex items-center justify-center;
-  @apply bg-background-elevated text-text-secondary;
-}
-
-.message-content {
-  @apply flex-1 min-w-0 p-2 rounded-lg;
-  @apply bg-background-elevated border border-border-primary;
-}
-
-.message-system .message-content {
-  @apply border-l-2 border-l-border-accent;
-}
-
-.message-notification .message-content {
-  @apply border-l-2 border-l-border-accent;
-}
-
-.message-error .message-content {
-  @apply border-l-2 border-l-status-error;
-}
-
-.message-text {
-  @apply text-sm text-text-primary whitespace-pre-wrap break-words;
-}
-
-.message-actions {
-  @apply flex gap-2 mt-2;
-}
-
-.action-btn {
-  @apply px-2 py-1 text-xs rounded transition-colors;
-  @apply border border-border-primary;
-}
-
-.action-primary {
-  @apply bg-border-accent text-white border-border-accent;
-  @apply hover:bg-opacity-80;
-}
-
-.action-secondary {
-  @apply bg-transparent text-text-secondary;
-  @apply hover:bg-background-primary hover:text-text-primary;
-}
-
-.action-danger {
-  @apply bg-status-error text-white border-status-error;
-  @apply hover:bg-opacity-80;
-}
-
-.message-timestamp {
-  @apply block text-xs text-text-secondary mt-1;
-}
-
-/* Input */
-.input-container {
-  position: relative;
-}
-
 .autocomplete-popup {
-  @apply absolute bottom-full left-4 right-4 mb-2;
-  @apply bg-background-elevated border border-border-primary rounded-lg;
-  @apply shadow-lg overflow-hidden;
+  position: absolute;
+  bottom: 100%;
+  left: 16px;
+  right: 16px;
+  margin-bottom: 8px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px var(--shadow-dropdown);
+  overflow: hidden;
   max-height: 200px;
   overflow-y: auto;
+  z-index: 10;
 }
-
 .autocomplete-item {
-  @apply px-3 py-2 text-xs cursor-pointer transition-colors;
-  @apply hover:bg-background-primary;
+  padding: 8px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s;
 }
-
+.autocomplete-item:hover,
 .autocomplete-item-active {
-  @apply bg-background-primary;
+  background: var(--bg-hover);
 }
-
-.chat-input {
-  @apply w-full px-3 py-2 text-sm rounded-lg;
-  @apply bg-background-elevated border border-border-primary;
-  @apply text-text-primary placeholder-text-secondary;
-  @apply focus:outline-none focus:ring-2 focus:ring-border-accent focus:border-transparent;
-  @apply transition-all;
+.chat-input-area {
+  position: relative;
 }
-
-.send-button {
-  @apply flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center;
-  @apply bg-border-accent text-white;
-  @apply hover:bg-opacity-80 transition-colors;
-  @apply disabled:opacity-50 disabled:cursor-not-allowed;
+.action-btn {
+  padding: 4px 10px;
+  font-size: 11px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
 }
-
-/* Scrollbar */
-.overflow-y-auto {
-  scrollbar-width: thin;
-  scrollbar-color: var(--border-primary) transparent;
-}
-
-.overflow-y-auto::-webkit-scrollbar {
-  width: 6px;
-}
-
-.overflow-y-auto::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.overflow-y-auto::-webkit-scrollbar-thumb {
-  background: var(--border-primary);
-  border-radius: 3px;
-}
-
-.overflow-y-auto::-webkit-scrollbar-thumb:hover {
-  background: var(--border-secondary);
+.action-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
 }
 </style>

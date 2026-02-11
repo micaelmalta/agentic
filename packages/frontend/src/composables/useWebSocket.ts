@@ -82,8 +82,16 @@ export function useWebSocket() {
         break
 
       case 'agent:stopped':
-        if (message.payload.agentId) {
-          agentsStore.removeAgent(message.payload.agentId)
+        if (message.payload.agent) {
+          agentsStore.updateAgent(message.payload.agent.id, message.payload.agent)
+        } else if (message.payload.agentId) {
+          agentsStore.updateAgent(message.payload.agentId, { status: 'idle' })
+        }
+        break
+
+      case 'agent:log':
+        if (message.payload.agentId && typeof message.payload.line === 'string') {
+          agentsStore.addLogLine(message.payload.agentId, message.payload.line)
         }
         break
 
@@ -91,6 +99,12 @@ export function useWebSocket() {
         if (message.payload.issues) {
           // Refresh issues from backend
           issuesStore.fetchBoardIssues()
+        }
+        break
+
+      case 'issue:update':
+        if (message.payload.issueKey && message.payload.updates) {
+          issuesStore.updateIssue(message.payload.issueKey, message.payload.updates)
         }
         break
 

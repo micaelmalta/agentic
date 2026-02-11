@@ -1,146 +1,92 @@
 <template>
   <div
     data-testid="issue-card"
+    :data-issue-key="issue.key"
+    :class="['issue-card', priorityClass, { 'active-issue': active }]"
     draggable="true"
-    class="kanban-issue-card bg-background-surface border border-border-primary rounded-lg p-3 mb-3 cursor-pointer hover:border-accent transition-colors min-h-[80px]"
-    :class="priorityBorderClass"
     @click="handleClick"
+    @contextmenu.prevent="handleContextMenu"
     @dragstart="handleDragStart"
     @dragend="handleDragEnd"
   >
-    <!-- Header: Priority + Key + Manual Lock -->
-    <div class="flex items-start justify-between mb-2">
-      <div class="flex items-center gap-2">
-        <div
-          data-testid="priority-icon"
-          class="flex-shrink-0"
-          :class="priorityIconClass"
-          :title="issue.priority"
-        >
-          <component :is="priorityIcon" :size="16" />
-        </div>
-        <span class="text-xs font-medium text-text-secondary">
-          {{ issue.key }}
-        </span>
-      </div>
-      <div v-if="issue.manualMode" data-testid="manual-lock" class="flex-shrink-0">
-        <Lock :size="14" class="text-text-muted" />
-      </div>
+    <div class="issue-top-row">
+      <span :class="['issue-type-dot', issueTypeClass]" />
+      <span class="issue-key">{{ issue.key }}</span>
     </div>
 
-    <!-- Summary -->
-    <p class="text-sm text-text-primary mb-3 line-clamp-2">
-      {{ issue.summary }}
-    </p>
+    <div class="issue-title">{{ issue.summary }}</div>
 
-    <!-- Labels -->
-    <div v-if="issue.labels.length > 0" class="flex flex-wrap gap-1 mb-3">
-      <span
-        v-for="label in issue.labels"
-        :key="label"
-        class="inline-block px-2 py-0.5 text-xs rounded-full bg-background-elevated text-text-secondary"
-      >
-        {{ label }}
-      </span>
-    </div>
-
-    <!-- Footer: Assignee + Agent Badge -->
-    <div class="flex items-center justify-between">
-      <div v-if="issue.assignee" data-testid="assignee-avatar" class="flex items-center gap-1.5">
-        <div class="w-5 h-5 rounded-full bg-background-elevated flex items-center justify-center overflow-hidden">
+    <div class="issue-bottom">
+      <template v-if="issue.assignee">
+        <div :class="['avatar-sm', avatarVariant]">
           <img
             v-if="issue.assignee.avatarUrl"
             :src="issue.assignee.avatarUrl"
             :alt="issue.assignee.displayName"
-            class="w-full h-full object-cover"
+            class="w-full h-full object-cover rounded-full"
           />
-          <span v-else class="text-xs text-text-secondary">
-            {{ issue.assignee.displayName.charAt(0) }}
-          </span>
+          <span v-else>{{ (issue.assignee.displayName || '?').slice(0, 2).toUpperCase() }}</span>
         </div>
-        <span class="text-xs text-text-secondary truncate max-w-[80px]">
-          {{ issue.assignee.displayName }}
-        </span>
-      </div>
-      <div v-else class="flex-1"></div>
+      </template>
+      <span v-else class="issue-extra">Unassigned</span>
 
-      <div
-        v-if="issue.agentId"
-        data-testid="agent-badge"
-        class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/10 text-accent text-xs"
-      >
+      <span v-if="issue.agentId" :class="['agent-chip', agentChipStatus]">
         <Bot :size="12" />
-        <span>{{ issue.agentId }}</span>
-      </div>
+        {{ issue.agentId }}
+      </span>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { ChevronsUp, ChevronUp, Minus, ChevronDown, Lock, Bot } from 'lucide-vue-next'
+import { Bot } from 'lucide-vue-next'
 import type { Issue } from '../../types/issue'
 
 const props = defineProps<{
   issue: Issue
+  active?: boolean
 }>()
 
 const emit = defineEmits<{
   click: [issue: Issue]
+  contextmenu: [issue: Issue, event: MouseEvent]
   dragstart: [event: DragEvent, issue: Issue]
   dragend: [event: DragEvent]
 }>()
 
-// Priority icon mapping
-const priorityIcon = computed(() => {
+const priorityClass = computed(() => {
   switch (props.issue.priority) {
-    case 'Critical':
-      return ChevronsUp
-    case 'High':
-      return ChevronUp
-    case 'Medium':
-      return Minus
-    case 'Low':
-      return ChevronDown
-    default:
-      return Minus
+    case 'Critical': return 'p-critical'
+    case 'High': return 'p-high'
+    case 'Medium': return 'p-medium'
+    case 'Low': return 'p-low'
+    default: return 'p-low'
   }
 })
 
-// Priority icon color
-const priorityIconClass = computed(() => {
-  switch (props.issue.priority) {
-    case 'Critical':
-      return 'text-danger'
-    case 'High':
-      return 'text-warning'
-    case 'Medium':
-      return 'text-accent'
-    case 'Low':
-      return 'text-text-muted'
-    default:
-      return 'text-text-muted'
-  }
+const issueTypeClass = computed(() => {
+  const t = (props.issue.issueType || '').toLowerCase()
+  if (t.includes('bug')) return 'bug'
+  if (t.includes('story')) return 'story'
+  return 'task'
 })
 
-// Priority left border color
-const priorityBorderClass = computed(() => {
-  switch (props.issue.priority) {
-    case 'Critical':
-      return 'border-l-4 border-l-danger'
-    case 'High':
-      return 'border-l-4 border-l-warning'
-    case 'Medium':
-      return 'border-l-4 border-l-accent'
-    case 'Low':
-      return 'border-l-4 border-l-text-muted'
-    default:
-      return 'border-l-4 border-l-text-muted'
-  }
+const avatarVariant = computed(() => {
+  const n = (props.issue.assignee?.displayName || '').length % 5
+  return `v${(n % 5) + 1}` as 'v1' | 'v2' | 'v3' | 'v4' | 'v5'
+})
+
+const agentChipStatus = computed(() => {
+  return 'running' // could come from store later
 })
 
 function handleClick() {
   emit('click', props.issue)
+}
+
+function handleContextMenu(event: MouseEvent) {
+  emit('contextmenu', props.issue, event)
 }
 
 function handleDragStart(event: DragEvent) {
@@ -151,27 +97,21 @@ function handleDragStart(event: DragEvent) {
       sourceStatus: props.issue.status
     }))
   }
+  ;(event.target as HTMLElement).classList.add('dragging')
   emit('dragstart', event, props.issue)
 }
 
 function handleDragEnd(event: DragEvent) {
+  ;(event.target as HTMLElement).classList.remove('dragging')
   emit('dragend', event)
 }
 </script>
 
 <style scoped>
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.kanban-issue-card:active {
-  cursor: grabbing;
-}
-
-.kanban-issue-card.dragging {
+.issue-card.dragging {
   opacity: 0.5;
+}
+.avatar-sm span {
+  line-height: 1;
 }
 </style>

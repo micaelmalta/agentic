@@ -13,9 +13,17 @@ dotenv.config();
 
 const PORT = process.env.PORT || 3001;
 
+// Parse CLAUDE_ADD_DIR: comma- or space-separated list of directories for --add-dir
+const addDirRaw = process.env.CLAUDE_ADD_DIR || '';
+const addDir = addDirRaw
+  ? addDirRaw.split(/[,\s]+/).map((d) => d.trim()).filter(Boolean)
+  : undefined;
+
 // Initialize services
 const agentManager = new AgentManager({
-  maxConcurrent: parseInt(process.env.MAX_CONCURRENT_AGENTS || '4')
+  maxConcurrent: parseInt(process.env.MAX_CONCURRENT_AGENTS || '4'),
+  cliPath: process.env.CLAUDE_CLI_PATH || 'claude',
+  addDir: addDir?.length ? addDir : undefined
 });
 
 const jiraService = new JiraService({
@@ -31,6 +39,7 @@ const server = createServer(app);
 
 // Initialize WebSocket server
 const wsServer = new WSServer(server);
+agentManager.setLogListener((agentId, line) => wsServer.broadcastAgentLog(agentId, line));
 
 // Middleware
 app.use(cors());
@@ -46,7 +55,7 @@ app.get('/health', (req, res) => {
 });
 
 // API routes
-app.use('/api/agents', createAgentRoutes(agentManager, wsServer));
+app.use('/api/agents', createAgentRoutes(agentManager, wsServer, jiraService));
 app.use('/api/jira', createJiraRoutes(jiraService, wsServer));
 app.use('/api/chat', chatRoutes);
 

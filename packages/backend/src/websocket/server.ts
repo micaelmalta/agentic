@@ -72,10 +72,21 @@ export class WSServer {
     });
   }
 
-  broadcastAgentStopped(agentId: string): void {
+  broadcastAgentStopped(agent: Agent): void {
     this.broadcast({
       type: 'agent:stopped',
-      payload: { agentId }
+      payload: { agent: this.serializeAgent(agent), agentId: agent.id }
+    });
+  }
+
+  broadcastAgentLog(agentId: string, line: string): void {
+    this.broadcast({
+      type: 'agent:log',
+      payload: {
+        agentId,
+        line,
+        timestamp: new Date().toISOString()
+      }
     });
   }
 
@@ -83,6 +94,13 @@ export class WSServer {
     this.broadcast({
       type: 'issues:updated',
       payload: { issues }
+    });
+  }
+
+  broadcastIssueUpdate(issueKey: string, updates: Partial<Issue>): void {
+    this.broadcast({
+      type: 'issue:update',
+      payload: { issueKey, updates }
     });
   }
 
@@ -118,9 +136,13 @@ export class WSServer {
   }
 
   private serializeAgent(agent: Agent): any {
-    // Remove process reference for serialization
-    const { process, ...serializable } = agent;
-    return serializable;
+    // Remove process reference for serialization; add processAlive/pid for verification
+    const { process: proc, ...rest } = agent;
+    return {
+      ...rest,
+      processAlive: !!(proc && (proc as any).exitCode == null && !(proc as any).killed),
+      pid: proc?.pid ?? null
+    };
   }
 
   getClientCount(): number {

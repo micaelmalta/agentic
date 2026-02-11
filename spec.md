@@ -753,7 +753,7 @@ These actions are **not** reversible and require confirmation dialogs instead:
   - Manages plan review queue (pending approvals, feedback routing)
   - Implements autonomous mode logic (work queue, agent assignment, auto-approval)
 - Agent process model: each agent is a Claude Code CLI process managed by the backend
-  - On assignment, backend runs: `claude --skill /workflow --issue <JIRA_KEY>`
+  - On assignment, backend runs: `claude -p "/workflow work on Jira issue <JIRA_KEY>"` (Claude Code CLI uses prompt, not --skill/--issue)
   - Agent pool respects max concurrent limit; queues assignments when at capacity
   - Auto-scale spawns/terminates agents based on To Do queue depth and pool settings
   - Each agent's stdout/stderr is captured and streamed to the frontend via WebSocket

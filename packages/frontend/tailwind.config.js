@@ -15,11 +15,13 @@ export default {
         },
         border: {
           primary: '#30363d',
+          secondary: '#21262d',
           accent: '#58a6ff',
         },
         text: {
           primary: '#c9d1d9',
           secondary: '#8b949e',
+          muted: '#6e7681',
           accent: '#58a6ff',
         },
         status: {
@@ -28,6 +30,9 @@ export default {
           waiting: '#d29922',
           error: '#f85149',
         },
+        danger: '#f85149',
+        warning: '#d29922',
+        accent: '#58a6ff',
         priority: {
           critical: '#f85149',
           high: '#d29922',

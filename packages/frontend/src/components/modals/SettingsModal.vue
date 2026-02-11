@@ -60,8 +60,8 @@
                 <label for="jira-project">Project</label>
                 <select id="jira-project" v-model="jiraConfig.project">
                   <option value="">Select project...</option>
-                  <option v-for="project in availableProjects" :key="project" :value="project">
-                    {{ project }}
+                  <option v-for="p in jiraMetaStore.sortedProjects" :key="p.key" :value="p.key">
+                    {{ p.name || p.key }}
                   </option>
                 </select>
               </div>
@@ -196,8 +196,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { X, CheckCircle, XCircle, Loader } from 'lucide-vue-next'
+import { useJiraMetaStore } from '../../stores/jiraMeta'
 
 const props = defineProps<{
   isOpen: boolean
@@ -208,6 +209,7 @@ const emit = defineEmits<{
   save: [config: any]
 }>()
 
+const jiraMetaStore = useJiraMetaStore()
 const tabs = [
   { id: 'connections', label: 'Connections' },
   { id: 'agents', label: 'Agents' }
@@ -224,8 +226,7 @@ const jiraConfig = ref({
   board: ''
 })
 
-const availableProjects = ref(['PROJ', 'DEV', 'SUPPORT'])
-const availableBoards = ref(['Main Board', 'Sprint Board'])
+const availableBoards = computed(() => jiraMetaStore.boardOptions)
 const jiraConnectionStatus = ref<'idle' | 'connected' | 'failed'>('idle')
 const testingJira = ref(false)
 
@@ -290,6 +291,20 @@ function saveSettings() {
 // Reset connection status when config changes
 watch(jiraConfig, () => { jiraConnectionStatus.value = 'idle' }, { deep: true })
 watch(datadogConfig, () => { datadogConnectionStatus.value = 'idle' }, { deep: true })
+
+// Load projects when opening settings; load boards when project is selected
+watch(() => props.isOpen, (open) => {
+  if (open) {
+    jiraMetaStore.ensureLoaded()
+    if (jiraConfig.value.project) {
+      jiraMetaStore.fetchBoards(jiraConfig.value.project)
+    }
+  }
+})
+watch(() => jiraConfig.value.project, (projectKey) => {
+  if (projectKey) jiraMetaStore.fetchBoards(projectKey)
+  else jiraMetaStore.fetchBoards(undefined)
+})
 </script>
 
 <style scoped>

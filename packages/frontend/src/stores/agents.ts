@@ -7,7 +7,13 @@ export const useAgentsStore = defineStore('agents', () => {
   const agents = ref<Agent[]>([])
   const selectedAgentId = ref<string | null>(null)
   const maxAgents = ref(4)
-  const autonomousMode = ref(false)
+  const autonomousMode = ref((() => {
+    try {
+      return localStorage.getItem('toolbar-autonomous') === 'true'
+    } catch {
+      return false
+    }
+  })())
   const chatMessages = ref<ChatMessage[]>([])
   const chatMessagesByAgent = ref<Map<string, ChatMessage[]>>(new Map())
 
@@ -45,12 +51,13 @@ export const useAgentsStore = defineStore('agents', () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       })
-      const newAgent = await response.json()
-      agents.value.push({
-        ...newAgent,
-        createdAt: new Date(newAgent.createdAt),
-        updatedAt: new Date(newAgent.updatedAt)
-      })
+
+      if (!response.ok) {
+        throw new Error('Failed to spawn agent')
+      }
+
+      // Agent will be added via WebSocket event (agent:created)
+      // No need to manually add it here to avoid duplication
     } catch (error) {
       console.error('Failed to spawn agent:', error)
     }
@@ -58,15 +65,38 @@ export const useAgentsStore = defineStore('agents', () => {
 
   async function stopAgent(agentId: string) {
     try {
-      await fetch(`/api/agents/${agentId}/stop`, {
+      const response = await fetch(`/api/agents/${agentId}/stop`, {
         method: 'POST'
       })
-      const agent = agents.value.find(a => a.id === agentId)
-      if (agent) {
-        agent.status = 'idle'
+
+      if (!response.ok) {
+        const errText = await response.text()
+        throw new Error(errText || 'Failed to stop agent')
       }
+
+      // Optimistic update so UI shows idle immediately; WebSocket may also send agent:stopped
+      updateAgent(agentId, { status: 'idle' })
     } catch (error) {
       console.error('Failed to stop agent:', error)
+      throw error
+    }
+  }
+
+  async function approveAgent(agentId: string, message?: string) {
+    try {
+      const response = await fetch(`/api/agents/${agentId}/approve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(message ? { message } : {})
+      })
+      if (!response.ok) {
+        const errText = await response.text()
+        throw new Error(errText || 'Failed to approve agent')
+      }
+      updateAgent(agentId, { status: 'running', awaitingApproval: false, phaseDescription: null })
+    } catch (error) {
+      console.error('Failed to approve agent:', error)
+      throw error
     }
   }
 
@@ -80,18 +110,21 @@ export const useAgentsStore = defineStore('agents', () => {
 
   async function assignIssue(agentId: string, issueKey: string) {
     try {
-      await fetch(`/api/agents/${agentId}/assign`, {
+      const response = await fetch(`/api/agents/${agentId}/assign`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ issueKey })
       })
-      const agent = agents.value.find(a => a.id === agentId)
-      if (agent) {
-        agent.issueKey = issueKey
-        agent.status = 'running'
+
+      if (!response.ok) {
+        throw new Error('Failed to assign issue')
       }
+
+      // Agent update will be broadcast via WebSocket (agent:update)
+      // No need to manually update here to avoid race conditions
     } catch (error) {
       console.error('Failed to assign issue:', error)
+      throw error
     }
   }
 
@@ -131,6 +164,14 @@ export const useAgentsStore = defineStore('agents', () => {
       if (agent.logs.length > 1000) {
         agent.logs = agent.logs.slice(-1000)
       }
+    }
+  }
+
+  /** Replace agent logs (e.g. after fetching from API). Use when polling logs. */
+  function setAgentLogs(agentId: string, logs: string[]) {
+    const agent = agents.value.find(a => a.id === agentId)
+    if (agent) {
+      agent.logs = Array.isArray(logs) ? [...logs] : []
     }
   }
 
@@ -224,6 +265,7 @@ export const useAgentsStore = defineStore('agents', () => {
     fetchAgents,
     spawnAgent,
     stopAgent,
+    approveAgent,
     stopAllAgents,
     assignIssue,
     selectAgent,
@@ -231,6 +273,7 @@ export const useAgentsStore = defineStore('agents', () => {
     removeAgent,
     updateAgent,
     addLogLine,
+    setAgentLogs,
     sendChatMessage,
     addChatMessage,
     clearChatMessages
