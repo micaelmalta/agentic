@@ -217,7 +217,7 @@ Skills that should use these MCPs when the task involves tickets or observabilit
 
 **PHASE SEQUENCING REQUIREMENT:** Phases must execute in order (1→2→3→4→5→6→7→8). Do NOT skip phases. After Phase 1 approval, execute phases 2-8 autonomously without stopping between phases.
 
-**⛔ MANDATORY GATES:** Testing (Phase 4) and validation (Phase 6) are NOT optional. All tests must pass and all 6 validation checks (formatter, linter, build, tests, code-reviewer, security-reviewer) must pass before commit. Use `python3 skills/workflow/scripts/validate_phase.py --phase 5` to verify.
+**⛔ MANDATORY GATES:** Testing (Phase 4) and validation (Phase 5) are NOT optional. All tests must pass and all 6 validation checks (formatter, linter, build, tests, code-reviewer, security-reviewer) must pass before commit. Use `python3 skills/workflow/scripts/validate_phase.py --phase 5` to verify.
 
 **OUTCOME FOCUS:** Work continues autonomously until PR is merged or explicitly stopped by user. Track progress visibly with "Phase X/8" headers and TodoWrite tool. Only escalate on gate failures after retries.
 
@@ -345,23 +345,52 @@ Once the plan is approved, phases 2-8 execute **fully autonomously** without sto
 
 **Skill:** Use the **developer** skill (`skills/developer/SKILL.md`) for all implementation. The developer skill enforces TDD (Test-Driven Development).
 
+**⛔ PHASE 3 TDD GATE ENFORCEMENT:**
+
+Each behavior/requirement MUST complete the full TDD cycle before proceeding:
+
+```
+TDD CYCLE GATE (per behavior):
+✓ [ ] RED: Test written and FAILS (proves requirement not yet met)
+✓ [ ] GREEN: Minimum code written and test now PASSES
+✓ [ ] REFACTOR: Code cleaned up, tests still PASS
+✓ [ ] All tests PASS (not just the new one)
+✓ [ ] Code follows project conventions
+✓ [ ] No security vulnerabilities introduced
+
+IF any gate fails:
+  → Do NOT move to next behavior
+  → Complete current TDD cycle first
+  → Verify all tests pass
+  → Then proceed to next behavior
+
+⛔ CRITICAL: TDD is NON-NEGOTIABLE - tests MUST come before implementation
+⛔ CRITICAL: Each behavior gets its own TDD cycle (don't batch)
+```
+
 **Actions:**
 
 1. Start execution with `/execute`; track progress with TodoWrite tool
 2. **Read and follow the developer skill** for implementation using TDD (Red-Green-Refactor):
    - **RED:** Write a failing test that defines the expected behavior
+     - Test MUST fail initially (proves requirement not yet implemented)
+     - If test passes immediately, test is wrong or feature already exists
    - **GREEN:** Write the minimum code to make the test pass
+     - Write ONLY enough code to pass the test
+     - Don't add extra features or functionality
    - **REFACTOR:** Clean up code while keeping tests green
-   - Repeat for each behavior/requirement
+     - Improve structure, naming, readability
+     - Tests MUST remain green throughout refactoring
+   - **Repeat for each behavior/requirement**
    - **Bug fixes:** Write reproduction test first (RED), then fix (GREEN), then refactor
-   - **Refactoring:** Ensure existing tests pass as safety net before and after changes
+   - **Refactoring existing code:** Ensure existing tests pass as safety net before and after changes
 3. Use parallel subagents for efficient execution:
    - **Bash agent:** Git operations, command execution, builds
    - **Explore agent:** Code navigation, pattern discovery
    - **General-purpose agent:** Research, complex analysis, test writing
    - **RLM skill:** Parallel implementation on multiple independent files/components
 4. Reference plan document during execution
-5. Commit changes atomically with clear messages
+5. Commit changes atomically with clear messages (one commit per behavior or logical unit)
 6. Document deviations from plan in commit messages
 
 **Parallel Execution Strategy:**
@@ -370,14 +399,54 @@ Once the plan is approved, phases 2-8 execute **fully autonomously** without sto
 - Use RLM for map-reduce style implementation across many files
 - Different agents can work on different components simultaneously
 - Merge results after all subtasks complete
+- **IMPORTANT:** Each parallel track MUST follow TDD independently
+
+**TDD Cycle Enforcement (per behavior):**
+
+```
+FOR each behavior in plan:
+  1. RED phase:
+     → Write failing test
+     → Run test (MUST fail)
+     → IF test passes: Test is wrong or feature exists
+
+  2. GREEN phase:
+     → Write minimum code to pass test
+     → Run test (MUST pass)
+     → Run ALL tests (MUST all pass)
+     → IF any test fails: Fix code, retry
+
+  3. REFACTOR phase:
+     → Clean up code structure
+     → Run ALL tests (MUST all pass)
+     → IF tests fail: Undo refactor or fix issue
+
+  4. Verify quality gates:
+     → All tests pass
+     → Code follows conventions
+     → No security issues
+
+  5. ONLY THEN proceed to next behavior
+END FOR
+```
 
 **Quality Gates (from developer skill):**
 
-- [ ] TDD followed (tests before code)
-- [ ] All tests pass
-- [ ] Code follows project conventions
-- [ ] No security vulnerabilities
-- [ ] Changes are minimal and focused
+These gates MUST be met before proceeding to Phase 4:
+
+- [ ] **TDD followed (tests before code)** - MANDATORY for all features
+- [ ] **All tests pass** - No failing tests allowed
+- [ ] **Code follows project conventions** - Linting, formatting, naming
+- [ ] **No security vulnerabilities** - No SQL injection, XSS, auth issues, etc.
+- [ ] **Changes are minimal and focused** - Only what's needed for the requirement
+- [ ] **Each behavior has test coverage** - No untested code paths
+- [ ] **Commits are atomic** - One commit per behavior or logical unit
+
+**⛔ CRITICAL ENFORCEMENT:** DO NOT proceed to Phase 4 until:
+1. All behaviors completed with full TDD cycle (RED → GREEN → REFACTOR)
+2. All tests pass (verify manually if needed)
+3. All quality gates above are verified
+4. All code is committed with clear messages
 
 ---
 
@@ -386,6 +455,31 @@ Once the plan is approved, phases 2-8 execute **fully autonomously** without sto
 **Goal:** Verify all tests pass and coverage is adequate.
 
 **⚠️ BLOCKING REQUIREMENT:** Testing is MANDATORY. Do NOT proceed to Phase 5 until all tests pass.
+
+**⛔ PHASE 4 GATE ENFORCEMENT:**
+
+Before proceeding to Phase 5, you MUST verify ALL testing gates pass:
+
+```
+PHASE 4 TESTING GATE CHECKLIST:
+✓ [ ] Unit tests executed and ALL pass (no failures)
+✓ [ ] Integration tests executed and ALL pass (if applicable)
+✓ [ ] E2E tests executed via Playwright MCP and ALL pass (if UI exists)
+✓ [ ] Build executed and succeeds (MANDATORY for frontend/compiled languages)
+✓ [ ] Agent returned status "pass"
+✓ [ ] No failing tests in agent output (failing_count = 0)
+✓ [ ] Build status = "pass" (if build was required)
+
+IF ANY check above fails:
+  → STOP immediately
+  → DO NOT proceed to Phase 5
+  → Fix the failing tests or build errors
+  → Re-run phase-testing-agent
+  → Verify ALL tests pass before continuing
+
+⛔ CRITICAL: All tests MUST pass - no exceptions
+⛔ CRITICAL: Build MUST succeed for frontend/compiled languages
+```
 
 **Agent:** Use the **phase-testing-agent** to auto-detect language, run tests, and retry on failures.
 
@@ -411,13 +505,67 @@ The agent will:
 6. **Escalate to user** via AskUserQuestion after max retries if stuck
 7. Return structured JSON output with results
 
+**Individual Test Gates:**
+
+Each test type is a blocking gate that must pass:
+
+1. **Unit Tests Gate:** All unit tests must pass with no failures
+   - Retry attempts: Up to 3 (with backoff: 5s, 10s, 15s)
+   - If fails after retries: Fix tests or code, re-run agent
+
+2. **Integration Tests Gate:** All integration tests must pass (if applicable)
+   - Retry attempts: Up to 3 (with backoff: 5s, 10s, 15s)
+   - If fails after retries: Fix integration issues, re-run agent
+
+3. **Build Gate:** Build must succeed with no compilation/bundling errors
+   - Retry attempts: Up to 1 (for transient failures)
+   - If fails: Fix build errors, re-run agent
+   - **MANDATORY for:** JavaScript/TypeScript (with build step), Go, Rust, Java, C#
+
+4. **E2E Tests Gate (UI projects):** All E2E tests must pass via Playwright MCP
+   - Required if: Project has UI/frontend
+   - Tools: browser_navigate, browser_click, browser_snapshot, etc.
+   - If fails: Fix E2E issues, re-run agent
+
 **Handling Agent Results:** Agent returns JSON with `status`, `failing_tests[]`, `build_status`, `retry_count`. See `skills/agents/phase-testing-agent/AGENT.md` for full output schema.
 
-- **If status = "pass":** Proceed to Phase 5
-- **If status = "fail":** Review `failing_tests`, fix issues, re-run agent
-- **If UI exists:** Also run E2E tests via Playwright MCP (browser_navigate, browser_click, browser_snapshot, etc.)
+- **If status = "pass":** Verify checklist above, then proceed to Phase 5
+- **If status = "fail":** Review `failing_tests` array, identify root cause, fix issues, re-run agent. Do NOT proceed until status = "pass".
+- **If build fails:** Review `build_status` and error messages, fix compilation/bundling errors, re-run agent.
+- **If UI exists:** Also run E2E tests via Playwright MCP. If E2E fails, fix UI issues and re-run.
 
-**DO NOT proceed to Phase 5 until phase-testing-agent returns status "pass".**
+**Retry Loop (MANDATORY):**
+
+```
+WHILE testing not complete:
+  1. Run phase-testing-agent
+  2. Check agent output status
+  3. IF status = "pass" AND no failing tests:
+       → Verify checklist above
+       → Proceed to Phase 5
+  4. IF status = "fail":
+       → Review failing_tests array
+       → Identify root cause (test bug vs code bug)
+       → Fix the issue (usually code, rarely test)
+       → GOTO step 1
+  5. IF build fails:
+       → Review build errors
+       → Fix compilation/bundling issues
+       → GOTO step 1
+  6. IF same failures 3+ times:
+       → Escalate to user via AskUserQuestion
+       → Present failing tests and error messages
+       → Get user guidance
+       → Apply fixes based on user input
+       → GOTO step 1
+END WHILE
+```
+
+**⛔ CRITICAL ENFORCEMENT:** DO NOT proceed to Phase 5 until:
+1. phase-testing-agent returns status "pass"
+2. No failing tests (failing_count = 0 or empty failing_tests array)
+3. Build succeeds (if build was required)
+4. All items in the checklist above are verified
 
 ---
 
@@ -426,6 +574,32 @@ The agent will:
 **Goal:** Ensure quality and security.
 
 **⚠️ BLOCKING REQUIREMENT:** All validation checks are MANDATORY. Do NOT proceed to Phase 6 until all checks pass.
+
+**⛔ PHASE 5 GATE ENFORCEMENT:**
+
+Before proceeding to Phase 6, you MUST verify ALL validation checks pass:
+
+```
+PHASE 5 VALIDATION GATE CHECKLIST:
+✓ [ ] Formatter executed and code properly formatted
+✓ [ ] Linter executed and ALL linting issues resolved
+✓ [ ] Build executed and build succeeds (no compilation errors)
+✓ [ ] Tests executed and ALL tests pass (no test failures)
+✓ [ ] Code review completed and findings addressed
+✓ [ ] Security review completed and NO vulnerabilities found
+✓ [ ] Agent returned status "pass"
+✓ [ ] Agent returned critical_security_issue = false
+
+IF ANY check above fails:
+  → STOP immediately
+  → DO NOT proceed to Phase 6
+  → Fix the failing check
+  → Re-run phase-validation-agent
+  → Verify ALL checks pass before continuing
+
+⛔ CRITICAL: Code review and security review are NON-OPTIONAL GATES
+⛔ CRITICAL: Security vulnerabilities BLOCK all progress until fixed
+```
 
 **Agent:** Use the **phase-validation-agent** to run 6 validation checks with auto-fix and retry.
 
@@ -443,17 +617,78 @@ Task(
 
 The agent runs **6 checks**: formatter, linter, build, tests (sequential); code-reviewer and security-reviewer (parallel). It auto-fixes format/lint issues with retry. See `skills/agents/phase-validation-agent/AGENT.md` for full output schema.
 
+**Individual Check Gates:**
+
+Each check is a blocking gate that must pass:
+
+1. **Formatter Gate:** Code must be properly formatted according to project standards
+   - Auto-fix attempts: Up to 3 retries
+   - If fails after retries: Manual fix required, re-run agent
+
+2. **Linter Gate:** Code must pass all linting rules with no errors
+   - Auto-fix attempts: Up to 3 retries
+   - If fails after retries: Manual fix required, re-run agent
+
+3. **Build Gate:** Project must compile/build successfully with no errors
+   - Retry attempts: Up to 1 (for transient failures)
+   - If fails: Fix compilation errors, re-run agent
+
+4. **Tests Gate:** All tests must pass (redundant check from Phase 4)
+   - Retry attempts: Up to 1 (for flaky tests)
+   - If fails: Fix test failures, re-run agent
+
+5. **Code Review Gate:** Code must meet quality standards (correctness, readability, maintainability)
+   - Severity levels: Critical (blocks), Suggestion (informational), Nit (informational)
+   - Critical findings: MUST be addressed before proceeding
+   - Suggestions/Nits: Should be addressed, but don't block
+
+6. **Security Review Gate:** Code must have NO security vulnerabilities
+   - Severity levels: Critical/High/Medium/Low
+   - Critical vulnerabilities: Workflow STOPS immediately, escalate to user
+   - High/Medium/Low: Must be reviewed and addressed before proceeding
+
 **Critical Security Handling:** If a critical vulnerability is found, the agent STOPS immediately and sets `critical_security_issue: true`. The workflow MUST escalate to the user -- do NOT proceed until the vulnerability is fixed.
 
 **Handling Agent Results:**
 
-- **If status = "pass" AND critical_security_issue = false:** Proceed to Phase 6
-- **If critical_security_issue = true:** STOP. Fix vulnerabilities. Re-run agent.
-- **If any check fails:** Fix issues by check type (format, lint, build, tests, code review, security), then re-run agent.
+- **If status = "pass" AND critical_security_issue = false:** Verify all checks in checklist above, then proceed to Phase 6
+- **If critical_security_issue = true:** STOP IMMEDIATELY. Present vulnerabilities to user. Fix vulnerabilities. Re-run agent. Do NOT proceed until security review passes.
+- **If any check fails:** Identify which check failed. Fix issues by check type (format, lint, build, tests, code review, security). Re-run agent. Verify ALL checks pass before proceeding.
 
-**Optional skip parameters:** `skip_build: true`, `skip_tests: true`. **DO NOT skip security review or code review.**
+**Retry Loop (MANDATORY):**
 
-**DO NOT proceed to Phase 6 until phase-validation-agent returns status "pass" and no critical security issues.**
+```
+WHILE validation not complete:
+  1. Run phase-validation-agent
+  2. Check agent output status
+  3. IF status = "pass" AND critical_security_issue = false:
+       → Verify checklist above
+       → Proceed to Phase 6
+  4. IF critical_security_issue = true:
+       → STOP workflow
+       → Present vulnerabilities to user
+       → Get user decision (fix now, abort)
+       → If fix now: Make fixes, GOTO step 1
+       → If abort: End workflow
+  5. IF any check fails:
+       → Identify failing checks
+       → Fix issues (format/lint auto-fixed, others manual)
+       → GOTO step 1
+  6. IF same failures 3+ times:
+       → Escalate to user via AskUserQuestion
+       → Get guidance
+       → Apply fixes based on user input
+       → GOTO step 1
+END WHILE
+```
+
+**Optional skip parameters:** `skip_build: true`, `skip_tests: true`. **⛔ NEVER skip security review or code review.**
+
+**⛔ CRITICAL ENFORCEMENT:** DO NOT proceed to Phase 6 until:
+1. phase-validation-agent returns status "pass"
+2. critical_security_issue = false (or not present)
+3. All 6 checks show status "pass" in agent output
+4. All items in the checklist above are verified
 
 ---
 
@@ -507,6 +742,33 @@ IF ANY item above is unchecked:
 
 **Goal:** Submit work for team review.
 
+**⛔ PHASE 7 GATE ENFORCEMENT:**
+
+Before proceeding to Phase 8, you MUST verify PR creation succeeded:
+
+```
+PHASE 7 PR CREATION GATE CHECKLIST:
+✓ [ ] PR created successfully on GitHub
+✓ [ ] Agent returned status "success"
+✓ [ ] PR URL is present and valid in agent output
+✓ [ ] PR number is present in agent output
+✓ [ ] Jira ticket linked to PR (if Jira integration configured)
+✓ [ ] Jira ticket transitioned to "In Code Review" (if Jira integration configured)
+
+IF PR creation fails:
+  → STOP immediately
+  → Review agent error output
+  → Check prerequisites (gh CLI installed, authenticated, remote exists)
+  → Fix the issue (auth, permissions, branch not pushed)
+  → Re-run phase-pr-agent
+  → Verify PR created before continuing
+
+IF Jira integration fails but PR succeeds:
+  → PR creation succeeded (proceed)
+  → Log Jira integration failure for manual follow-up
+  → Document in Phase 8 summary
+```
+
 **Agent:** Use the **phase-pr-agent** to create PR and integrate with Jira (if configured).
 
 **Execution:**
@@ -524,9 +786,25 @@ Task(
 
 **Agent actions:** Creates draft PR via `gh pr create --draft`, links to Jira and transitions to "In Code Review" (if configured), marks ready if requested. Returns JSON with `pr_url`, `pr_number`, `jira_status`. See `skills/agents/phase-pr-agent/AGENT.md` for full output schema.
 
+**Handling Agent Results:**
+
+- **If status = "success" AND pr_url is present:** PR created successfully, verify checklist above, proceed to Phase 8
+- **If status = "fail":** PR creation failed. Review error message. Check prerequisites:
+  - `gh` CLI installed and authenticated (`gh auth status`)
+  - Remote repository configured (`git remote -v`)
+  - Branch pushed to remote (`git push`)
+  - Fix issue and re-run agent
+- **If Jira integration fails but PR succeeds:** Acceptable (graceful degradation). Log for manual follow-up.
+
 **Graceful degradation:** If Atlassian MCP is not configured, the PR is still created and Jira steps are skipped.
 
 **After PR creation:** Mark ready when all commits are pushed: `gh pr ready <pr-number>`
+
+**⛔ CRITICAL ENFORCEMENT:** DO NOT proceed to Phase 8 until:
+1. phase-pr-agent returns status "success"
+2. pr_url is present and valid
+3. PR is confirmed created on GitHub
+4. All items in the checklist above are verified (or gracefully degraded for Jira)
 
 ---
 
