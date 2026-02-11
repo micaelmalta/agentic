@@ -1,7 +1,7 @@
 <template>
-  <div class="kanban-panel flex flex-col h-full bg-background-primary">
+  <div class="kanban-panel flex flex-col h-full bg-background-primary overflow-hidden">
     <!-- Panel Header -->
-    <div data-testid="panel-header" class="panel-header px-4 py-3 border-b border-border-primary flex items-center justify-between">
+    <div data-testid="panel-header" class="panel-header px-4 py-3 border-b border-border-primary flex items-center justify-between flex-shrink-0">
       <h2 class="text-sm font-semibold text-text-primary">Kanban Board</h2>
       <div class="flex items-center gap-2">
         <label class="flex items-center gap-2 text-xs text-text-secondary cursor-pointer">
@@ -18,7 +18,7 @@
     <!-- Board Container -->
     <div
       data-testid="board-container"
-      class="flex-1 overflow-x-auto overflow-y-auto"
+      class="flex-1 overflow-x-auto overflow-y-auto min-h-0"
     >
       <div class="flex min-w-max gap-4 p-4">
         <!-- Column: To Do -->
