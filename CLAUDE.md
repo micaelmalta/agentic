@@ -31,6 +31,30 @@ Each skill lives in `skills/<name>/SKILL.md` with YAML frontmatter defining:
 - **description**: Purpose and when to use
 - **triggers**: Commands and phrases that activate the skill
 
+#### Skill Reference Pattern (Progressive Disclosure)
+
+Skills use a **reference-based structure** following Claude's best practices:
+- **SKILL.md** (<500 lines): Overview, quick start, when to use, references to detailed docs
+- **Reference files** (one level deep): Detailed protocols, examples, tool usage
+- **Progressive disclosure**: Claude loads SKILL.md first (fast), then references as needed
+
+**Example structure:**
+```
+skills/workflow/
+├── SKILL.md              # Overview + references (~241 lines)
+├── PHASES.md             # Detailed 8-phase protocol
+├── GATES.md              # Gate checklists and retry loops
+├── MCP.md                # MCP integration details
+├── TOOLS.md              # Tool usage guidelines
+└── [other references...]
+```
+
+**Benefits:**
+- Faster skill loading and selection
+- Token-efficient (details load only when needed)
+- Easier maintenance and updates
+- Clear separation of overview vs details
+
 **Core Skills:**
 - **para** - PARA methodology (`/plan`, `/execute`, `/summarize`, `/archive`, `/check`, `/status`, `/help`, `/init`)
 - **developer** - TDD implementation (`/dev`) - write tests first, Red-Green-Refactor cycle

@@ -44,259 +44,122 @@ All code changes follow **Test-Driven Development**:
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### 1. Red Phase
-
-Write a test that:
-- Defines the expected behavior clearly
-- Fails when run (because code doesn't exist yet)
-- Fails for the RIGHT reason (not syntax error, missing import, etc.)
-
-### 2. Green Phase
-
-Write the MINIMUM code to make the test pass:
-- Don't over-engineer
-- Don't add features not covered by tests
-- Focus only on making the current test pass
-
-### 3. Refactor Phase
-
-Clean up while keeping tests green:
-- Remove duplication
-- Improve naming
-- Simplify logic
-- Run tests after each change
+**Detailed cycle protocols:** See [TDD_CYCLE.md](TDD_CYCLE.md) for complete Red-Green-Refactor workflows by task type.
 
 ---
 
-## Tool Usage for Code Modifications (MANDATORY)
+## Quick Start
 
-**⛔ CRITICAL: NEVER create temporary bash scripts for file modifications**
+### 1. Write a Failing Test (RED)
 
-When implementing code, you MUST use the correct tools for each operation:
-
-### ✅ File Modification Rules (REQUIRED)
-
-```
-✅ CORRECT - ALWAYS DO THIS:
-# Use Edit tool directly for modifying existing files
-Edit(
-  file_path="src/component.js",
-  old_string="const value = 'old';",
-  new_string="const value = 'new';"
-)
-
-# Use Write tool for creating new files
-Write(
-  file_path="src/new_component.js",
-  content="export function newComponent() { ... }"
-)
-
-# Use Read tool before editing (required by Edit tool)
-Read(file_path="src/component.js")
+```javascript
+test("calculates discount correctly", () => {
+  const result = calculateDiscount(100);
+  expect(result).toBe(10); // 10% discount
+});
 ```
 
-### ❌ WRONG Approaches (DO NOT DO)
+Run test → **FAILS** (function doesn't exist)
 
-```
-❌ WRONG - Creating temporary bash scripts:
-echo '#!/bin/bash' > fix_lines.sh
-echo 'sed -i "s/old/new/g" src/component.js' >> fix_lines.sh
-chmod +x fix_lines.sh
-./fix_lines.sh
-# ← WRONG: Creates temporary file that might get committed!
+### 2. Write Minimum Code (GREEN)
 
-❌ WRONG - Using Bash with sed/awk/perl:
-sed -i 's/old/new/g' src/component.js
-# ← WRONG: Not explicit, not reviewable, hard to verify
-
-❌ WRONG - Using echo/heredoc to overwrite files:
-cat > src/component.js <<'EOF'
-... entire file content ...
-EOF
-# ← WRONG: Risk of data loss, not explicit about changes
+```javascript
+function calculateDiscount(amount) {
+  return amount * 0.1;
+}
 ```
 
-### Tool Selection Matrix
+Run test → **PASSES**
 
-| Task | Correct Tool | WRONG Tool |
-|------|--------------|------------|
-| Modify existing file | **Edit tool** | ❌ sed, awk, perl, bash scripts |
-| Create new file | **Write tool** | ❌ echo >, cat <<EOF |
-| Read file content | **Read tool** | ❌ cat, head, tail |
-| Search files | **Grep tool** | ❌ grep command |
-| Find files | **Glob tool** | ❌ find, ls |
-| Git operations | **Bash tool** | ✅ Correct usage |
-| Run tests | **Bash tool** | ✅ Correct usage |
-| Build commands | **Bash tool** | ✅ Correct usage |
+### 3. Refactor (Keep Tests Green)
 
-### Why This Matters
+```javascript
+const DISCOUNT_RATE = 0.1;
 
-**Using Edit tool:**
-- ✅ Changes are explicit and reviewable (old → new)
-- ✅ No temporary files or artifacts
-- ✅ Atomic operations with clear intent
-- ✅ Works across all encodings and file types
-- ✅ Integrated with permission system
-- ✅ Changes appear in git diff clearly
+function calculateDiscount(amount) {
+  return amount * DISCOUNT_RATE;
+}
+```
 
-**Using bash scripts for file modifications:**
-- ❌ Creates temporary files that might get committed
-- ❌ Changes are implicit and hard to review
-- ❌ Risk of leaving artifacts in worktree
-- ❌ Not integrated with permission system
-- ❌ Hard to verify correctness
-- ❌ Pollutes git history with temporary files
+Run test → **PASSES**
 
-### Enforcement
+---
 
-- **ALWAYS** use Edit tool for modifying source code files
-- **NEVER** create temporary bash scripts for sed/awk/perl operations
-- **NEVER** commit temporary scripts, intermediate files, or build artifacts
-- **NEVER** leave uncommitted temporary files in the worktree
-- **READ FIRST** - Edit tool requires reading the file before modifying
+## Tool Usage (CRITICAL)
+
+**⛔ NEVER create temporary bash scripts for file modifications**
+
+- ✅ **ALWAYS** use **Edit tool** for modifying existing files
+- ✅ **ALWAYS** use **Write tool** for creating new files
+- ✅ **ALWAYS** use **Read tool** before editing
+- ❌ **NEVER** create temporary scripts (fix.sh, replace.sh, etc.)
+- ❌ **NEVER** use sed/awk/perl for source code modifications
+
+**See [TOOLS.md](TOOLS.md) for:**
+- Complete tool usage guidelines
+- File modification rules
+- Examples for RED/GREEN/REFACTOR phases
+- Anti-patterns to avoid
+
+---
+
+## Reference Documents
+
+For detailed information, see:
+
+- **[TDD_CYCLE.md](TDD_CYCLE.md)** - Detailed Red-Green-Refactor cycle, feature implementation, bug fixes, refactoring protocols
+- **[TOOLS.md](TOOLS.md)** - Tool usage for file modifications (Edit/Write/Read)
+- **[EXAMPLES.md](EXAMPLES.md)** - Language-specific test commands and patterns
 
 ---
 
 ## Protocol by Task Type
 
-### Feature Implementation (TDD)
+### Feature Implementation
 
-**Execution Order:**
+1. Write failing test (RED)
+2. Run test → verify it fails
+3. Write minimum code (GREEN)
+4. Run test → verify it passes
+5. Refactor → verify tests still pass
+6. Repeat for next behavior
 
-```
-1. Write test (expect failure)
-2. Run test (verify it fails for right reason)
-3. Write minimum code
-4. Run test (verify it passes)
-5. Refactor
-6. Run test (verify still passes)
-7. Repeat for next behavior
-```
+See [TDD_CYCLE.md](TDD_CYCLE.md#feature-implementation-tdd) for detailed protocol.
 
-**Actions:**
+### Bug Fix
 
-1. Break feature into small, testable behaviors
-2. For each behavior:
-   - Write a failing test that describes the behavior
-   - Run test, confirm it fails
-   - Write the simplest code to make it pass
-   - Run test, confirm it passes
-   - Refactor if needed, keeping tests green
-3. Continue until all behaviors are implemented
+1. Write failing test that reproduces bug (RED)
+2. Run test → verify it fails (confirms bug exists)
+3. Fix the code (GREEN)
+4. Run test → verify it passes (confirms fix)
+5. Run all tests → verify no regressions
 
-**Example Flow:**
+See [TDD_CYCLE.md](TDD_CYCLE.md#bug-fix-tdd) for detailed protocol.
 
-```
-Feature: User login
+### Refactoring
 
-Behavior 1: Valid credentials return success
-  → Write test: expect login("user", "pass") to return { success: true }
-  → Run test: FAILS (function doesn't exist)
-  → Write code: implement login function
-  → Run test: PASSES
-  → Refactor: extract validation logic
+1. Ensure tests exist and pass (baseline)
+2. Make ONE refactoring change
+3. Run tests → verify still pass
+4. Repeat steps 2-3
+5. Final test run → confirm no regressions
 
-Behavior 2: Invalid password returns error
-  → Write test: expect login("user", "wrong") to return { error: "invalid" }
-  → Run test: FAILS (always returns success)
-  → Write code: add password validation
-  → Run test: PASSES
-  → Refactor: none needed
-```
+See [TDD_CYCLE.md](TDD_CYCLE.md#refactoring-with-tdd-safety-net) for detailed protocol.
 
-### Bug Fix (TDD)
+---
 
-**Execution Order:**
+## Language-Specific Commands
 
-```
-1. Understand the bug (symptoms, reproduction steps)
-2. Write a failing test that reproduces the bug
-3. Run test (verify it fails, confirming the bug)
-4. Fix the code
-5. Run test (verify it passes, confirming the fix)
-6. Run all tests (verify no regressions)
-```
+| Stack | Test Command | Watch Mode |
+|-------|--------------|------------|
+| **JavaScript/TypeScript** | `npm test` | `npm test -- --watch` |
+| **Python** | `pytest` | `pytest --watch` or `ptw` |
+| **Go** | `go test ./...` | `gotestsum --watch` |
+| **Ruby** | `bundle exec rspec` | `guard` |
+| **Rust** | `cargo test` | `cargo watch -x test` |
+| **Java** | `mvn test` | IDE integration |
 
-**Actions:**
-
-1. Understand the bug:
-   - What is the expected behavior?
-   - What is the actual behavior?
-   - What inputs/conditions trigger it?
-
-2. Write reproduction test:
-   - Create test that exercises the buggy code path
-   - Assert the EXPECTED (correct) behavior
-   - Test should FAIL (proving the bug exists)
-
-3. Fix the bug:
-   - Make minimal change to fix root cause
-   - Don't fix symptoms; fix the cause
-
-4. Verify:
-   - Reproduction test now passes
-   - All other tests still pass
-   - Add comment in test explaining what bug it prevents
-
-**Example Flow:**
-
-```
-Bug: User discount not applied for orders over $100
-
-1. Write test:
-   test("applies 10% discount for orders over $100", () => {
-     const order = createOrder({ total: 150 });
-     applyDiscounts(order);
-     expect(order.total).toBe(135); // 10% off
-   });
-
-2. Run test: FAILS (order.total is still 150)
-   → Bug confirmed!
-
-3. Fix code:
-   // Found: discount check was > 100 instead of >= 100
-   if (order.subtotal >= 100) { ... }
-
-4. Run test: PASSES
-   → Bug fixed!
-
-5. Run all tests: ALL PASS
-   → No regressions
-```
-
-### Refactoring (with TDD Safety Net)
-
-**Execution Order:**
-
-```
-1. Ensure tests exist for code being refactored
-2. Run tests (verify all pass - baseline)
-3. Make ONE refactoring change
-4. Run tests (verify still pass)
-5. Repeat steps 3-4
-6. Final test run to confirm no regressions
-```
-
-**Actions:**
-
-1. Before refactoring:
-   - Verify adequate test coverage exists
-   - If tests are missing, write them FIRST
-   - Establish passing baseline
-
-2. During refactoring:
-   - Make small, incremental changes
-   - Run tests after EACH change
-   - If tests fail, undo and try smaller step
-
-3. Common refactoring patterns:
-   - Extract function/method
-   - Rename for clarity
-   - Remove duplication
-   - Simplify conditionals
-   - Break up large functions
-
-**Golden Rule:** Tests must pass before AND after. Behavior unchanged.
+See [EXAMPLES.md](EXAMPLES.md) for complete language-specific patterns.
 
 ---
 
@@ -304,13 +167,13 @@ Bug: User discount not applied for orders over $100
 
 Before considering implementation complete:
 
-- [ ] Tests written BEFORE implementation code (TDD)
-- [ ] All tests pass
-- [ ] Code follows project conventions
-- [ ] No security vulnerabilities introduced
-- [ ] Changes are minimal and focused
-- [ ] No over-engineering (YAGNI)
-- [ ] Comments only on non-obvious logic
+- [ ] **TDD followed**: Tests written before code
+- [ ] **All tests pass**: No failures
+- [ ] **Code follows project conventions**: Linting, formatting, naming
+- [ ] **No security vulnerabilities**: No SQL injection, XSS, auth issues, etc.
+- [ ] **Changes are minimal and focused**: Only what's needed
+- [ ] **No over-engineering**: YAGNI (You Aren't Gonna Need It)
+- [ ] **Comments only on non-obvious logic**: Code should be self-documenting
 
 ---
 
@@ -329,16 +192,14 @@ Before considering implementation complete:
 
 ## Test Writing Guidelines
 
-### Good Tests Are:
+**Good Tests Are:**
+- **Fast** - Run quickly, encourage frequent execution
+- **Isolated** - Don't depend on other tests or external state
+- **Repeatable** - Same result every time
+- **Self-validating** - Pass or fail, no manual inspection
+- **Timely** - Written before the code (TDD)
 
-- **Fast**: Run quickly, encourage frequent execution
-- **Isolated**: Don't depend on other tests or external state
-- **Repeatable**: Same result every time
-- **Self-validating**: Pass or fail, no manual inspection
-- **Timely**: Written before the code (TDD)
-
-### Test Structure (Arrange-Act-Assert):
-
+**Test Structure (Arrange-Act-Assert):**
 ```
 test("description of expected behavior", () => {
   // Arrange: Set up test data and conditions
@@ -352,27 +213,7 @@ test("description of expected behavior", () => {
 });
 ```
 
-### What to Test:
-
-| Test Type | What to Cover |
-|-----------|---------------|
-| Happy path | Primary use case works correctly |
-| Edge cases | Boundary conditions, empty/null inputs |
-| Error handling | Invalid inputs, failure scenarios |
-| Integration points | Interactions between components |
-
----
-
-## Language-Specific Commands
-
-| Stack | Test Command | Watch Mode |
-|-------|--------------|------------|
-| **JavaScript/TypeScript** | `npm test` | `npm test -- --watch` |
-| **Python** | `pytest` | `pytest --watch` or `ptw` |
-| **Go** | `go test ./...` | `gotestsum --watch` |
-| **Ruby** | `bundle exec rspec` | `guard` |
-| **Rust** | `cargo test` | `cargo watch -x test` |
-| **Java** | `mvn test` | IDE integration |
+See [TDD_CYCLE.md](TDD_CYCLE.md#test-writing-guidelines) for complete guidelines.
 
 ---
 
