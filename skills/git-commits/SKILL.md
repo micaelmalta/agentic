@@ -1,6 +1,6 @@
 ---
 name: git-commits
-description: "Write commit messages, changelogs, release notes, and manage versioning following conventional commits or project conventions. Use when the user asks for a commit message, changelog, release notes, versioning, tagging, or how to format commits."
+description: "Write commit messages, changelogs, release notes, and manage versioning following Conventional Commits v1.0.0 with required scope. Use when the user asks for a commit message, changelog, release notes, versioning, tagging, or how to format commits."
 triggers:
   - "/commit"
   - "commit message"
@@ -29,28 +29,65 @@ Write clear, consistent commit messages and changelogs so history is readable an
 
 ### 1. Commit Message Format
 
-Prefer **Conventional Commits** when the project does not specify otherwise:
+Follow **[Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/)** when the project does not specify otherwise:
 
 ```
 <type>(<scope>): <short summary>
 
 [optional body]
 
-[optional footer: Breaking-Change:, Fixes: #123]
+[optional footer(s)]
 ```
 
-**Types:** `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `perf`, `ci`, `build`.
+**Format Rules:**
+- `<type>`: Required, lowercase type from list below
+- `(<scope>)`: **Required**, noun describing section of codebase (e.g., `api`, `auth`, `ui`, `db`)
+- `<short summary>`: Required, imperative mood, lowercase, no period, ~72 chars max
+- Breaking changes: Add `!` after scope: `feat(api)!: drop support for Node 12`
 
-- **feat**: User-facing or API change.
-- **fix**: Bug fix.
-- **docs**: Documentation only.
-- **refactor**: No behavior change.
-- **test**: Tests only.
-- **chore**: Tooling, config, deps (no app code).
-- **perf**: Performance improvement.
-- **ci** / **build**: CI or build pipeline.
+**Scope Naming:**
+- Use **lowercase** nouns (e.g., `api`, not `API`)
+- Be **specific** but not too granular (e.g., `auth` not `login-form-button`)
+- Common scopes: `api`, `auth`, `ui`, `db`, `cli`, `docs`, `config`, `deps`, `tests`, `ci`, `build`
+- For components: `user-service`, `payment-flow`, `dashboard`
+- For features: `oauth`, `search`, `notifications`
+- Be consistent across the project (check `git log --oneline` for existing patterns)
 
-**Rules:** Summary in imperative, lowercase, no period. One logical change per commit. Body when context or rationale is needed.
+**Types:** `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `perf`, `ci`, `build`, `revert`.
+
+- **feat**: New feature for the user (triggers MINOR bump)
+- **fix**: Bug fix for the user (triggers PATCH bump)
+- **docs**: Documentation only changes
+- **style**: Code style changes (formatting, whitespace, no logic change)
+- **refactor**: Code change that neither fixes a bug nor adds a feature
+- **test**: Adding or updating tests
+- **chore**: Maintenance tasks (deps, tooling, config)
+- **perf**: Performance improvement
+- **ci**: CI/CD configuration and scripts
+- **build**: Build system or external dependencies
+- **revert**: Reverts a previous commit
+
+**Breaking Changes:**
+- Option 1: Add `!` after scope: `refactor(api)!: drop deprecated endpoints`
+- Option 2: Footer: `BREAKING CHANGE: description of what broke`
+- Both trigger MAJOR version bump
+
+**Body:** Use when you need to explain "why", context, or side effects. Leave blank line after summary.
+
+**Footers:** `BREAKING CHANGE: <description>`, `Fixes #123`, `Closes #456`, `Refs #789`
+
+**Examples:**
+```
+feat(auth): add OAuth2 social login
+fix(api): prevent race condition in user creation
+docs(readme): update installation instructions
+refactor(db)!: migrate from MySQL to PostgreSQL
+
+BREAKING CHANGE: Database schema incompatible with v1.x
+chore(deps): upgrade TypeScript to v5
+test(api): add integration tests for user endpoints
+perf(search): optimize query with database index
+```
 
 ### 2. Changelog
 
@@ -76,12 +113,14 @@ Use **SemVer** (`MAJOR.MINOR.PATCH`) unless the project specifies otherwise:
 
 **Pre-release versions**: `1.0.0-alpha.1`, `1.0.0-beta.2`, `1.0.0-rc.1`
 
-**Determining version from commits** (conventional commits):
+**Determining version from commits** (Conventional Commits v1.0.0):
 
-- `feat!:` or `BREAKING CHANGE:` → MAJOR
-- `feat:` → MINOR
-- `fix:`, `perf:`, `refactor:` → PATCH
-- `docs:`, `style:`, `test:`, `chore:` → no version bump (or PATCH if releasing)
+- `feat(<scope>)!:` or `BREAKING CHANGE:` footer → **MAJOR**
+- `feat(<scope>):` → **MINOR**
+- `fix(<scope>):`, `perf(<scope>):` → **PATCH**
+- `docs(<scope>):`, `style(<scope>):`, `test(<scope>):`, `chore(<scope>):`, `refactor(<scope>):` → no version bump (or PATCH if releasing)
+
+**Note:** Any commit with `!` after scope or `BREAKING CHANGE:` footer triggers MAJOR bump, regardless of type.
 
 ### 5. Tagging Releases
 
@@ -112,10 +151,18 @@ For projects using automation (e.g., `semantic-release`, `release-please`):
 
 1. Update version in manifest (`package.json`, `pyproject.toml`, etc.)
 2. Update CHANGELOG.md with new version header
-3. Commit: `chore(release): v1.2.3`
+3. Commit: `chore(release): bump version to v1.2.3`
 4. Tag: `git tag -a v1.2.3 -m "Release v1.2.3"`
 5. Push: `git push && git push --tags`
 6. Create GitHub Release (optional): `gh release create v1.2.3 --notes-file CHANGELOG.md`
+
+**Example commit messages:**
+```
+chore(release): bump version to v1.2.3
+chore(deps): upgrade all dependencies to latest
+ci(github): add automated release workflow
+docs(changelog): update for v1.2.3 release
+```
 
 ### 7. Commands
 
@@ -130,19 +177,28 @@ For projects using automation (e.g., `semantic-release`, `release-please`):
 | Create GitHub release     | `gh release create v1.2.3 --generate-notes` |
 | Bump version (npm)        | `npm version patch/minor/major`             |
 
-Respect project conventions: if the repo uses a different format (e.g. Jira ticket prefix), follow it.
+**Project Conventions:**
+- Always respect existing project conventions if they differ from this standard
+- Check project's CONTRIBUTING.md or git history for established patterns
+- If project requires Jira ticket prefixes (e.g., `feat(api): PROJ-123 add endpoint`), include them
+- Scope is **required** by this standard; if project allows scope-less commits, follow project rules
+
+**Reference:** [Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/)
 
 ---
 
 ## Checklist
 
-- [ ] Type and scope match the change.
-- [ ] Summary is imperative and under ~72 chars.
-- [ ] Changelog/release notes match what actually changed.
-- [ ] Breaking changes called out explicitly.
-- [ ] Version bump follows SemVer based on change type.
-- [ ] Tag created and pushed for releases.
-- [ ] GitHub Release created with release notes (if applicable).
+- [ ] Type is lowercase and valid (feat, fix, docs, etc.)
+- [ ] **Scope is present** and describes codebase section (api, auth, ui, db, etc.)
+- [ ] Summary is imperative mood, lowercase, no period, ~72 chars max
+- [ ] Breaking changes use `!` after scope or `BREAKING CHANGE:` footer
+- [ ] Body explains "why" when needed (leave blank line after summary)
+- [ ] Footers follow format: `BREAKING CHANGE:`, `Fixes #123`, `Closes #456`
+- [ ] Changelog/release notes match what actually changed
+- [ ] Version bump follows SemVer based on change type
+- [ ] Tag created and pushed for releases (annotated tag with `git tag -a`)
+- [ ] GitHub Release created with release notes (if applicable)
 
 ---
 

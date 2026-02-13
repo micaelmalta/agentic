@@ -242,9 +242,21 @@ All skills use **git worktree** by default for isolated, parallel development. T
 
 **Worktree Pattern:**
 ```bash
+# ONE-TIME SETUP: Create unified worktrees directory (shared across all repos)
+mkdir -p ../.worktrees
+
 # Phase 2: Create worktree (automated by workflow skill)
-git worktree add ../repo-name-feature-name -b feature/name
-cd ../repo-name-feature-name
+# First, fetch latest changes from remote
+git fetch origin main  # or master
+
+# Get repo name and create worktree inside unified directory
+REPO_NAME=$(basename $(git rev-parse --show-toplevel))
+git worktree add ../.worktrees/${REPO_NAME}/feature-implement-auth -b feature/implement-auth origin/main
+cd ../.worktrees/${REPO_NAME}/feature-implement-auth
+
+# Concrete example for repo "agentic":
+#   Worktree path: ../.worktrees/agentic/feature-implement-auth/
+#   Full path: /Users/mmalta/projects/poc/.worktrees/agentic/feature-implement-auth/
 
 # Initialize development environment
 npm install  # or yarn, pip install, etc.
@@ -254,8 +266,8 @@ npm install  # or yarn, pip install, etc.
 
 # Phase 8: Cleanup after PR merge
 cd $(git rev-parse --show-toplevel)  # Return to main repo
-git worktree remove ../repo-name-feature-name
-git branch -d feature/name  # Optional
+git worktree remove ../.worktrees/${REPO_NAME}/feature-implement-auth
+git branch -d feature/implement-auth  # Optional
 ```
 
 **Benefits:**
@@ -263,8 +275,24 @@ git branch -d feature/name  # Optional
 - No branch switching or stashing required
 - Complete file isolation between features
 - Shared git history across all worktrees
+- **Single hidden directory for all repos** - maximum cleanliness
+- **Scales perfectly** - works for 1 repo or 100 repos
 
-**Location:** Worktrees are created as sibling directories following the pattern `../repo-name-branch-name` (recommended by [Claude Code docs](https://code.claude.com/docs/en/common-workflows#run-parallel-claude-code-sessions-with-git-worktrees))
+**Location:** Worktrees are created inside a unified `../.worktrees/{repo-name}/` directory hierarchy.
+
+**Example structure:**
+```
+/Users/mmalta/projects/poc/
+├── .worktrees/                        # Hidden, unified worktrees directory
+│   ├── agentic/                       # All worktrees for agentic repo
+│   │   ├── feature-implement-auth/
+│   │   ├── fix-user-validation/
+│   │   └── feature-add-notifications/
+│   └── another-repo/                  # All worktrees for another-repo
+│       └── feature-xyz/
+├── agentic/                           # Main agentic repo
+└── another-repo/                      # Main another-repo repo
+```
 
 ### Tool Usage for File Modifications (CRITICAL)
 

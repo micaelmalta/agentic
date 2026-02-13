@@ -101,30 +101,53 @@ Once the plan is approved, phases 2-8 execute **fully autonomously** without sto
 **Actions:**
 
 1. **If a Jira ticket key is provided:** Use **Atlassian MCP** to transition the issue to **In Progress**. Call `jira_get_transitions` with the issue key, find the transition whose name matches "In Progress" (or "In progress"; names vary by project), then call `jira_transition_issue` with that transition ID. This marks the ticket as in progress before implementation starts.
-2. **Determine repo and branch names:**
-   - Get current repo directory name: `basename $(git rev-parse --show-toplevel)`
+2. **Determine main branch name:**
+   - Auto-detect: `git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@'`
+   - Or use common convention: `main` or `master`
+3. **Fetch latest changes from remote:**
+   ```bash
+   git fetch origin main  # or master
+   ```
+   This ensures your new branch will be based on the absolute latest code.
+4. **Determine repo and branch names:**
+   - Get current repo directory name: `REPO_NAME=$(basename $(git rev-parse --show-toplevel))`
    - Create branch name: `feature/<description>` or `fix/<description>`
-3. **Create worktree as sibling directory:**
+5. **Create unified worktrees directory (if it doesn't exist):**
    ```bash
-   # Pattern: ../repo-name-branch-name
-   git worktree add ../$(basename $(git rev-parse --show-toplevel))-feature-description -b feature/description
+   # Create hidden directory for all worktrees (shared across all repos)
+   mkdir -p ../.worktrees
    ```
-   Example: If repo is `agentic` and branch is `feature/add-auth`, worktree path is `../agentic-feature-add-auth`
-4. **Navigate to worktree directory:**
+   This one-time setup creates a single unified directory to contain worktrees for ALL repositories in the parent directory. The dot-prefix keeps it hidden and clean.
+
+   **Example:** Creates `../.worktrees/` which will contain subdirectories for each repo
+
+6. **Create worktree inside unified directory based on latest remote main:**
    ```bash
-   cd ../agentic-feature-add-auth
+   # IMPORTANT: Use origin/main (not just HEAD) to ensure up-to-date base
+   git worktree add ../.worktrees/${REPO_NAME}/feature-implement-auth -b feature/implement-auth origin/main
    ```
-5. **Initialize development environment** (if needed):
+
+   **Concrete example:**
+   - Repo: `agentic`
+   - Branch: `feature/implement-auth`
+   - Worktree path: `../.worktrees/agentic/feature-implement-auth/`
+   - Full path: `/Users/mmalta/projects/poc/.worktrees/agentic/feature-implement-auth/`
+
+7. **Navigate to worktree directory:**
+   ```bash
+   cd ../.worktrees/${REPO_NAME}/feature-implement-auth
+   ```
+8. **Initialize development environment** (if needed):
    - JavaScript/TypeScript: `npm install` or `yarn`
    - Python: Setup virtual environment or run package manager
    - Other languages: Follow project setup process
-6. **Confirm worktree setup:**
+9. **Confirm worktree setup:**
    ```bash
    git worktree list  # Shows all worktrees
    git status         # Confirms current branch
    pwd                # Confirms working directory
    ```
-7. **Record worktree path** for cleanup in Phase 8
+10. **Record worktree path** for cleanup in Phase 8
 
 **Note:** All subsequent phases (3-8) operate within this worktree directory. The main repo remains untouched.
 
