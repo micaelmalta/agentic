@@ -2,9 +2,156 @@
 
 A curated collection of specialized skills for AI-assisted software development using Claude Code and Cursor. Each skill provides structured workflows, protocols, and best practices for different aspects of software engineering.
 
+## Quick Install
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/micaelmalta/agentic/main/install.sh | bash
+```
+
+Then in your project:
+```bash
+/init    # Initialize PARA structure
+/help    # See all available skills
+```
+
 ## Overview
 
 This repository implements the **PARA-Programming methodology** (Plan → Review → Execute → Summarize → Archive), enabling reproducible, well-documented AI-assisted development sessions. Skills cover the full development lifecycle from planning to deployment.
+
+## Installation
+
+### Automated Installation (Recommended)
+
+Install all skills directly from GitHub using a single command:
+
+```bash
+# Install to Claude Code (default: ~/.claude/skills)
+curl -fsSL https://raw.githubusercontent.com/micaelmalta/agentic/main/install.sh | bash
+
+# Or install to a custom location
+curl -fsSL https://raw.githubusercontent.com/micaelmalta/agentic/main/install.sh | bash -s -- --path /custom/path
+```
+
+**What the installer does:**
+1. ✓ Verifies all prerequisites are installed
+2. ✓ Checks installation directory (prompts if exists)
+3. ✓ Creates necessary parent directories
+4. ✓ Clones the repository from GitHub
+5. ✓ Displays next steps and usage instructions
+
+**What gets installed:**
+- `~/.claude/skills/skills/` — All 18 specialized skills
+- `~/.claude/skills/skills/agents/` — 3 autonomous phase agents
+- `~/.claude/skills/CLAUDE.md` — AI assistant guidance
+- `~/.claude/skills/README.md` — Documentation (this file)
+
+### Manual Installation
+
+1. **Clone the repository:**
+
+```bash
+# Clone to Claude Code skills directory
+git clone https://github.com/micaelmalta/agentic.git ~/.claude/skills
+
+# Or clone to a custom location
+git clone https://github.com/micaelmalta/agentic.git /path/to/skills
+```
+
+2. **Verify prerequisites:**
+
+```bash
+# Check Python version (required for RLM, skill-creator, validation scripts)
+python3 --version  # Should be 3.10 or higher
+
+# Check Node.js (required for MCP setup)
+node --version
+
+# Check Git (required for all version control)
+git --version
+
+# Check GitHub CLI (required for PR creation)
+gh --version
+```
+
+If any prerequisites are missing:
+- **Python 3.10+**: [python.org/downloads](https://www.python.org/downloads/)
+- **Node.js**: [nodejs.org](https://nodejs.org/)
+- **GitHub CLI**: `brew install gh` (macOS) or [cli.github.com](https://cli.github.com)
+
+3. **Initialize PARA in your project:**
+
+```bash
+cd /your/project
+# From Claude Code, run:
+/init
+```
+
+### Installation for Cursor
+
+If you're using Cursor instead of Claude Code:
+
+```bash
+# Clone to Cursor configuration directory
+git clone https://github.com/micaelmalta/agentic.git ~/.cursor/skills
+
+# Or create a symlink from existing installation
+ln -s ~/.claude/skills ~/.cursor/skills
+```
+
+### Updating Skills
+
+Keep your skills up to date:
+
+```bash
+# Navigate to skills directory
+cd ~/.claude/skills
+
+# Pull latest changes
+git pull origin main
+
+# Or re-run automated installation
+curl -fsSL https://raw.githubusercontent.com/micaelmalta/agentic/main/install.sh | bash
+```
+
+### Verifying Installation
+
+After installation, verify that skills are available:
+
+1. **Check skills directory:**
+```bash
+ls -la ~/.claude/skills/skills/
+```
+
+2. **In Claude Code or Cursor, test a skill:**
+```bash
+/help
+# You should see all available skills listed
+```
+
+3. **Initialize PARA in a test project:**
+```bash
+cd /path/to/test-project
+/init
+# Should create context/ directory structure
+```
+
+### Uninstallation
+
+To remove the skills:
+
+```bash
+# Remove skills directory
+rm -rf ~/.claude/skills
+
+# Or for custom installation path
+rm -rf /path/to/custom/location
+
+# Clean up PARA structures in projects (optional)
+# In each project directory:
+rm -rf context/
+```
+
+**Note:** Uninstalling does not affect your project's git history or code. Only the skills and PARA context structures are removed.
 
 ## Quick Start
 
@@ -447,6 +594,18 @@ This skills collection is built on these principles:
 | `/architect` | Technical specifications and design docs |
 
 ## Troubleshooting
+
+### Installation Issues
+
+| Problem | Solution |
+|---------|----------|
+| Installation script fails | Check prerequisites: `python3 --version`, `node --version`, `git --version`, `gh --version` |
+| `curl` command not found | Install curl: `brew install curl` (macOS) or use manual installation method |
+| Permission denied during install | Run with `sudo` if needed, or install to user directory (default: `~/.claude/skills`) |
+| Directory already exists | Installer will prompt to remove and reinstall, or manually `rm -rf ~/.claude/skills` |
+| Skills not appearing in Claude | Verify installation path; check `~/.claude/skills/skills/` directory exists |
+
+### Runtime Issues
 
 | Problem | Solution |
 |---------|----------|
