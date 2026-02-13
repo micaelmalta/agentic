@@ -258,3 +258,117 @@ IF Jira integration fails but PR succeeds:
 2. pr_url is present and valid
 3. PR is confirmed created on GitHub
 4. All items in the checklist above are verified (or gracefully degraded for Jira)
+
+---
+
+## Phase 8: One-Pass Monitoring (No Traditional Gate)
+
+**ℹ️ PHASE 8 APPROACH:**
+
+Phase 8 does **NOT** have a traditional blocking gate or retry loop. Instead, it uses a **one-pass monitoring + escalation** pattern.
+
+**Philosophy:** Phase 5 validation catches 90%+ of issues BEFORE the PR. Phase 8 monitors CI/bot feedback and makes simple fixes ONCE, then escalates complex issues to the user.
+
+### One-Pass Monitoring Checklist
+
+```
+PHASE 8 ONE-PASS MONITORING:
+✓ [ ] Check CI status (gh pr checks <pr-number>)
+✓ [ ] Check bot comments (gh pr view <pr-number> --comments)
+✓ [ ] Classify issues as simple or complex
+✓ [ ] Apply simple fixes if any (format, lint, trivial config)
+✓ [ ] Push fixes if applied
+✓ [ ] Escalate complex issues to user with AskUserQuestion
+```
+
+### Decision Criteria
+
+**✅ Simple/Automatable (fix once, no retry):**
+- Format issues (run formatter)
+- Lint errors with auto-fix capability
+- Missing imports/exports
+- Trivial type annotations
+- Test timeout config changes
+- Dependency lockfile updates
+
+**❌ Complex (escalate to user):**
+- Logic errors in implementation
+- Failing unit/integration tests
+- Security vulnerabilities
+- Design feedback from reviewers
+- Performance issues
+- Breaking API changes
+- Contradictory bot comments
+
+### User Escalation Pattern
+
+When complex issues are detected:
+
+```python
+AskUserQuestion(
+  questions=[{
+    question: "PR has [issue type]: [details]. How should we proceed?",
+    header: "CI/Bot Feedback",
+    options: [
+      {
+        label: "Continue auto-fixing",
+        description: "I'll attempt to resolve the issues"
+      },
+      {
+        label: "Manual control",
+        description: "Stop here, I'll handle it manually"
+      },
+      {
+        label: "Skip for now",
+        description: "Acceptable for draft PR, address later"
+      }
+    ]
+  }]
+)
+```
+
+### One-Pass Rule
+
+**⛔ CRITICAL:** Make fixes ONCE. If CI still fails after the one-pass fixes, escalate to user. **DO NOT loop.**
+
+**Why no retry loop:**
+1. ❌ Infinite loop risk with complex/contradictory feedback
+2. ❌ Over-correction without user oversight
+3. ❌ Wasted CI resources for human judgment issues
+4. ✅ Phase 5 caught issues upfront - PR starts near-green
+5. ✅ Human judgment faster for complex issues
+6. ✅ Clear audit trail with one attempt + decision point
+
+### Summary Requirements
+
+After CI/bot monitoring (and after PR merge), create summary:
+
+```
+PHASE 8 SUMMARY CHECKLIST:
+✓ [ ] Run /summarize command
+✓ [ ] Document what was built/fixed
+✓ [ ] List files modified with impact
+✓ [ ] Record key decisions made
+✓ [ ] Document Phase 8 fixes applied (if any)
+✓ [ ] Note CI/bot issues and how resolved
+✓ [ ] List lessons learned
+✓ [ ] Identify known limitations
+✓ [ ] Suggest future improvements
+✓ [ ] Link to merged PR and commits
+✓ [ ] Record worktree path used
+```
+
+### Cleanup Requirements
+
+After PR merge and summary complete:
+
+```
+PHASE 8 CLEANUP CHECKLIST:
+✓ [ ] Return to main repo: cd $(git rev-parse --show-toplevel)
+✓ [ ] Verify worktree path: git worktree list
+✓ [ ] Remove worktree: git worktree remove <path>
+✓ [ ] (Optional) Delete merged branch: git branch -d <branch>
+✓ [ ] Verify cleanup: git worktree list (should not show removed path)
+```
+
+**Note:** Keep worktree active if follow-up changes needed. Clean up only when completely done.

@@ -147,11 +147,35 @@ Visual representation of the complete developer workflow orchestration.
                                           │
                                           ▼
 ┌─────────────────────────────────────────────────────────────────────────────────────────┐
-│ PHASE 8: MONITOR & SUMMARIZE                                      Skills: para          │
+│ PHASE 8: MONITOR, SUMMARIZE & CLEANUP                             Skills: para          │
 │                                                                         documentation   │
 ├─────────────────────────────────────────────────────────────────────────────────────────┤
-│   Monitor CI, address reviews, merge                                                    │
-│   /summarize → context/summaries/YYYY-MM-DD-*.md                                        │
+│   ┌──────────────────────────────────────────────────────────────────────────────────┐  │
+│   │ ONE-PASS CI/BOT MONITORING                                                       │  │
+│   │                                                                                  │  │
+│   │  Check CI status (once) → Check bot comments (once)                             │  │
+│   │         │                         │                                             │  │
+│   │         ├─ All green ─────────────┴──► Skip to Summary                          │  │
+│   │         │                                                                        │  │
+│   │         └─ Failures/Comments                                                    │  │
+│   │                  │                                                              │  │
+│   │                  ▼                                                              │  │
+│   │           Simple/Automatable? ────YES──► Auto-fix + Push (ONCE)                │  │
+│   │                  │                           │                                  │  │
+│   │                  NO                          ▼                                  │  │
+│   │                  │                   Still fails? ──► Escalate to user          │  │
+│   │                  ▼                                                              │  │
+│   │           Escalate to user                                                      │  │
+│   │           (AskUserQuestion with options)                                        │  │
+│   │                                                                                  │  │
+│   │  Simple: format, lint --fix, trivial test config, dependency lockfile          │  │
+│   │  Complex: logic errors, design feedback, security, perf, breaking changes      │  │
+│   └──────────────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                          │
+│   After PR merge:                                                                        │
+│   /summarize → context/summaries/YYYY-MM-DD-*.md                                         │
+│   Update docs (if needed) → Parallel subagents for README/API/ADR                       │
+│   Clean up worktree: git worktree remove <path>                                         │
 │   /archive when complete                                                                │
 └─────────────────────────────────────────────────────────────────────────────────────────┘
                                           │
@@ -663,7 +687,7 @@ function runTDDCycle(behaviors):
 | 5. Validation | code-reviewer, security-reviewer | Yes               | All pass      | **Yes (MANDATORY)**          |
 | 6. Commit     | git-commits                      | No                | -             | No                           |
 | 7. PR         | -                                | No                | -             | No                           |
-| 8. Monitor    | para, documentation              | Yes (docs)        | -             | No                           |
+| 8. Monitor    | para, documentation              | Yes (docs)        | -             | No (one-pass only)           |
 
 ### Retry Loop Rules
 

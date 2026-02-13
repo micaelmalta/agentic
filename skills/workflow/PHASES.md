@@ -491,48 +491,105 @@ Task(
 
 ## Phase 8: Monitor, Summarize & Cleanup
 
-**Goal:** Document outcomes, capture learnings, and clean up worktree.
+**Goal:** Monitor CI/bot feedback with one-pass fixes, document outcomes, and clean up worktree.
+
+**Philosophy:** Phase 5 validation catches 90%+ of issues BEFORE the PR. Phase 8 does **one pass** of CI/bot monitoring + simple fixes only. Complex issues escalate to user.
 
 **PARA command:** Use `/summarize` once work is complete (e.g. after PR merge).
 
 **Skills:** Use **para** skill for summary, **documentation** skill if docs need updating.
 
-**Actions:**
+---
 
-1. Monitor PR feedback and CI checks
-2. Address review comments
-3. Once merged, run `/summarize` to document in `context/summaries/YYYY-MM-DD-<task-name>.md`
-4. Update documentation if needed (README, API docs, ADRs)
-5. **Clean up worktree after PR merge:**
-   ```bash
-   # Return to main repo
-   cd $(git rev-parse --show-toplevel)
+### Step 1: One-Pass CI/Bot Monitoring
 
-   # List worktrees to confirm path
-   git worktree list
+**Execute ONCE after PR creation:**
 
-   # Remove the worktree (use path from Phase 2)
-   git worktree remove ../agentic-feature-add-auth
+```bash
+# 1. Check CI status
+gh pr checks <pr-number> --watch
 
-   # Optionally delete the merged branch
-   git branch -d feature/add-auth
-   ```
-   **Note:** Keep worktree active if you need to make follow-up changes. Clean up only when completely done.
+# 2. Read bot comments (if any)
+gh pr view <pr-number> --comments
+```
+
+**Decision Tree:**
+
+```
+CI Status? → All green → Skip to Step 2 (Summary)
+           → Failures → Analyze failures
+
+Bot Comments? → None → Skip to Step 2
+              → Present → Analyze comments
+
+Analysis:
+├─ Simple/Automatable (format, lint, trivial test fix)?
+│  ├─ YES → Auto-fix locally
+│  │       Push changes
+│  │       Report what was fixed
+│  └─ NO → Go to User Escalation
+│
+└─ Complex (logic errors, design issues, contradictory feedback)?
+   └─ Report to user + AskUserQuestion:
+      - "CI failed with: [details]"
+      - "Bot suggests: [feedback]"
+      - Options:
+        [1] Continue auto-fixing (I'll attempt to resolve)
+        [2] Manual control (stop here, I'll handle it)
+        [3] Skip and proceed (acceptable for draft PR)
+```
+
+**What qualifies as "simple/automatable":**
+
+✅ **Auto-fix these:**
+- Format issues (`npm run format`, `black`, `gofmt`, etc.)
+- Lint errors with auto-fix (`eslint --fix`, `rubocop -a`)
+- Missing imports/exports
+- Trivial type errors (add explicit type annotation)
+- Test timeouts (increase timeout in test config)
+- Dependency conflicts (update lockfile)
+
+❌ **DO NOT auto-fix (escalate to user):**
+- Logic errors in implementation
+- Failing unit/integration tests (need code changes)
+- Security vulnerabilities
+- Design feedback ("this should use pattern X")
+- Performance issues
+- Breaking API changes
+- Contradictory bot comments
+
+**One-Pass Rule:** Make fixes ONCE. If CI still fails after the fixes, escalate to user. **DO NOT loop.**
+
+---
+
+### Step 2: Summarize
+
+Once work is complete (after PR merge or user closes the loop), run `/summarize`:
+
+```
+/summarize
+```
+
+Creates `context/summaries/YYYY-MM-DD-<task-name>.md`
 
 **Summary Document Contents:**
 
 - What was built/fixed
 - Files modified (with impact)
 - Key decisions made
+- Phase 8 fixes applied (if any)
+- CI/bot issues encountered and resolution
 - Lessons learned
 - Known limitations
 - Future improvements
 - Link to merged PR and commits
 - Worktree path used (for reference)
 
-**Note:** The `context/` directory is git-ignored. Summaries are local session artifacts and are not committed to git.
+---
 
-**⚡ PARALLEL SUBAGENTS for documentation (if docs need updating):**
+### Step 3: Update Documentation (if needed)
+
+**⚡ PARALLEL SUBAGENTS** (only if docs need updating):
 
 ```
 Task(subagent_type="general-purpose", prompt="Update README.md with new feature/change following documentation skill")
@@ -540,4 +597,113 @@ Task(subagent_type="general-purpose", prompt="Update API docs for new/changed en
 Task(subagent_type="general-purpose", prompt="Write ADR for architectural decision made, following documentation skill ADR format")
 ```
 
-Only launch doc subagents if documentation updates are needed for this change.
+---
+
+### Step 4: Clean Up Worktree
+
+**After PR merge and all follow-ups complete:**
+
+```bash
+# Return to main repo
+cd $(git rev-parse --show-toplevel)
+
+# List worktrees to confirm path
+git worktree list
+
+# Remove the worktree (use path from Phase 2)
+git worktree remove ../.worktrees/$(basename $(git rev-parse --show-toplevel))/feature-name
+
+# Optionally delete the merged branch
+git branch -d feature/feature-name
+```
+
+**Note:** Keep worktree active if you need to make follow-up changes. Clean up only when completely done.
+
+---
+
+### Why NOT a Retry Loop?
+
+**Problems with post-PR loops:**
+1. ❌ **Infinite loop risk** - Complex/contradictory feedback can trap the agent
+2. ❌ **Over-correction** - Agent might make unwanted changes without oversight
+3. ❌ **Wasted resources** - Multiple CI runs for issues needing human judgment
+4. ❌ **Harder debugging** - Tracing through multiple auto-fix iterations is painful
+5. ❌ **Loss of transparency** - Code changes on remote without clear review
+
+**Why one-pass is better:**
+1. ✅ **Phase 5 catches issues upfront** - PR starts green or near-green
+2. ✅ **CI failures are often environment-specific** - Can't loop-fix locally
+3. ✅ **Human judgment for complex issues** - Faster and more reliable
+4. ✅ **Clear audit trail** - One attempt, clear decision point
+5. ✅ **User maintains control** - Explicit choice to continue or take over
+
+---
+
+### Example: Phase 8 One-Pass Monitoring
+
+**Scenario:** PR created, CI runs, bot comments
+
+```bash
+# Check CI status
+gh pr checks 42
+
+Output:
+✓ Lint - passing
+✓ Tests - passing
+✗ Format - failing (2 files need formatting)
+✓ Build - passing
+```
+
+**Decision:** Format is automatable → Auto-fix
+
+```bash
+# Fix locally
+npm run format
+
+# Verify
+git diff
+
+# Commit and push
+git add .
+git commit -m "chore: apply format fixes from CI"
+git push
+
+# Report
+echo "✓ Applied format fixes. CI should pass on re-run."
+```
+
+**If CI still fails after this:** Escalate to user with details.
+
+---
+
+### Example: Phase 8 User Escalation
+
+**Scenario:** Bot comments suggest design changes
+
+```bash
+gh pr view 42 --comments
+
+Output:
+@bot-reviewer: "Consider using the Repository pattern here instead of direct DB calls."
+@bot-reviewer: "This function has cyclomatic complexity of 15. Refactor?"
+```
+
+**Decision:** Design feedback = complex → Escalate
+
+```
+AskUserQuestion(
+  questions: [{
+    question: "PR has bot feedback suggesting design improvements (Repository pattern, refactor complex function). How should we proceed?",
+    header: "Bot Feedback",
+    options: [
+      { label: "Address feedback", description: "I'll make the suggested design changes" },
+      { label: "Discuss in PR", description: "Leave as-is, discuss with team in PR" },
+      { label: "Create follow-up", description: "Accept for now, create issue for future refactor" }
+    ]
+  }]
+)
+```
+
+---
+
+**Note:** The `context/` directory is git-ignored. Summaries are local session artifacts and are not committed to git.

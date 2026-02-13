@@ -211,7 +211,7 @@ See [PARALLEL.md](PARALLEL.md) for complete parallel execution patterns.
 - [ ] Phase 5: Validation complete (formatter, linter, build, tests, code review, security review)
 - [ ] Phase 6: Changes committed and pushed
 - [ ] Phase 7: PR created as draft; marked ready after all commits
-- [ ] Phase 8: Summary documented and worktree cleaned up
+- [ ] Phase 8: CI/bot monitoring complete (one-pass), summary documented, worktree cleaned up
 
 ---
 
