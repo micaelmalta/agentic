@@ -1,5 +1,17 @@
 # Hybrid Architecture: Workflow Skill + Phase Agents
 
+## Contents
+
+- [Orchestrator Responsibilities](#orchestrator-responsibilities)
+- [Phase Agent Responsibilities](#phase-agent-responsibilities)
+- [Phase Agents](#phase-agents)
+- [Benefits of Hybrid Approach](#benefits-of-hybrid-approach)
+- [Agent Invocation Pattern](#agent-invocation-pattern)
+- [Error Recovery Between Phases](#error-recovery-between-phases)
+- [Detailed Specifications](#detailed-specifications)
+
+---
+
 The workflow skill uses a **hybrid architecture** combining orchestration and autonomous phase agents:
 
 ```

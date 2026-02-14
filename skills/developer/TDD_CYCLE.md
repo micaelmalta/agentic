@@ -229,34 +229,15 @@ test("description of expected behavior", () => {
 
 ## TDD Cycle Enforcement
 
-**Per Behavior Checklist:**
+Each behavior/requirement MUST complete the full TDD cycle (RED → GREEN → REFACTOR) before proceeding to the next behavior.
 
-```
-FOR each behavior in plan:
-  1. RED phase:
-     → Write failing test
-     → Run test (MUST fail)
-     → IF test passes: Test is wrong or feature exists
+**For complete TDD gate checklist with enforcement rules:** See [../workflow/GATES.md - Phase 3: TDD Gate Enforcement](../workflow/GATES.md#phase-3-tdd-gate-enforcement).
 
-  2. GREEN phase:
-     → Write minimum code to pass test
-     → Run test (MUST pass)
-     → Run ALL tests (MUST all pass)
-     → IF any test fails: Fix code, retry
-
-  3. REFACTOR phase:
-     → Clean up code structure
-     → Run ALL tests (MUST all pass)
-     → IF tests fail: Undo refactor or fix issue
-
-  4. Verify quality gates:
-     → All tests pass
-     → Code follows conventions
-     → No security issues
-
-  5. ONLY THEN proceed to next behavior
-END FOR
-```
+**Quick summary:**
+- RED: Write failing test (MUST fail initially)
+- GREEN: Write minimum code to pass test (MUST pass)
+- REFACTOR: Clean up code (ALL tests MUST still pass)
+- Verify quality gates before proceeding to next behavior
 
 ---
 

@@ -275,26 +275,9 @@ Once the plan is approved, phases 2-8 execute **fully autonomously** without sto
 
 **⛔ PHASE 3 TDD GATE ENFORCEMENT:**
 
-Each behavior/requirement MUST complete the full TDD cycle before proceeding:
+Each behavior/requirement MUST complete the full TDD cycle (RED → GREEN → REFACTOR) before proceeding.
 
-```
-TDD CYCLE GATE (per behavior):
-✓ [ ] RED: Test written and FAILS (proves requirement not yet met)
-✓ [ ] GREEN: Minimum code written and test now PASSES
-✓ [ ] REFACTOR: Code cleaned up, tests still PASS
-✓ [ ] All tests PASS (not just the new one)
-✓ [ ] Code follows project conventions
-✓ [ ] No security vulnerabilities introduced
-
-IF any gate fails:
-  → Do NOT move to next behavior
-  → Complete current TDD cycle first
-  → Verify all tests pass
-  → Then proceed to next behavior
-
-⛔ CRITICAL: TDD is NON-NEGOTIABLE - tests MUST come before implementation
-⛔ CRITICAL: Each behavior gets its own TDD cycle (don't batch)
-```
+**For complete TDD gate checklist:** See [GATES.md - Phase 3: TDD Gate Enforcement](GATES.md#phase-3-tdd-gate-enforcement).
 
 **Actions:**
 
