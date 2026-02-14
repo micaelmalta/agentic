@@ -95,6 +95,7 @@ This workflow coordinates these specialized skills:
 For detailed information, see these reference files:
 
 - **[PHASES.md](PHASES.md)** - Detailed protocol for all 8 phases
+- **[PRODUCT_PROPOSALS.md](PRODUCT_PROPOSALS.md)** - Product proposal validation protocol (user stories + E2E tests)
 - **[GATES.md](GATES.md)** - Gate checklists and retry loops (MANDATORY enforcement)
 - **[MCP.md](MCP.md)** - MCP integration (Atlassian, Datadog, Playwright)
 - **[TOOLS.md](TOOLS.md)** - Tool usage for file modifications (Edit/Write/Read)

@@ -58,6 +58,46 @@ For large codebases (100+ files), use **RLM skill** instead of multiple Explore 
 
 When the plan involves architecture or tech design, also structure content using **tech_proposal_template.md** (Metadata, Architecture Considerations, API Changes, Data Models, Domain Architecture, Additional Considerations, Estimation & Implementation Plan)—either inline in the plan or in a separate tech spec file referenced from the plan.
 
+### Product Proposal Validation
+
+When the input to Phase 1 is a **product proposal** (high-level feature description without concrete user stories), apply the **Product Proposal Validation Protocol** before creating the implementation plan.
+
+**See [PRODUCT_PROPOSALS.md](PRODUCT_PROPOSALS.md) for the complete protocol.**
+
+**Core requirements:**
+
+1. **User Stories Validation**
+   - Identify ALL implied user stories from the proposal
+   - Generate missing stories with: clear Title, detailed Description (context, scope, workflow), Acceptance Criteria
+   - Ensure stories are: independently testable, vertically sliced, actionable/implementation-ready
+   - Do NOT leave high-level features without concrete implementation stories
+
+2. **E2E Test Coverage (MANDATORY)**
+   - For EVERY user story, ensure at least one corresponding E2E test exists
+   - Generate missing E2E tests if needed
+   - Each E2E test must: state user journey, reference related story, define expected outcomes, cover critical happy path, include key edge cases
+   - Use Playwright MCP for UI features (MANDATORY)
+
+3. **Structured Output**
+   - Product Proposal Summary (brief overview + key objectives)
+   - User Stories (with Title, Description, Acceptance Criteria, Related E2E Tests)
+   - E2E Test Coverage Summary (table showing all stories and their E2E tests)
+   - Coverage Gaps (if any were found and how they were resolved)
+   - Dependencies (cross-story dependencies and parallel work opportunities)
+   - Implementation Readiness Checklist
+
+**Quality Standards:**
+- Be concrete, implementation-ready, and avoid vague language
+- Every story must be independently testable
+- No user-facing functionality without E2E coverage
+- All gaps must be resolved or escalated to user (via AskUserQuestion) before proceeding
+
+**Output Location:** Create validation document in `context/plans/YYYY-MM-DD-<proposal-name>-validation.md`
+
+**Approval Gate:** Present validation output to user for review and approval before creating implementation plan or Jira tickets.
+
+**After approval:** If using Atlassian MCP, create Jira tickets from validated stories, then proceed with creating the implementation plan.
+
 ### Jira Epic/Initiative Breakdown
 
 When the input to Phase 1 is a **Jira Epic** or **Initiative**, break it down into actionable tickets following these rules before creating the implementation plan.

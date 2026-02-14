@@ -344,6 +344,22 @@ See [skills/workflow/SKILL.md](skills/workflow/SKILL.md) and [skills/developer/S
 6. Archive when done: `/archive`
 7. Clean up worktree: `git worktree remove <path>`
 
+### Product Proposal Validation
+
+When starting with a **product proposal** (high-level feature description without concrete user stories):
+
+1. Read workflow skill: `skills/workflow/SKILL.md`
+2. Read product proposal validation protocol: `skills/workflow/PRODUCT_PROPOSALS.md`
+3. Apply validation in Phase 1 (Plan):
+   - **Validate/generate user stories** (clear title, detailed description with context/scope/workflow, acceptance criteria)
+   - **Validate/generate E2E test coverage** (at least one E2E test per story, using Playwright MCP for UI)
+   - **Output structured validation** (proposal summary, stories with tests, coverage gaps)
+4. Present validation output for user approval
+5. After approval: Create Jira tickets (if using Atlassian MCP)
+6. Continue with standard workflow (Phase 2-8)
+
+**Key requirement:** No user-facing functionality without E2E coverage. All stories must be independently testable and implementation-ready.
+
 ### Large Codebase Work
 
 1. Use RLM skill for exploration: `/rlm`
