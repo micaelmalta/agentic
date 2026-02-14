@@ -90,102 +90,48 @@ Run tests after changes. Fix or skip failing tests before adding new ones.
 
 **When the application has a UI, Playwright MCP is MANDATORY for E2E and UI testing.**
 
-**Prerequisites:**
+**Prerequisites:** Ensure Playwright MCP is configured via `/setup`. If not available, stop and run `/setup` before proceeding.
 
-1. Ensure Playwright MCP is configured via `/setup`
-2. The MCP provides browser automation tools directly to the agent
+**Quick reference:** Playwright MCP provides browser automation tools (`browser_navigate`, `browser_click`, `browser_type`, `browser_screenshot`, `browser_snapshot`, `browser_wait_for`, etc.) for testing user flows, visual regression, and accessibility.
 
-**Playwright MCP Capabilities:**
-
-| Tool                    | Purpose                                     |
-| ----------------------- | ------------------------------------------- |
-| `browser_navigate`      | Navigate to URLs                            |
-| `browser_click`         | Click elements                              |
-| `browser_type`          | Type text into inputs                       |
-| `browser_screenshot`    | Capture screenshots for visual verification |
-| `browser_snapshot`      | Get accessibility tree snapshot             |
-| `browser_wait_for`      | Wait for conditions                         |
-| `browser_select_option` | Select dropdown options                     |
-| `browser_hover`         | Hover over elements                         |
-| `browser_drag`          | Drag and drop                               |
-| `browser_press_key`     | Press keyboard keys                         |
-
-**When to Use Playwright MCP:**
-
-- Testing user flows (login, checkout, forms)
-- Visual regression testing (screenshots)
-- Accessibility tree inspection
-- Interactive debugging of UI issues
-- Cross-browser testing (Chrome, Firefox, WebKit, Edge)
-
-**Example UI Test Flow:**
-
-1. Use `browser_navigate` to go to the page
-2. Use `browser_snapshot` to understand the page structure
-3. Use `browser_click`, `browser_type` to interact
-4. Use `browser_screenshot` to capture results
-5. Verify outcomes via assertions or visual inspection
-
-**Configuration:** If Playwright MCP is not available, stop and run `/setup` to configure it before proceeding with any UI testing.
+**For complete UI testing guide:** See [reference/UI_TESTING.md](reference/UI_TESTING.md), which covers:
+- Playwright MCP capabilities and when to use them
+- Example UI test flows (login, forms, multi-step wizards)
+- Best practices (semantic selectors, waiting for dynamic content)
+- Configuration and troubleshooting
+- Integration with testing frameworks
 
 ### 6. Accessibility (a11y) Testing
 
-Test that the application is usable by people with disabilities:
+Test that the application is usable by people with disabilities.
 
-| Test Type         | Tools                        | What to Check                                                      |
-| ----------------- | ---------------------------- | ------------------------------------------------------------------ |
-| **Automated**     | axe-core, pa11y, Lighthouse  | Color contrast, alt text, ARIA labels, heading hierarchy           |
-| **Keyboard**      | Manual or Cypress/Playwright | Tab order, focus visible, no keyboard traps, skip links            |
-| **Screen reader** | VoiceOver, NVDA, JAWS        | Announcements make sense, forms labeled, dynamic content announced |
+**Test types:** Automated (axe-core, pa11y, Lighthouse), Keyboard (tab order, focus), Screen reader (VoiceOver, NVDA, JAWS).
 
-**Automated a11y testing in CI:**
+**Quick reference:** Test color contrast, alt text, ARIA labels, keyboard navigation, and screen reader announcements. Follow WCAG 2.1 Level AA guidelines.
 
-```javascript
-// Jest + axe-core example
-import { axe, toHaveNoViolations } from "jest-axe";
-expect.extend(toHaveNoViolations);
-
-it("has no accessibility violations", async () => {
-  const { container } = render(<MyComponent />);
-  expect(await axe(container)).toHaveNoViolations();
-});
-```
-
-**Key WCAG criteria to test:**
-
-- Perceivable: Alt text, captions, color contrast (4.5:1 for text)
-- Operable: Keyboard accessible, no seizure triggers, navigable
-- Understandable: Readable, predictable, input assistance
-- Robust: Compatible with assistive technologies
+**For complete a11y testing guide:** See [reference/A11Y_TESTING.md](reference/A11Y_TESTING.md), which covers:
+- Automated, keyboard, and screen reader testing
+- WCAG 2.1 criteria (Perceivable, Operable, Understandable, Robust)
+- Common issues and fixes
+- Tools and resources
+- Integration with CI/CD
 
 ### 7. Internationalization (i18n) Testing
 
-Test that the application works correctly across languages and locales:
+Test that the application works correctly across languages and locales.
 
-| Test Type                | What to Check                                                      |
-| ------------------------ | ------------------------------------------------------------------ |
-| **Translation coverage** | All user-facing strings have translations; no hardcoded text       |
-| **Locale formatting**    | Dates, numbers, currencies format correctly per locale             |
-| **RTL support**          | Layout works for right-to-left languages (Arabic, Hebrew)          |
-| **Text expansion**       | UI doesn't break when translations are longer (German ~30% longer) |
-| **Pluralization**        | Correct plural forms for each language                             |
-| **Character encoding**   | Unicode renders correctly; no mojibake                             |
+**Test types:** Translation coverage (no hardcoded text), Locale formatting (dates, numbers, currencies), RTL support (Arabic, Hebrew), Text expansion, Pluralization, Character encoding (Unicode, no mojibake).
 
-**i18n testing approaches:**
+**Quick reference:** Use pseudo-localization to catch hardcoded strings, test with longest translations (German), test RTL layouts (Arabic), verify pluralization rules per language.
 
-```javascript
-// Test with pseudo-localization (catches hardcoded strings)
-i18n.locale = "pseudo"; // Renders "[Ḩḗŀŀǿ Ẇǿřŀḓ!]"
-
-// Test with longest translations
-i18n.locale = "de"; // German often longest
-
-// Test RTL
-i18n.locale = "ar"; // Arabic
-expect(document.dir).toBe("rtl");
-```
-
-**Tools:** i18next, FormatJS, pseudo-localization libraries, Crowdin/Lokalise for translation management.
+**For complete i18n testing guide:** See [reference/I18N_TESTING.md](reference/I18N_TESTING.md), which covers:
+- Translation coverage and pseudo-localization
+- Locale formatting (dates, numbers, currencies)
+- RTL (right-to-left) support testing
+- Text expansion and UI breakage detection
+- Pluralization for different languages
+- Character encoding and mojibake detection
+- Tools (i18next, FormatJS, Crowdin, Lokalise)
 
 ### 8. Database Migration Testing
 
