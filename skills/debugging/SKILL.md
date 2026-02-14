@@ -123,11 +123,12 @@ When debugging with logs (local or production):
 
 | Situation | Skill to invoke |
 |-----------|----------------|
-| Bug fix needs tests | **testing** skill (write reproduction test) |
 | Performance-related bug | **performance** skill (profile first) |
 | Security-related bug | **security-reviewer** skill |
 | Bug in CI/CD pipeline | **ci-cd** skill |
 | Bug caused by dependency update | **dependencies** skill |
+
+**See also:** **testing** skill for writing reproduction tests (TDD approach for bug fixes).
 
 ---
 
