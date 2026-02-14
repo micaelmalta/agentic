@@ -181,8 +181,14 @@ jobs:
 
             content = md_file.read_text(encoding='utf-8')
 
+            # Remove code blocks to avoid checking example links
+            # Remove fenced code blocks (```...```)
+            content_no_code = re.sub(r'```.*?```', '', content, flags=re.DOTALL)
+            # Remove inline code (`...`)
+            content_no_code = re.sub(r'`[^`]+`', '', content_no_code)
+
             # Find all markdown links: [text](path)
-            links = re.findall(r'\[([^\]]+)\]\(([^)]+)\)', content)
+            links = re.findall(r'\[([^\]]+)\]\(([^)]+)\)', content_no_code)
 
             for link_text, link_path in links:
                 # Skip external links (http://, https://, mailto:)

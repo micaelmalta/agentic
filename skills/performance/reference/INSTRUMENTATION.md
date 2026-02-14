@@ -4,7 +4,7 @@ This document provides guidance for instrumenting code with observability for di
 
 **For overview:** See [SKILL.md - Protocol](../SKILL.md#protocol)
 
-**Note:** For complete observability setup (logging, metrics, tracing), see [../ci-cd/reference/OBSERVABILITY.md](../ci-cd/reference/OBSERVABILITY.md). This file focuses on performance-specific instrumentation concerns.
+**Note:** For complete observability setup (logging, metrics, tracing), see [../../ci-cd/reference/OBSERVABILITY.md](../../ci-cd/reference/OBSERVABILITY.md). This file focuses on performance-specific instrumentation concerns.
 
 ---
 
