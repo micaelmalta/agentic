@@ -62,39 +62,11 @@ When the plan involves architecture or tech design, also structure content using
 
 When the input to Phase 1 is a **product proposal** (high-level feature description without concrete user stories), apply the **Product Proposal Validation Protocol** before creating the implementation plan.
 
-**See [PRODUCT_PROPOSALS.md](PRODUCT_PROPOSALS.md) for the complete protocol.**
-
-**Core requirements:**
-
-1. **User Stories Validation**
-   - Identify ALL implied user stories from the proposal
-   - Generate missing stories with: clear Title, detailed Description (context, scope, workflow), Acceptance Criteria
-   - Ensure stories are: independently testable, vertically sliced, actionable/implementation-ready
-   - Do NOT leave high-level features without concrete implementation stories
-
-2. **E2E Test Coverage (MANDATORY)**
-   - For EVERY user story, ensure at least one corresponding E2E test exists
-   - Generate missing E2E tests if needed
-   - Each E2E test must: state user journey, reference related story, define expected outcomes, cover critical happy path, include key edge cases
-   - Use Playwright MCP for UI features (MANDATORY)
-
-3. **Structured Output**
-   - Product Proposal Summary (brief overview + key objectives)
-   - User Stories (with Title, Description, Acceptance Criteria, Related E2E Tests)
-   - E2E Test Coverage Summary (table showing all stories and their E2E tests)
-   - Coverage Gaps (if any were found and how they were resolved)
-   - Dependencies (cross-story dependencies and parallel work opportunities)
-   - Implementation Readiness Checklist
-
-**Quality Standards:**
-- Be concrete, implementation-ready, and avoid vague language
-- Every story must be independently testable
-- No user-facing functionality without E2E coverage
-- All gaps must be resolved or escalated to user (via AskUserQuestion) before proceeding
-
-**Output Location:** Create validation document in `context/plans/YYYY-MM-DD-<proposal-name>-validation.md`
-
-**Approval Gate:** Present validation output to user for review and approval before creating implementation plan or Jira tickets.
+**See [PRODUCT_PROPOSALS.md](PRODUCT_PROPOSALS.md) for the complete protocol,** which covers:
+- User Stories Validation (identify all implied stories, generate missing stories with clear Title/Description/Acceptance Criteria)
+- E2E Test Coverage (MANDATORY - at least one E2E test per story, using Playwright MCP for UI)
+- Structured Output (proposal summary, stories with E2E tests, coverage gaps, dependencies)
+- Quality Standards and Approval Gate
 
 **After approval:** If using Atlassian MCP, create Jira tickets from validated stories, then proceed with creating the implementation plan.
 
@@ -601,84 +573,38 @@ Task(
 **Execute ONCE after PR creation:**
 
 ```bash
-# 1. Check CI status
+# Check CI status and bot comments
 gh pr checks <pr-number> --watch
-
-# 2. Read bot comments (if any)
 gh pr view <pr-number> --comments
 ```
 
-**Decision Tree:**
+**Process:**
+1. **CI all green + no bot comments:** Skip to Step 2 (Summary)
+2. **Simple/automatable issues** (format, lint, missing imports, trivial type errors): Auto-fix locally, push, report
+3. **Complex issues** (logic errors, design feedback, security, performance): Escalate to user via AskUserQuestion
 
-```
-CI Status? → All green → Skip to Step 2 (Summary)
-           → Failures → Analyze failures
+**One-Pass Rule:** Make fixes ONCE. If CI still fails after fixes, escalate to user. DO NOT loop.
 
-Bot Comments? → None → Skip to Step 2
-              → Present → Analyze comments
+**For detailed decision trees, auto-fix guidelines, and examples:** See [PHASE_8_MONITORING.md](PHASE_8_MONITORING.md)
 
-Analysis:
-├─ Simple/Automatable (format, lint, trivial test fix)?
-│  ├─ YES → Auto-fix locally
-│  │       Push changes
-│  │       Report what was fixed
-│  └─ NO → Go to User Escalation
-│
-└─ Complex (logic errors, design issues, contradictory feedback)?
-   └─ Report to user + AskUserQuestion:
-      - "CI failed with: [details]"
-      - "Bot suggests: [feedback]"
-      - Options:
-        [1] Continue auto-fixing (I'll attempt to resolve)
-        [2] Manual control (stop here, I'll handle it)
-        [3] Skip and proceed (acceptable for draft PR)
-```
-
-**What qualifies as "simple/automatable":**
-
-✅ **Auto-fix these:**
-- Format issues (`npm run format`, `black`, `gofmt`, etc.)
-- Lint errors with auto-fix (`eslint --fix`, `rubocop -a`)
-- Missing imports/exports
-- Trivial type errors (add explicit type annotation)
-- Test timeouts (increase timeout in test config)
-- Dependency conflicts (update lockfile)
-
-❌ **DO NOT auto-fix (escalate to user):**
-- Logic errors in implementation
-- Failing unit/integration tests (need code changes)
-- Security vulnerabilities
-- Design feedback ("this should use pattern X")
-- Performance issues
-- Breaking API changes
-- Contradictory bot comments
-
-**One-Pass Rule:** Make fixes ONCE. If CI still fails after the fixes, escalate to user. **DO NOT loop.**
+**Rationale:** Phase 5 validation catches 90%+ of issues BEFORE PR. Phase 8 does one pass only—complex issues need human judgment.
 
 ---
 
 ### Step 2: Summarize
 
-Once work is complete (after PR merge or user closes the loop), run `/summarize`:
+Once work is complete (after PR merge), run `/summarize`:
 
 ```
 /summarize
 ```
 
-Creates `context/summaries/YYYY-MM-DD-<task-name>.md`
-
-**Summary Document Contents:**
-
-- What was built/fixed
-- Files modified (with impact)
-- Key decisions made
-- Phase 8 fixes applied (if any)
+Creates `context/summaries/YYYY-MM-DD-<task-name>.md` documenting:
+- What was built/fixed and files modified
+- Key decisions and Phase 8 fixes applied
 - CI/bot issues encountered and resolution
-- Lessons learned
-- Known limitations
-- Future improvements
-- Link to merged PR and commits
-- Worktree path used (for reference)
+- Lessons learned, limitations, future improvements
+- Link to PR, commits, and worktree path
 
 ---
 
@@ -702,9 +628,6 @@ Task(subagent_type="general-purpose", prompt="Write ADR for architectural decisi
 # Return to main repo
 cd $(git rev-parse --show-toplevel)
 
-# List worktrees to confirm path
-git worktree list
-
 # Remove the worktree (use path from Phase 2)
 git worktree remove ../.worktrees/$(basename $(git rev-parse --show-toplevel))/feature-name
 
@@ -712,92 +635,7 @@ git worktree remove ../.worktrees/$(basename $(git rev-parse --show-toplevel))/f
 git branch -d feature/feature-name
 ```
 
-**Note:** Keep worktree active if you need to make follow-up changes. Clean up only when completely done.
-
----
-
-### Why NOT a Retry Loop?
-
-**Problems with post-PR loops:**
-1. ❌ **Infinite loop risk** - Complex/contradictory feedback can trap the agent
-2. ❌ **Over-correction** - Agent might make unwanted changes without oversight
-3. ❌ **Wasted resources** - Multiple CI runs for issues needing human judgment
-4. ❌ **Harder debugging** - Tracing through multiple auto-fix iterations is painful
-5. ❌ **Loss of transparency** - Code changes on remote without clear review
-
-**Why one-pass is better:**
-1. ✅ **Phase 5 catches issues upfront** - PR starts green or near-green
-2. ✅ **CI failures are often environment-specific** - Can't loop-fix locally
-3. ✅ **Human judgment for complex issues** - Faster and more reliable
-4. ✅ **Clear audit trail** - One attempt, clear decision point
-5. ✅ **User maintains control** - Explicit choice to continue or take over
-
----
-
-### Example: Phase 8 One-Pass Monitoring
-
-**Scenario:** PR created, CI runs, bot comments
-
-```bash
-# Check CI status
-gh pr checks 42
-
-Output:
-✓ Lint - passing
-✓ Tests - passing
-✗ Format - failing (2 files need formatting)
-✓ Build - passing
-```
-
-**Decision:** Format is automatable → Auto-fix
-
-```bash
-# Fix locally
-npm run format
-
-# Verify
-git diff
-
-# Commit and push
-git add .
-git commit -m "chore: apply format fixes from CI"
-git push
-
-# Report
-echo "✓ Applied format fixes. CI should pass on re-run."
-```
-
-**If CI still fails after this:** Escalate to user with details.
-
----
-
-### Example: Phase 8 User Escalation
-
-**Scenario:** Bot comments suggest design changes
-
-```bash
-gh pr view 42 --comments
-
-Output:
-@bot-reviewer: "Consider using the Repository pattern here instead of direct DB calls."
-@bot-reviewer: "This function has cyclomatic complexity of 15. Refactor?"
-```
-
-**Decision:** Design feedback = complex → Escalate
-
-```
-AskUserQuestion(
-  questions: [{
-    question: "PR has bot feedback suggesting design improvements (Repository pattern, refactor complex function). How should we proceed?",
-    header: "Bot Feedback",
-    options: [
-      { label: "Address feedback", description: "I'll make the suggested design changes" },
-      { label: "Discuss in PR", description: "Leave as-is, discuss with team in PR" },
-      { label: "Create follow-up", description: "Accept for now, create issue for future refactor" }
-    ]
-  }]
-)
-```
+**Note:** Keep worktree active if you need follow-up changes. Clean up only when completely done.
 
 ---
 
