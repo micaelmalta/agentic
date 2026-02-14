@@ -21,7 +21,7 @@ class TestSkillSections:
         patterns = [
             r"##\s+Protocol",
             r"##\s+Phase\s",
-            r"##\s+The\s+\w+\s+(Workflow|Loop)",
+            r"##\s+The\s+\w+\s+(Workflow|Loop|Phases)",
             r"##\s+Process",
             r"##\s+/\w+\s+Flow",
             r"##\s+Skill\s+Creation\s+Process",
