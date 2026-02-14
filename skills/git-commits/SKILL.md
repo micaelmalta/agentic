@@ -103,79 +103,24 @@ perf(search): optimize query with database index
 
 ### 4. Versioning (Semantic Versioning)
 
-Use **SemVer** (`MAJOR.MINOR.PATCH`) unless the project specifies otherwise:
+Use **SemVer** (`MAJOR.MINOR.PATCH`): MAJOR for breaking changes, MINOR for new features, PATCH for bug fixes.
 
-| Version Bump | When                                | Example           |
-| ------------ | ----------------------------------- | ----------------- |
-| **MAJOR**    | Breaking changes (API incompatible) | `1.2.3` → `2.0.0` |
-| **MINOR**    | New features (backward compatible)  | `1.2.3` → `1.3.0` |
-| **PATCH**    | Bug fixes (backward compatible)     | `1.2.3` → `1.2.4` |
+**For complete versioning guide:** See [reference/VERSIONING.md](reference/VERSIONING.md), which covers:
+- SemVer format and version bump rules
+- Pre-release versions (alpha, beta, rc)
+- Determining version from Conventional Commits
+- Examples and best practices
 
-**Pre-release versions**: `1.0.0-alpha.1`, `1.0.0-beta.2`, `1.0.0-rc.1`
+### 5. Tagging and Release Management
 
-**Determining version from commits** (Conventional Commits):
+Create annotated tags (`git tag -a v1.2.3 -m "Release v1.2.3"`) with `v` prefix. Use automated tools (semantic-release, release-please) or manual workflow (update version, CHANGELOG, commit, tag, push).
 
-- `feat(<scope>)!:` or `BREAKING CHANGE:` footer → **MAJOR**
-- `feat(<scope>):` → **MINOR**
-- `fix(<scope>):`, `perf(<scope>):` → **PATCH**
-- `docs(<scope>):`, `style(<scope>):`, `test(<scope>):`, `chore(<scope>):`, `refactor(<scope>):` → no version bump (or PATCH if releasing)
-
-**Note:** Any commit with `!` after scope or `BREAKING CHANGE:` footer triggers MAJOR bump, regardless of type.
-
-### 5. Tagging Releases
-
-```bash
-# Create annotated tag (preferred)
-git tag -a v1.2.3 -m "Release v1.2.3: Brief description"
-
-# Push tag to remote
-git push origin v1.2.3
-
-# Push all tags
-git push --tags
-```
-
-**Tag naming**: Use `v` prefix consistently (`v1.2.3` not `1.2.3`).
-
-### 6. Automated Release Workflow
-
-For projects using automation (e.g., `semantic-release`, `release-please`):
-
-| Tool                 | How It Works                                                                    |
-| -------------------- | ------------------------------------------------------------------------------- |
-| **semantic-release** | Analyzes commits, determines version, creates tag, publishes, updates changelog |
-| **release-please**   | Creates release PR with changelog; merge to release                             |
-| **standard-version** | Bumps version, updates changelog, creates tag                                   |
-
-**Manual release workflow:**
-
-1. Update version in manifest (`package.json`, `pyproject.toml`, etc.)
-2. Update CHANGELOG.md with new version header
-3. Commit: `chore(release): bump version to v1.2.3`
-4. Tag: `git tag -a v1.2.3 -m "Release v1.2.3"`
-5. Push: `git push && git push --tags`
-6. Create GitHub Release (optional): `gh release create v1.2.3 --notes-file CHANGELOG.md`
-
-**Example commit messages:**
-```
-chore(release): bump version to v1.2.3
-chore(deps): upgrade all dependencies to latest
-ci(github): add automated release workflow
-docs(changelog): update for v1.2.3 release
-```
-
-### 7. Commands
-
-| Action                    | Command                                     |
-| ------------------------- | ------------------------------------------- |
-| Inspect staged changes    | `git diff --staged`                         |
-| Suggest message from diff | Review diff, then output suggested message  |
-| View recent messages      | `git log -n 5 --oneline`                    |
-| View tags                 | `git tag -l` or `git tag -l "v1.*"`         |
-| Create tag                | `git tag -a v1.2.3 -m "Release v1.2.3"`     |
-| Push tag                  | `git push origin v1.2.3`                    |
-| Create GitHub release     | `gh release create v1.2.3 --generate-notes` |
-| Bump version (npm)        | `npm version patch/minor/major`             |
+**For complete release guide:** See [reference/RELEASES.md](reference/RELEASES.md), which covers:
+- Tagging releases (annotated tags, naming conventions)
+- Automated release workflow (semantic-release, release-please, standard-version)
+- Manual release workflow (step-by-step)
+- Commands reference (git tag, gh release, npm version)
+- Troubleshooting and best practices
 
 **Project Conventions:**
 - Always respect existing project conventions if they differ from this standard
