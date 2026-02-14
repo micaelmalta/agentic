@@ -152,7 +152,24 @@ Test that migrations work correctly and are reversible:
 4. Run latest migration down, then up again
 5. Verify data integrity
 
-### 9. Output
+### 9. LLM Evaluation and Testing
+
+Test LLM-powered features (skills, agents, AI-assisted workflows) with specialized approaches.
+
+**Challenges:** Non-deterministic outputs, semantic correctness, evaluation complexity, cost/latency.
+
+**Quick reference:** Test behavior/outcomes (not exact output), use temperature=0 for deterministic tests, mock LLM calls for unit tests, run expensive E2E tests selectively, use scoring-based evaluation for quality.
+
+**For complete LLM evaluation guide:** See [reference/LLM_EVALUATION.md](reference/LLM_EVALUATION.md), which covers:
+- Testing challenges with LLMs (non-determinism, evaluation metrics, flaky tests)
+- Test types (unit with mocks, integration, E2E with real LLM, regression/snapshot)
+- Deterministic vs scoring-based tests
+- Prompt evaluation frameworks (PromptFoo, LangSmith)
+- Skill validation patterns (outcome-based, property-based, LLM-as-judge, differential)
+- Common pitfalls (over-fitting, flaky tests, testing implementation details)
+- Example test patterns and tools
+
+### 10. Output
 
 When adding or updating tests, provide:
 
