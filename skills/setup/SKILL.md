@@ -146,63 +146,18 @@ Run from the project root so the path to the script is correct (e.g. `./skills/s
 
 ## Config Snippets (Reference)
 
-**Atlassian (HTTP) – two servers:**
+**Quick reference:**
+- **Atlassian (HTTP):** Two servers (`atlassian`, `atlassian-tech`) for Jira/Confluence
+- **Datadog (stdio):** Node.js with API keys for monitoring/observability
+- **Playwright (stdio):** `npx @playwright/mcp@latest` for UI testing, optional `--headless` for CI
 
-```json
-"atlassian": {
-  "url": "https://mcp.atlassian.com/v1/mcp",
-  "type": "http"
-},
-"atlassian-tech": {
-  "url": "https://mcp.atlassian.com/v1/mcp",
-  "type": "http"
-}
-```
-
-Override **atlassian-tech** URL with `ATLASSIAN_TECH_URL` when running the setup script if your tech endpoint differs.
-
-**Datadog (stdio):**
-
-```json
-"datadog": {
-  "type": "stdio",
-  "command": "node",
-  "args": ["<YOUR_MCP_DATADOG_PATH>/src/index.js"],
-  "env": {
-    "DATADOG_API_KEY": "<from-user>",
-    "DATADOG_APP_KEY": "<from-user>"
-  }
-}
-```
-
-Use the user's actual path for `args[0]` and their keys in `env`. Do not commit real keys.
-
-**Playwright (stdio):**
-
-```json
-"playwright": {
-  "command": "npx",
-  "args": ["@playwright/mcp@latest"]
-}
-```
-
-For headless mode (recommended for CI):
-
-```json
-"playwright": {
-  "command": "npx",
-  "args": ["@playwright/mcp@latest", "--headless"]
-}
-```
-
-Optional arguments:
-
-- `--browser <chrome|firefox|webkit|msedge>` – specify browser
-- `--viewport-size <WxH>` – e.g., `1280x720`
-- `--user-data-dir <path>` – persistent browser profile
-- `--isolated` – ephemeral session mode
-- `--storage-state <path>` – load auth cookies/localStorage
-- `--config <path>` – JSON config file for advanced settings
+**For complete configuration examples:** See [reference/CONFIG_EXAMPLES.md](reference/CONFIG_EXAMPLES.md), which covers:
+- Full JSON configuration for each MCP server (Atlassian, Datadog, Playwright)
+- Config file locations (Cursor, Claude Code, Claude Desktop)
+- Advanced options (browser selection, viewport size, persistent sessions, environment variables)
+- Merging with existing config (preserve existing `mcpServers` entries)
+- Security best practices (use environment variables, never commit secrets)
+- Troubleshooting common issues
 
 ---
 
