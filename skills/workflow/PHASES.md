@@ -58,6 +58,78 @@ For large codebases (100+ files), use **RLM skill** instead of multiple Explore 
 
 When the plan involves architecture or tech design, also structure content using **tech_proposal_template.md** (Metadata, Architecture Considerations, API Changes, Data Models, Domain Architecture, Additional Considerations, Estimation & Implementation Plan)—either inline in the plan or in a separate tech spec file referenced from the plan.
 
+### Jira Epic/Initiative Breakdown
+
+When the input to Phase 1 is a **Jira Epic** or **Initiative**, break it down into actionable tickets following these rules before creating the implementation plan.
+
+#### If the input is an Epic
+
+Break the Epic into **User Stories** and **Tasks** (implementation-level):
+
+- Each Story must include:
+  - A **clear, concise Title**
+  - A **detailed Description** with: Context, Scope, and Acceptance Criteria (when applicable)
+- Stories must be:
+  - **Independently testable**
+  - **Vertically sliced** as much as possible
+  - **Actionable and implementation-ready** (no vague items)
+
+#### If the input is an Initiative
+
+Create:
+- **1 Backend Epic** — with clear Title and Description (scope and goals)
+- **1 Frontend Epic** — with clear Title and Description (scope and goals)
+
+Then break each Epic into Stories and Tasks following the same quality rules above.
+
+#### Dependencies
+
+Explicitly identify dependencies between tickets:
+
+- Reference dependencies **directly in each Jira ticket description**
+- Add a dedicated **Dependencies section** for each affected ticket
+- Design work to **minimize blocking**
+
+**Frontend/Backend dependency pattern:** If frontend depends on backend, create a backend story to:
+1. Define the API contract
+2. Provide mock responses
+3. Publish schema/documentation
+
+This allows frontend to proceed using mocks. Prefer enabling **parallel work** over tightly coupled tickets.
+
+#### Output Format
+
+Structure the breakdown clearly:
+
+```
+Initiative (if applicable)
+├── Backend Epic (Title + Description)
+│   ├── Story 1 (Title + Description + Acceptance Criteria)
+│   │   └── Task 1.1, Task 1.2, ...
+│   └── Story 2
+│       └── Task 2.1, Task 2.2, ...
+├── Frontend Epic (Title + Description)
+│   ├── Story 1
+│   │   └── Task 1.1, Task 1.2, ...
+│   └── Story 2
+│       └── Task 2.1, Task 2.2, ...
+└── Dependency Summary (cross-ticket view)
+```
+
+All titles and descriptions must be **clear, concrete, and ready to create in Jira** (via `jira_create_issue` or `jira_batch_create_issues`).
+
+#### Creating Tickets in Jira
+
+**⚠️ DO NOT create tickets during planning.** The breakdown is part of the plan document presented for user review. Tickets are created **only after the user approves the plan** — as the first action when execution begins (between plan approval and Phase 2 worktree creation).
+
+**After plan approval, create tickets using Atlassian MCP:**
+
+1. Create Epics first (if Initiative): `jira_create_issue` with `issue_type: "Epic"`
+2. Create Stories under each Epic: `jira_create_issue` with `issue_type: "Story"` and link to Epic via `jira_link_to_epic`
+3. Create Tasks as subtasks: `jira_create_issue` with `issue_type: "Subtask"` and `additional_fields: {"parent": "STORY-KEY"}`
+4. Add dependencies: `jira_create_issue_link` with `link_type: "Blocks"` for blocking dependencies
+5. Batch creation: Use `jira_batch_create_issues` for efficiency when creating multiple stories/tasks
+
 **Approval Gate (ONE-TIME APPROVAL):**
 
 - Present plan to user for **one-time review and approval**

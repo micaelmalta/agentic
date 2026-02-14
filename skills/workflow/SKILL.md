@@ -114,6 +114,8 @@ For detailed information, see these reference files:
 
 Creates detailed plan in `context/plans/YYYY-MM-DD-<task>.md`. For technical designs, also use architect skill and tech_proposal_template.md.
 
+**Jira Epic/Initiative input:** When given a Jira Epic or Initiative, Phase 1 breaks it down into Stories and Tasks (Epic → Stories + Tasks; Initiative → Backend Epic + Frontend Epic → Stories + Tasks). Dependencies are explicitly identified with parallel-work patterns (backend API contract + mocks first). See [PHASES.md](PHASES.md#jira-epicinitiative-breakdown) for full breakdown rules.
+
 ### 2. Execute All Phases
 
 After plan approval, phases 2-8 execute **autonomously**:

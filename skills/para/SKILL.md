@@ -66,6 +66,33 @@ Plan → Review → Execute → Summarize → Archive
 - Explanations ("How does X work?")
 - Read-only informational tasks
 
+#### Jira Epic/Initiative Breakdown
+
+When the input to `/plan` is a **Jira Epic** or **Initiative**, break it down into actionable tickets as part of the plan:
+
+**Epic →** User Stories + Tasks (implementation-level)
+- Each Story: clear Title, detailed Description (context, scope, acceptance criteria), independently testable, vertically sliced, implementation-ready
+
+**Initiative →** 1 Backend Epic + 1 Frontend Epic → Stories + Tasks each
+- Each Epic: clear Title + Description with scope and goals
+
+**Dependencies:**
+- Explicitly identify and reference in each ticket description
+- Add a dedicated Dependencies section per affected ticket
+- Minimize blocking: backend creates API contract + mocks first so frontend can proceed in parallel
+
+**Output format:**
+```
+Initiative (if applicable)
+├── Backend Epic → Stories → Tasks
+├── Frontend Epic → Stories → Tasks
+└── Dependency Summary (cross-ticket view)
+```
+
+All titles and descriptions must be clear, concrete, and ready to create in Jira.
+
+**⚠️ DO NOT create tickets during planning.** Include the breakdown in the plan document for user review. Tickets are created **only after the user approves the plan** — as the first action of the Execute phase, using Atlassian MCP (`jira_create_issue`, `jira_batch_create_issues`, `jira_link_to_epic`, `jira_create_issue_link`).
+
 ### 2. Review Phase
 
 **Purpose:** Validate the plan before starting work.
