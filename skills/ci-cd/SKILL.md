@@ -1,6 +1,6 @@
 ---
 name: ci-cd
-description: "Configure and fix CI/CD pipelines: build, test, lint, deploy, database migrations, environment config, observability, and releases. Use when the user asks about CI, pipeline, GitHub Actions, deploy, fix the build, environment variables, monitoring, or release process."
+description: "Configure and fix CI/CD pipelines: build, test, lint, deploy, database migrations, environment config, observability setup (log shipping, metric collection, alert configuration), and releases. Use when the user asks about CI, pipeline, GitHub Actions, deploy, fix the build, environment variables, monitoring setup, or release process."
 triggers:
   - "/ci"
   - "CI"

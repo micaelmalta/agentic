@@ -1,6 +1,6 @@
 ---
 name: performance
-description: "Analyze and improve performance: profile, find bottlenecks, optimize, and instrument code with observability (logging, metrics, tracing). Use when the user asks about performance, slow code, bottlenecks, profiling, optimization, or adding observability."
+description: "Analyze and improve performance: profile, find bottlenecks, optimize, and instrument code with observability for diagnosing performance issues (profiling, bottleneck tracing). Use when the user asks about performance, slow code, bottlenecks, profiling, optimization, or adding performance-specific observability."
 triggers:
   - "/perf"
   - "performance"

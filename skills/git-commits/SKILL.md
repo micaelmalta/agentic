@@ -1,6 +1,6 @@
 ---
 name: git-commits
-description: "Write commit messages, changelogs, release notes, and manage versioning following Conventional Commits v1.0.0 with required scope. Use when the user asks for a commit message, changelog, release notes, versioning, tagging, or how to format commits."
+description: "Write commit messages, changelogs, release notes, and manage versioning following Conventional Commits with required scope. Use when the user asks for a commit message, changelog, release notes, versioning, tagging, or how to format commits."
 triggers:
   - "/commit"
   - "commit message"
@@ -29,7 +29,7 @@ Write clear, consistent commit messages and changelogs so history is readable an
 
 ### 1. Commit Message Format
 
-Follow **[Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/)** when the project does not specify otherwise:
+Follow **[Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)** when the project does not specify otherwise:
 
 ```
 <type>(<scope>): <short summary>
@@ -113,7 +113,7 @@ Use **SemVer** (`MAJOR.MINOR.PATCH`) unless the project specifies otherwise:
 
 **Pre-release versions**: `1.0.0-alpha.1`, `1.0.0-beta.2`, `1.0.0-rc.1`
 
-**Determining version from commits** (Conventional Commits v1.0.0):
+**Determining version from commits** (Conventional Commits):
 
 - `feat(<scope>)!:` or `BREAKING CHANGE:` footer → **MAJOR**
 - `feat(<scope>):` → **MINOR**
@@ -183,7 +183,7 @@ docs(changelog): update for v1.2.3 release
 - If project requires Jira ticket prefixes (e.g., `feat(api): PROJ-123 add endpoint`), include them
 - Scope is **required** by this standard; if project allows scope-less commits, follow project rules
 
-**Reference:** [Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/)
+**Reference:** [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
 
 ---
 
