@@ -1,0 +1,20 @@
+# Development and Testing Dependencies
+# Install with: pip install -r requirements-dev.txt
+
+# Testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+
+# Schema validation
+jsonschema>=4.19.0
+
+# YAML support
+pyyaml>=6.0
+
+# Code quality
+black>=23.7.0
+flake8>=6.1.0
+mypy>=1.5.0
+
+# Documentation
+markdown>=3.4.0
