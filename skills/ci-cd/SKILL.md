@@ -58,28 +58,18 @@ Add or change one job/workflow at a time; run the pipeline to verify.
 
 ### 3. Database Migrations in CI
 
-| Stage          | Action                                   | Considerations                                          |
-| -------------- | ---------------------------------------- | ------------------------------------------------------- |
-| **Test**       | Run migrations against test DB           | Ensure migrations are reversible; test both up and down |
-| **Staging**    | Run migrations before code deploy        | Validate with production-like data                      |
-| **Production** | Run migrations with appropriate strategy | Zero-downtime for critical systems                      |
+Run database migrations before or during deploy as a separate CI step.
 
-**Migration commands by ecosystem:**
+**Quick reference:** Run migrations in test/staging/production stages. Use ecosystem-specific commands (Prisma, Knex, Alembic, Django, goose, Rails). If migration fails, stop deployment.
 
-| Ecosystem        | Migrate                     | Rollback                                     |
-| ---------------- | --------------------------- | -------------------------------------------- |
-| Node (Prisma)    | `npx prisma migrate deploy` | `npx prisma migrate reset` (dev only)        |
-| Node (Knex)      | `npx knex migrate:latest`   | `npx knex migrate:rollback`                  |
-| Python (Alembic) | `alembic upgrade head`      | `alembic downgrade -1`                       |
-| Python (Django)  | `python manage.py migrate`  | `python manage.py migrate <app> <migration>` |
-| Go (goose)       | `goose up`                  | `goose down`                                 |
-| Ruby (Rails)     | `rails db:migrate`          | `rails db:rollback`                          |
-
-**CI migration pattern:**
-
-1. Run migrations in a separate job/step before deploy
-2. If migration fails, stop deployment
-3. For rollback: deploy previous code version, then run down migration
+**For complete database migration guide:** See [reference/DB_MIGRATIONS.md](reference/DB_MIGRATIONS.md), which covers:
+- Migration stages and considerations
+- Commands by ecosystem (Node, Python, Go, Ruby)
+- CI migration patterns
+- Zero-downtime migrations (multi-phase approach)
+- Testing migrations (up/down, rollback)
+- Common issues (lock timeout, constraint violations, dependencies)
+- Rollback strategy and troubleshooting
 
 ### 4. Environment & Config Management
 
@@ -106,24 +96,21 @@ jobs:
 
 ### 5. Observability & Monitoring
 
-Set up observability in the pipeline and deployed application:
+Set up observability (logging, metrics, tracing, alerts) in the pipeline and deployed application.
 
-| Layer       | What to Configure                                                                                      |
-| ----------- | ------------------------------------------------------------------------------------------------------ |
-| **Logging** | Structured logs (JSON), log levels, correlation IDs; ship to central system (Datadog, CloudWatch, ELK) |
-| **Metrics** | Application metrics (request count, latency, error rate); infrastructure metrics (CPU, memory)         |
-| **Tracing** | Distributed tracing for multi-service systems (OpenTelemetry, Jaeger, Datadog APM)                     |
-| **Alerts**  | Alert on error rate spikes, latency p99, failed deployments; route to on-call                          |
+**Quick reference:** Use structured logs (JSON), track RED metrics (Requests, Errors, Duration), implement distributed tracing for microservices, alert on error rate spikes and latency. Add deployment events and smoke tests to CI.
 
-**CI observability steps:**
+**MCP (Datadog):** Use Datadog MCP (after `/setup`) to query metrics, search logs, check monitors, and validate deployment impact.
 
-- Add deployment events/markers to monitoring system
-- Run smoke tests post-deploy and alert on failure
-- Track deployment frequency and failure rate as metrics
-
-**Health checks**: Add `/health` or `/ready` endpoints; CI can verify after deploy.
-
-**MCP (Datadog):** When monitoring or observability is in scope, use the **Datadog MCP** (after **/setup**) to inspect monitors, query metrics, search logs, and check service health. Use tools such as `list_monitors`, `get_monitor_status`, `query_metrics`, `search_logs`, and `get_service_health` to validate alerts and deployment impact. Ensure **/setup** has been run so Datadog MCP is configured.
+**For complete observability guide:** See [reference/OBSERVABILITY.md](reference/OBSERVABILITY.md), which covers:
+- Observability layers (Logging, Metrics, Tracing, Alerts)
+- Structured logging with correlation IDs
+- Application metrics (RED method) and infrastructure metrics
+- Distributed tracing with OpenTelemetry/Jaeger
+- Alert rules and routing (PagerDuty, Slack)
+- CI observability (deployment events, smoke tests)
+- Health checks (liveness, readiness)
+- Datadog MCP integration and best practices
 
 ### 6. Release Management
 
@@ -152,35 +139,22 @@ Set up observability in the pipeline and deployed application:
 
 ### Secrets Safety
 
-**BAD - Never do this:**
+Never log or commit secrets; always use platform secret store (GitHub Secrets, Vault, AWS SSM) and reference by name.
 
-```yaml
-# BAD: Hardcoded secret in workflow
-env:
-  API_KEY: "sk-1234567890abcdef"
+**Quick reference:**
+- ❌ BAD: Hardcoded secrets, secrets in logs, secrets in code
+- ✅ GOOD: Reference from secret store, mask in output, read from environment variables
 
-# BAD: Secret printed in logs
-- run: echo "Using key ${{ secrets.API_KEY }}"
+**For complete secrets safety guide:** See [reference/SECRETS.md](reference/SECRETS.md), which covers:
+- BAD practices (hardcoded, logged, committed secrets)
+- GOOD practices (secret stores, masking, environment variables)
+- Secret store options (GitHub, AWS, Vault, Azure, GCP)
+- Secret scanning (git-secrets, GitHub scanning, TruffleHog)
+- Secret rotation (when, how, zero-downtime)
+- Handling secret leaks (revoke, rotate, investigate)
+- Best practices by platform (GitHub Actions, GitLab, CircleCI)
 
-# BAD: Secret in code
-const API_KEY = "sk-1234567890abcdef";
-```
-
-**GOOD - Always do this:**
-
-```yaml
-# GOOD: Reference from secret store
-env:
-  API_KEY: ${{ secrets.API_KEY }}
-
-# GOOD: Mask secrets in output
-- run: echo "::add-mask::${{ secrets.API_KEY }}"
-
-# GOOD: Secret from environment variable
-const API_KEY = process.env.API_KEY;
-```
-
-For deep security analysis of secrets handling, invoke the **security-reviewer** skill.
+For deep security analysis, invoke the **security-reviewer** skill.
 
 ### 8. Conventions
 
