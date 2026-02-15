@@ -16,14 +16,15 @@ class TestWorkflowPhaseOrdering:
 
     def test_workflow_phase_ordering(self):
         body = read_skill_body(SKILL_PATH)
-        # Match actual phase headings like "## Phase 1: Plan", "## Phase 2: Create Feature Branch"
+        # Workflow uses a table format, check for phase entries in the table
         positions = []
         for i in range(1, 9):
-            match = re.search(rf"^##\s+Phase\s+{i}\b", body, re.MULTILINE)
-            assert match, f"Phase {i} heading not found in workflow SKILL.md"
+            # Match table entries like "| **1. Plan** |" or "| **2. Worktree** |"
+            match = re.search(rf"\|\s+\*\*{i}\.", body, re.MULTILINE)
+            assert match, f"Phase {i} table entry not found in workflow SKILL.md"
             positions.append(match.start())
-        # Verify headings appear in sequential order
-        assert positions == sorted(positions), "Phase headings are not in sequential order"
+        # Verify phases appear in sequential order
+        assert positions == sorted(positions), "Phase table entries are not in sequential order"
 
 
 class TestWorkflowDelegation:

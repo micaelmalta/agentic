@@ -1,6 +1,6 @@
 ---
 name: performance
-description: "Analyze and improve performance: profile, find bottlenecks, optimize, and instrument code with observability (logging, metrics, tracing). Use when the user asks about performance, slow code, bottlenecks, profiling, optimization, or adding observability."
+description: "Analyze and improve performance: profile, find bottlenecks, optimize, and instrument code with observability for diagnosing performance issues (profiling, bottleneck tracing). Use when the user asks about performance, slow code, bottlenecks, profiling, optimization, or adding performance-specific observability."
 triggers:
   - "/perf"
   - "performance"
@@ -60,91 +60,14 @@ Preserve correctness and readability; add a short comment or test for non-obviou
 
 ### 5. Observability & Instrumentation
 
-Add observability to understand production behavior and diagnose issues:
+Add observability to understand production behavior and diagnose performance issues. Use structured logging, metrics (RED method), and tracing for distributed systems.
 
-#### Logging
-
-| Principle           | Implementation                                                                         |
-| ------------------- | -------------------------------------------------------------------------------------- |
-| **Structured logs** | Use JSON format with consistent fields (`timestamp`, `level`, `message`, `context`)    |
-| **Log levels**      | ERROR (failures), WARN (degraded), INFO (business events), DEBUG (troubleshooting)     |
-| **Correlation IDs** | Pass request ID through all services; include in every log line                        |
-| **What to log**     | Request/response summaries, errors with stack traces, business events, slow operations |
-| **What NOT to log** | Secrets, PII, full payloads (unless debug), high-volume low-value events               |
-
-```javascript
-// Good: Structured, contextual
-logger.info(
-  { requestId, userId, action: "checkout", itemCount: 3 },
-  "Checkout started"
-);
-
-// Bad: Unstructured, no context
-console.log("checkout started");
-```
-
-#### Metrics
-
-| Metric Type   | Use For                       | Examples                                               |
-| ------------- | ----------------------------- | ------------------------------------------------------ |
-| **Counter**   | Events that only increase     | `http_requests_total`, `errors_total`, `orders_placed` |
-| **Gauge**     | Values that go up/down        | `active_connections`, `queue_depth`, `cache_size`      |
-| **Histogram** | Distributions (latency, size) | `request_duration_seconds`, `response_size_bytes`      |
-
-**Key metrics to instrument:**
-
-- Request rate, error rate, duration (RED method)
-- Saturation (queue depth, connection pool usage)
-- Business metrics (signups, purchases, API calls by endpoint)
-
-#### Tracing
-
-For distributed systems, add tracing to follow requests across services:
-
-| Concept                 | Purpose                                                         |
-| ----------------------- | --------------------------------------------------------------- |
-| **Trace**               | End-to-end journey of a request                                 |
-| **Span**                | Single operation within a trace (DB query, HTTP call, function) |
-| **Context propagation** | Pass trace ID in headers between services                       |
-
-**When to add spans:**
-
-- External calls (HTTP, gRPC, DB, cache, queue)
-- Significant internal operations (batch processing, complex calculations)
-- Entry points (API handlers, queue consumers)
-
-#### Instrumentation by Ecosystem
-
-| Ecosystem | Logging                | Metrics                    | Tracing                    |
-| --------- | ---------------------- | -------------------------- | -------------------------- |
-| Node      | `pino`, `winston`      | `prom-client`              | `@opentelemetry/sdk-node`  |
-| Python    | `structlog`, `logging` | `prometheus_client`        | `opentelemetry-sdk`        |
-| Go        | `zap`, `zerolog`       | `prometheus/client_golang` | `go.opentelemetry.io/otel` |
-| Rust      | `tracing`, `slog`      | `prometheus` crate         | `opentelemetry` crate      |
-
-### 6. Commands (by ecosystem)
-
-| Ecosystem | Profile                           | Benchmark                          |
-| --------- | --------------------------------- | ---------------------------------- |
-| Node      | `node --inspect`, Chrome DevTools | `benchmark`, built-in `perf_hooks` |
-| Python    | `python -m cProfile`, `py-spy`    | `pytest-benchmark`, `timeit`       |
-| Go        | `go test -cpuprofile`, `pprof`    | `go test -bench`                   |
-| Rust      | `cargo flamegraph`, `perf`        | `cargo bench`, `criterion`         |
-
-### 7. MCP Integration (Datadog)
-
-When monitoring or validating instrumentation in production, use the **Datadog MCP** (after **/setup**) to inspect real metrics, logs, and traces. Key tools:
-
-- `query_metrics` - Query time-series metrics data (e.g., latency, throughput)
-- `list_metrics` - Discover available metrics in your environment
-- `get_metric_metadata` - Get units, description, and tags for a metric
-- `search_logs` - Search logs with filters and time ranges
-- `list_monitors` - List monitors, optionally filtered by status or tags
-- `get_monitor_status` - Get detailed status for a specific monitor
-- `query_traces` - Query APM traces for a service
-- `get_service_health` - Get latency, error rate, and throughput for a service
-
-Ensure **/setup** has been run so Datadog MCP is configured.
+**For complete instrumentation guidance:** See [reference/INSTRUMENTATION.md](reference/INSTRUMENTATION.md), which covers:
+- Performance-specific observability (logging, metrics, tracing)
+- Instrumentation by ecosystem (Node, Python, Go, Rust)
+- Profiling commands by ecosystem
+- MCP Integration (Datadog) for performance diagnosis
+- Best practices (log slow operations, instrument hot paths, track RED metrics)
 
 ---
 

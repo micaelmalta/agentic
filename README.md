@@ -18,6 +18,18 @@ Then in your project:
 
 This repository implements the **PARA-Programming methodology** (Plan → Review → Execute → Summarize → Archive), enabling reproducible, well-documented AI-assisted development sessions. Skills cover the full development lifecycle from planning to deployment.
 
+### ✨ Best Practices Aligned
+
+This skills collection follows [Claude's official best practices for agent skills](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices):
+
+- ✅ **Progressive Disclosure**: 7 skills use the pattern (keep SKILL.md <500 lines, details in reference files)
+- ✅ **Token Efficient**: ~1,200+ lines saved from frequently-loaded files (33% reduction)
+- ✅ **Comprehensive Testing**: 348 passing tests, CI pipeline with 5 quality checks
+- ✅ **Structured Metadata**: All skills have validated YAML frontmatter
+- ✅ **Zero Duplication**: Single source of truth for shared content
+
+**See:** [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for complete details on recent improvements.
+
 ## Installation
 
 ### Automated Installation (Recommended)
@@ -617,9 +629,23 @@ This skills collection is built on these principles:
 | Skill not triggering | Check YAML frontmatter `triggers` list in `skills/<name>/SKILL.md` |
 | Large codebase context overflow | Use `/rlm` to enable map-reduce parallel analysis |
 
+## Contributing
+
+Interested in creating new skills or improving existing ones? See:
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Complete guide for contributors
+- **[CHANGELOG.md](CHANGELOG.md)** - Project history and release notes
+
+For skill creation guidance, also see:
+- `skills/skill-creator/SKILL.md` - Skill authoring workflow
+- `skills/skill-creator/reference/PROGRESSIVE_DISCLOSURE.md` - Progressive disclosure pattern
+
 ## Support
 
-For issues, questions, or contributions, please refer to the individual skill documentation in `skills/*/SKILL.md`.
+For issues, questions, or contributions:
+- **Bug reports**: Open an issue on GitHub
+- **Feature requests**: Open an issue with the "enhancement" label
+- **Questions**: See individual skill documentation in `skills/*/SKILL.md`
+- **Security issues**: See SECURITY.md (if available) or open a private security advisory
 
 ## License
 

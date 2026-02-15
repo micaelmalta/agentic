@@ -2,6 +2,20 @@
 
 This document defines the mandatory validation process for product proposals in Phase 1 (Planning) of the workflow.
 
+## Contents
+
+- [When to Use This Protocol](#when-to-use-this-protocol)
+- [Core Requirements](#core-requirements)
+- [Output Format](#output-format)
+- [Language and Style](#language-and-style)
+- [Integration with Workflow Phases](#integration-with-workflow-phases)
+- [Examples](#examples)
+- [Quality Assurance](#quality-assurance)
+- [Escalation to User](#escalation-to-user)
+- [Success Criteria](#success-criteria)
+
+---
+
 ## When to Use This Protocol
 
 Use this protocol when the input to Phase 1 is a **product proposal** rather than a specific implementation task or Jira ticket. Product proposals are high-level feature descriptions that need to be broken down into concrete, testable user stories with corresponding E2E tests.

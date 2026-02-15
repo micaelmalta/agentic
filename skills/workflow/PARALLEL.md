@@ -1,5 +1,13 @@
 # Parallel Execution & Subagents
 
+## Contents
+
+- [Parallel Execution Groups](#parallel-execution-groups)
+- [Subagent Types & Capabilities](#subagent-types--capabilities)
+- [RLM Integration for Large Codebases](#rlm-integration-for-large-codebases)
+
+---
+
 ## Parallel Execution Groups
 
 **CRITICAL:** The following skill groups can and SHOULD run as parallel subagents to maximize efficiency. Launch all subagents in a single message using multiple Task tool calls.

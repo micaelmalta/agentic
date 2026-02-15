@@ -17,8 +17,7 @@ triggers:
 
 # PARA-Programming Methodology
 
-**Version:** 1.0
-**Purpose:** Global workflow methodology for AI-assisted development
+**Purpose:** Structured workflow methodology for AI-assisted development
 
 ---
 
@@ -53,7 +52,7 @@ Plan → Review → Execute → Summarize → Archive
 
 **What happens:**
 
-- Create `context/plans/YYYY-MM-DD-<task-name>.md` (in a monorepo: use root `context/` for repo-wide work, or the relevant project’s `context/` when scoped to that project)
+- Create `context/plans/YYYY-MM-DD-<task-name>.md` (in a monorepo: use root `context/` for repo-wide work, or the relevant project's `context/` when scoped to that project)
 - Document objectives, approach, and implementation steps
 - Identify affected files and components
 - Consider edge cases and risks
@@ -65,6 +64,8 @@ Plan → Review → Execute → Summarize → Archive
 - Code navigation ("Show me X")
 - Explanations ("How does X work?")
 - Read-only informational tasks
+
+**For decision framework:** See [reference/DECISION_FRAMEWORK.md](reference/DECISION_FRAMEWORK.md) for complete "Should I use PARA?" guidelines.
 
 #### Jira Epic/Initiative Breakdown
 
@@ -137,13 +138,7 @@ When you run `/execute`, ALL steps in the plan execute automatically without sto
 - Never ask "should I continue?" between steps
 - Only ask user for guidance when genuinely stuck or requirements are unclear/conflicting
 
-**Best practices:**
-
-- Follow the plan but adapt as needed
-- Document deviations from the plan in execution notes
-- Keep commits focused and atomic
-- Update the plan if scope changes significantly
-- Use TodoWrite to track step completion visibly
+**For execution best practices:** See [reference/COMMANDS.md](reference/COMMANDS.md).
 
 ### 4. Summarize Phase (`/summarize`)
 
@@ -199,7 +194,7 @@ project-root/
 **Monorepo only:** When the repository is a monorepo (multiple apps or packages in one repo), use a **parent context at the repo root** and **per-project context** under each project:
 
 - **Root (parent):** One `context/` at repo root for cross-cutting plans, summaries, and archives (e.g. shared infra, repo-wide refactors, release coordination). Root `CLAUDE.md` describes the monorepo layout, shared tooling, and conventions.
-- **Per project:** Each app or package (e.g. `apps/web/`, `packages/api/`) can have its own `context/` and optional `CLAUDE.md` for that project’s plans, summaries, and archives. Use the **project’s** `context/` when work is scoped to that project; use the **root** `context/` when work spans multiple projects or is repo-wide.
+- **Per project:** Each app or package (e.g. `apps/web/`, `packages/api/`) can have its own `context/` and optional `CLAUDE.md` for that project's plans, summaries, and archives. Use the **project's** `context/` when work is scoped to that project; use the **root** `context/` when work spans multiple projects or is repo-wide.
 
 ```
 monorepo-root/
@@ -212,7 +207,7 @@ monorepo-root/
 ├── apps/
 │   ├── web/
 │   │   ├── CLAUDE.md      # (optional) App-specific context
-│   │   └── context/       # This app’s plans, summaries, archives
+│   │   └── context/       # This app's plans, summaries, archives
 │   └── api/
 │       ├── CLAUDE.md
 │       └── context/
@@ -241,7 +236,7 @@ monorepo-root/
 - Current active work
 - Session state
 - Links to active plans
-- Temporary notes and findings
+- Temporary findings
 - **Note:** `context/` is git-ignored. These files are local session artifacts, not version-controlled.
 
 ### `context/plans/`
@@ -280,87 +275,18 @@ monorepo-root/
 
 ---
 
-## Decision Framework: Should I Use PARA?
+## Commands
 
-### ✅ Use PARA Workflow When:
+- `/init` - Initialize PARA structure
+- `/plan <task>` - Create plan
+- `/execute` - Start execution
+- `/summarize` - Document outcomes
+- `/archive` - Archive completed work
+- `/status` - Check workflow state
+- `/check` - Decision helper
+- `/help` - Show guide
 
-| Scenario                  | Reason                                          |
-| ------------------------- | ----------------------------------------------- |
-| Adding new features       | Needs planning and documentation                |
-| Fixing bugs (non-trivial) | Requires investigation and approach             |
-| Refactoring code          | Must document before/after and rationale        |
-| Architecture changes      | Critical to plan and record decisions           |
-| Performance optimization  | Need baseline, approach, and results            |
-| Security fixes            | Must document vulnerability and fix             |
-| API changes               | Breaking changes need careful planning          |
-| Database migrations       | Requires careful planning and rollback strategy |
-| Dependency updates        | Potential for breaking changes                  |
-| Config changes (complex)  | Need to understand impact                       |
-
-**Rule of thumb:** If it results in git changes, use PARA workflow.
-
-### ❌ Skip PARA Workflow For:
-
-| Scenario                     | Alternative           |
-| ---------------------------- | --------------------- |
-| "What does function X do?"   | Direct conversation   |
-| "Show me where Y is defined" | Use search/navigation |
-| "How does Z work?"           | Ask for explanation   |
-| "List all API endpoints"     | Direct query          |
-| "Explain this error message" | Direct conversation   |
-| Quick typo fixes             | Just fix it           |
-| Documentation reading        | Direct conversation   |
-| Code review comments         | Direct conversation   |
-
-**Rule of thumb:** If it's read-only or informational, skip PARA.
-
----
-
-## Commands Reference
-
-- **`/init`** - Initialize PARA structure in project. In a **monorepo**, initialize `context/` at repo root (parent) and optionally `context/` under each app or package that will use PARA. When setting up a new project, suggest **/setup** if the user will need Atlassian or Datadog MCP (Jira, Confluence, logs, metrics).
-- **`/plan <task>`** - Create a new plan
-- **`/execute`** - Start execution with tracking
-- **`/summarize`** - Generate post-work summary
-- **`/archive`** - Archive completed work
-- **`/status`** - Check current workflow state
-- **`/check`** - Decision helper (should I use PARA?)
-- **`/help`** - Show comprehensive guide
-
----
-
-## Best Practices
-
-### Planning
-
-- Be specific about objectives
-- List all affected files
-- Consider edge cases upfront
-- Identify risks and unknowns
-- Keep plans focused (single responsibility)
-
-### Execution
-
-- Create feature branches for complex work
-- Reference plan file during implementation
-- Document deviations from plan
-- Keep commits atomic and well-described
-- Update plan if scope changes significantly
-
-### Summarizing
-
-- Write summaries while context is fresh
-- Be honest about what worked/didn't work
-- Document trade-offs and alternatives considered
-- Link to relevant commits and PRs
-- Note future work and tech debt
-
-### Archiving
-
-- Archive regularly to keep context clean
-- Organize archives by date or milestone
-- Maintain searchable structure
-- Don't delete - archives are knowledge base
+**For detailed commands and best practices:** See [reference/COMMANDS.md](reference/COMMANDS.md).
 
 ---
 
@@ -369,7 +295,7 @@ monorepo-root/
 ### Where to put context (monorepo vs single-repo)
 
 - **Single-repo:** One `context/` at project root; all plans, summaries, and archives live there.
-- **Monorepo:** Use root `context/` for repo-wide work; use each project’s `context/` for work scoped to that app or package. Choose the context directory that matches the scope of the current task.
+- **Monorepo:** Use root `context/` for repo-wide work; use each project's `context/` for work scoped to that app or package. Choose the context directory that matches the scope of the current task.
 
 ### Active Context (`context/context.md`)
 
@@ -417,40 +343,9 @@ PARA-Programming complements git workflow:
 
 ---
 
-## Tips for Success
+## Philosophy and Tips
 
-1. **Start small** - Use PARA for one task to learn the workflow
-2. **Use `/check`** - When unsure if you need PARA, ask
-3. **Keep plans focused** - One task per plan
-4. **Write summaries promptly** - Don't wait, context fades fast
-5. **Archive regularly** - Keep active context manageable
-6. **Reference archives** - They're your project knowledge base
-7. **Adapt the workflow** - PARA is a framework, not a prison
-
----
-
-## Philosophy
-
-PARA-Programming is built on these principles:
-
-- **Planning reduces rework** - Think before you code
-- **Documentation compounds** - Future you will thank present you
-- **Context is currency** - Preserve it, don't lose it
-- **Async-first** - Enable handoffs and resumption
-- **Human-AI collaboration** - Structure helps both humans and AI work better
-
----
-
-## Getting Help
-
-- Run `/help` in any project for comprehensive guide
-- Run `/check <task>` to decide if you need PARA
-- Run `/status` to see where you are in the workflow
-- See `CLAUDE.md` in your project for project-specific context
-
----
-
-**Remember:** PARA is a tool to help you work better with AI, not a bureaucratic requirement. Use it when it adds value, skip it when it doesn't.
+**For philosophy, principles, and tips for success:** See [reference/METHODOLOGY.md](reference/METHODOLOGY.md).
 
 ---
 

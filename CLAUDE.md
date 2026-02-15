@@ -14,7 +14,7 @@ This is a **skills collection** for AI-assisted development (Claude Code/Cursor)
 skills/                    # Specialized agent skills
 ├── <skill-name>/
 │   ├── SKILL.md          # Skill definition, protocol, and usage
-│   └── [assets/]         # Optional supporting files
+│   └── [reference/]      # Optional reference files
 context/                  # PARA workflow artifacts (git-ignored)
 ├── context.md            # Active session state
 ├── plans/                # Implementation plans (YYYY-MM-DD-<task>.md)
@@ -41,7 +41,7 @@ Skills use a **reference-based structure** following Claude's best practices:
 **Example structure:**
 ```
 skills/workflow/
-├── SKILL.md              # Overview + references (~241 lines)
+├── SKILL.md              # Overview + references
 ├── PHASES.md             # Detailed 8-phase protocol
 ├── GATES.md              # Gate checklists and retry loops
 ├── MCP.md                # MCP integration details
@@ -77,68 +77,13 @@ skills/workflow/
 
 ### Phase Agent System
 
-**Phase agents** are autonomous, encapsulated workers used by the workflow skill for specific phases. They run in background mode by default and have structured JSON input/output for programmatic integration.
+**Phase agents** are autonomous workers used by the workflow skill for testing (Phase 4), validation (Phase 5), and PR creation (Phase 7). They have structured JSON I/O, retry logic, and run in background mode.
 
-**Architecture:**
-```
-Workflow Skill (Orchestrator)
-├── Phase 1: Planning (direct orchestration)
-├── Phase 2: Git Worktree Creation (direct orchestration)
-├── Phase 3: Implementation (direct orchestration - developer skill)
-├── Phase 4: Testing → phase-testing-agent (background)
-├── Phase 5: Validation → phase-validation-agent (background)
-├── Phase 6: Commit & Push (direct orchestration)
-├── Phase 7: PR Creation → phase-pr-agent (background)
-└── Phase 8: Monitor, Summarize & Cleanup (direct orchestration)
-```
-
-**Note:** Phases 2-8 execute within the worktree directory created in Phase 2.
-
-**Phase Agents:**
-
-1. **phase-testing-agent** (`skills/agents/phase-testing-agent/`)
-   - Auto-detects language (JS/TS, Python, Go, Rust, Ruby, Java)
-   - Runs tests with build step if needed
-   - Retry logic: 5s, 10s, 15s backoff (max 3 attempts)
-   - Returns structured JSON with failing test details
-   - User escalation after max retries
-
-2. **phase-validation-agent** (`skills/agents/phase-validation-agent/`)
-   - Runs 6 checks: formatter, linter, build, tests, code-reviewer, security-reviewer
-   - Auto-fixes format/lint issues with retry
-   - **Critical security handling:** Stops immediately on vulnerabilities
-   - Returns consolidated JSON with all check results
-   - Language-specific command mapping
-
-3. **phase-pr-agent** (`skills/agents/phase-pr-agent/`)
-   - Creates GitHub draft PR via `gh` CLI
-   - Automatic Jira integration (links PR, transitions to "In Code Review")
-   - Graceful degradation if Atlassian MCP not configured
-   - Fuzzy matching for Jira transition names
-   - Optional immediate mark-ready parameter
-
-**Key Characteristics:**
-- **Background Execution:** Non-blocking by default using Task tool
-- **Auto-Detection:** Language, test commands, build requirements
-- **Retry Logic:** Exponential backoff for recoverable errors
-- **User Escalation:** AskUserQuestion when stuck after retries
-- **Structured I/O:** JSON schemas in `protocol.md` files
-- **Graceful Degradation:** Continue with partial success (e.g., PR without Jira)
-
-**Agent vs Skill:**
-- **Skills:** Interactive, conversation-based, flexible workflows
-- **Agents:** Autonomous, structured I/O, encapsulated logic, background mode
-- **Usage:** Workflow orchestrates overall flow, agents execute specific phases
-
-**Documentation:**
-- Agent specs: `skills/agents/<agent-name>/AGENT.md`
-- I/O protocols: `skills/agents/<agent-name>/protocol.md`
-- Agent system: `skills/agents/README.md`
-- Template: `skills/agents/AGENT_TEMPLATE.md`
+**For details:** See `skills/agents/README.md` for agent system overview and `skills/agents/<agent-name>/AGENT.md` for individual agent specifications.
 
 ## Prerequisites
 
-- **Python 3.10+** — Required for `skills/rlm/rlm.py`, skill-creator scripts (`init_skill.py`, `package_skill.py`, `quick_validate.py`), validation scripts (`validate-input.py`), and MCP builder evaluation (`evaluation.py`)
+- **Python 3.10+** — Required for `skills/rlm/rlm.py`, skill-creator scripts, validation scripts, and MCP builder evaluation
 - **Node.js** — Required for `skills/setup/setup_mcp.js`
 - **GitHub CLI (`gh`)** — Required for Phase 7 (PR creation) in workflow skill
 - **Git** — Required for branch management, commits, and all version control operations
@@ -160,6 +105,8 @@ Workflow Skill (Orchestrator)
 - Explanations ("How does Z work?")
 - Quick fixes (typos)
 
+**For full PARA methodology:** See `skills/para/SKILL.md` or the global `~/.claude/CLAUDE.md`.
+
 ### Decision Helper
 
 - Run `/check <task>` to determine if a task needs PARA workflow
@@ -175,35 +122,18 @@ For codebases with **100+ files** or complex cross-file analysis:
 
 ## Skill Usage Patterns
 
-### When Writing Plans (architect + tech_proposal_template.md)
+### When Writing Plans
 
 For features or architectural changes:
 1. Read `skills/architect/SKILL.md`
 2. Read `skills/architect/tech_proposal_template.md`
-3. Structure plan using template sections:
-   - Metadata, Architecture Considerations, API Changes
-   - Data Models, Domain Architecture, Implementation Plan
+3. Structure plan using template sections
 
 ### Parallel Execution
 
-Launch **independent subagents in parallel** for efficiency:
+Launch **independent subagents in parallel** for efficiency when tasks don't depend on each other.
 
-**Phase: Exploration**
-```
-Task(Explore, "Find affected files...")
-Task(Explore, "Check existing patterns...")
-Task(Bash, "Review git history...")
-```
-
-**Phase: Validation (via phase-validation-agent)**
-```
-# Phase agents handle parallel execution internally
-# Workflow spawns single agent that runs all validations
-Task(
-  general-purpose,
-  "Read skills/agents/phase-validation-agent/AGENT.md and execute with input: {...}"
-)
-```
+**For details:** See `skills/workflow/PARALLEL.md` for complete parallel execution patterns.
 
 **Sequential Skills** (DO NOT parallelize):
 - debugging (investigation → fix)
@@ -217,7 +147,7 @@ Task(
 ### Setup (`/setup`)
 
 Configure MCP servers for Claude Code or Cursor:
-- **Atlassian** (atlassian, atlassian-tech) - Jira, Confluence
+- **Atlassian:atlassian** / **Atlassian:atlassian-tech** - Jira, Confluence
 - **Datadog** - Logs, metrics, monitors, traces
 - **Playwright** - Browser automation for UI testing (MANDATORY for UI)
 
@@ -238,61 +168,18 @@ Config locations:
 
 ### Git Worktree Usage (Default)
 
-All skills use **git worktree** by default for isolated, parallel development. This allows multiple features to be worked on simultaneously without context switching.
+All skills use **git worktree** for isolated, parallel development.
 
-**Worktree Pattern:**
+**Quick pattern:**
 ```bash
-# ONE-TIME SETUP: Create unified worktrees directory (shared across all repos)
 mkdir -p ../.worktrees
-
-# Phase 2: Create worktree (automated by workflow skill)
-# First, fetch latest changes from remote
-git fetch origin main  # or master
-
-# Get repo name and create worktree inside unified directory
+git fetch origin main
 REPO_NAME=$(basename $(git rev-parse --show-toplevel))
-git worktree add ../.worktrees/${REPO_NAME}/feature-implement-auth -b feature/implement-auth origin/main
-cd ../.worktrees/${REPO_NAME}/feature-implement-auth
-
-# Concrete example for repo "agentic":
-#   Worktree path: ../.worktrees/agentic/feature-implement-auth/
-#   Full path: /Users/mmalta/projects/poc/.worktrees/agentic/feature-implement-auth/
-
-# Initialize development environment
-npm install  # or yarn, pip install, etc.
-
-# Phases 3-7: Work in worktree directory
-# All git operations work normally
-
-# Phase 8: Cleanup after PR merge
-cd $(git rev-parse --show-toplevel)  # Return to main repo
-git worktree remove ../.worktrees/${REPO_NAME}/feature-implement-auth
-git branch -d feature/implement-auth  # Optional
+git worktree add ../.worktrees/${REPO_NAME}/feature-name -b feature/name origin/main
+cd ../.worktrees/${REPO_NAME}/feature-name
 ```
 
-**Benefits:**
-- Multiple Claude Code sessions can work on different features simultaneously
-- No branch switching or stashing required
-- Complete file isolation between features
-- Shared git history across all worktrees
-- **Single hidden directory for all repos** - maximum cleanliness
-- **Scales perfectly** - works for 1 repo or 100 repos
-
-**Location:** Worktrees are created inside a unified `../.worktrees/{repo-name}/` directory hierarchy.
-
-**Example structure:**
-```
-/Users/mmalta/projects/poc/
-├── .worktrees/                        # Hidden, unified worktrees directory
-│   ├── agentic/                       # All worktrees for agentic repo
-│   │   ├── feature-implement-auth/
-│   │   ├── fix-user-validation/
-│   │   └── feature-add-notifications/
-│   └── another-repo/                  # All worktrees for another-repo
-│       └── feature-xyz/
-├── agentic/                           # Main agentic repo
-└── another-repo/                      # Main another-repo repo
-```
+**For complete worktree documentation:** See `skills/workflow/PHASES.md` (Phase 2).
 
 ### Tool Usage for File Modifications (CRITICAL)
 
@@ -315,24 +202,7 @@ git branch -d feature/implement-auth  # Optional
 - Atomic operations with clear intent
 - Prevents accidental commits of temporary scripts
 
-**NEVER do this:**
-```bash
-# ❌ WRONG: Creates temporary script that gets committed
-echo 'sed -i "s/old/new/g" file.js' > fix.sh
-chmod +x fix.sh && ./fix.sh
-```
-
-**ALWAYS do this:**
-```python
-# ✅ CORRECT: Use Edit tool directly
-Edit(
-  file_path="file.js",
-  old_string="old content",
-  new_string="new content"
-)
-```
-
-See [skills/workflow/SKILL.md](skills/workflow/SKILL.md) and [skills/developer/SKILL.md](skills/developer/SKILL.md) for complete tool usage guidelines.
+**For complete tool usage guidelines:** See `skills/workflow/TOOLS.md` and `skills/developer/TOOLS.md`.
 
 ### Starting New Work
 
@@ -350,15 +220,9 @@ When starting with a **product proposal** (high-level feature description withou
 
 1. Read workflow skill: `skills/workflow/SKILL.md`
 2. Read product proposal validation protocol: `skills/workflow/PRODUCT_PROPOSALS.md`
-3. Apply validation in Phase 1 (Plan):
-   - **Validate/generate user stories** (clear title, detailed description with context/scope/workflow, acceptance criteria)
-   - **Validate/generate E2E test coverage** (at least one E2E test per story, using Playwright MCP for UI)
-   - **Output structured validation** (proposal summary, stories with tests, coverage gaps)
+3. Apply validation in Phase 1 (Plan) to generate user stories and E2E test coverage
 4. Present validation output for user approval
-5. After approval: Create Jira tickets (if using Atlassian MCP)
-6. Continue with standard workflow (Phase 2-8)
-
-**Key requirement:** No user-facing functionality without E2E coverage. All stories must be independently testable and implementation-ready.
+5. Continue with standard workflow (Phase 2-8)
 
 ### Large Codebase Work
 
@@ -370,15 +234,10 @@ When starting with a **product proposal** (high-level feature description withou
 ### Feature Implementation
 
 1. Read workflow skill: `skills/workflow/SKILL.md`
-2. Follow 8-phase protocol with hybrid architecture:
-   - Phase 1: Plan (para skill)
-   - Phase 2: Create Git Worktree (isolated workspace in sibling directory)
-   - Phase 3: Execute (developer skill - TDD)
-   - Phase 4: Testing → **phase-testing-agent** (background)
-   - Phase 5: Validation → **phase-validation-agent** (background)
-   - Phase 6: Commit & Push (git-commits skill)
-   - Phase 7: PR Creation → **phase-pr-agent** (background)
-   - Phase 8: Monitor, Summarize & Cleanup (para + worktree removal)
+2. Follow 8-phase protocol (Plan → Worktree → Execute → Test → Validate → Commit → PR → Monitor)
+3. Phases 4, 5, 7 use autonomous phase agents
+
+**For detailed phase documentation:** See `skills/workflow/PHASES.md`.
 
 ### Code Review
 
@@ -390,24 +249,6 @@ When starting with a **product proposal** (high-level feature description withou
 
 1. Read security-reviewer skill: `skills/security-reviewer/SKILL.md`
 2. Check for: injection, XSS, auth issues, sensitive data exposure, crypto
-
-## Context Management
-
-### Active Context (`context/context.md`)
-
-Keep lean and focused:
-- Current task summary
-- Links to active plans
-- Temporary findings
-- Session state
-
-### Historical Context (`context/archives/`)
-
-Searchable knowledge base:
-- Completed plans and summaries
-- Lessons learned
-- Similar problems solved
-- Decision evolution
 
 ## Key Principles
 

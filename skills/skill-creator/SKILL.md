@@ -62,7 +62,7 @@ skill-name/
 │   └── Markdown instructions (required)
 └── Bundled Resources (optional)
     ├── scripts/          - Executable code (Python/Bash/etc.)
-    ├── references/       - Documentation intended to be loaded into context as needed
+    ├── reference/       - Documentation intended to be loaded into context as needed
     └── assets/           - Files used in output (templates, icons, fonts, etc.)
 ```
 
@@ -84,12 +84,12 @@ Executable code (Python/Bash/etc.) for tasks that require deterministic reliabil
 - **Benefits**: Token efficient, deterministic, may be executed without loading into context
 - **Note**: Scripts may still need to be read by Claude for patching or environment-specific adjustments
 
-##### References (`references/`)
+##### References (`reference/`)
 
 Documentation and reference material intended to be loaded as needed into context to inform Claude's process and thinking.
 
 - **When to include**: For documentation that Claude should reference while working
-- **Examples**: `references/finance.md` for financial schemas, `references/mnda.md` for company NDA template, `references/policies.md` for company policies, `references/api_docs.md` for API specifications
+- **Examples**: `reference/finance.md` for financial schemas, `reference/mnda.md` for company NDA template, `reference/policies.md` for company policies, `reference/api_docs.md` for API specifications
 - **Use cases**: Database schemas, API documentation, domain knowledge, company policies, detailed workflow guides
 - **Benefits**: Keeps SKILL.md lean, loaded only when Claude determines it's needed
 - **Best practice**: If files are large (>10k words), include grep search patterns in SKILL.md
@@ -121,88 +121,16 @@ The skill should only contain the information needed for an AI agent to do the j
 Skills use a three-level loading system to manage context efficiently:
 
 1. **Metadata (name + description)** - Always in context (~100 words)
-2. **SKILL.md body** - When skill triggers (<5k words)
+2. **SKILL.md body** - When skill triggers (<5k words, <500 lines preferred)
 3. **Bundled resources** - As needed by Claude (Unlimited because scripts can be executed without reading into context window)
 
-#### Progressive Disclosure Patterns
+**Key principle:** Keep SKILL.md under 500 lines. When a skill supports multiple variations, frameworks, or domains, keep only the core workflow and selection guidance in SKILL.md. Move variant-specific details (patterns, examples, configuration) into separate reference files.
 
-Keep SKILL.md body to the essentials and under 500 lines to minimize context bloat. Split content into separate files when approaching this limit. When splitting out content into other files, it is very important to reference them from SKILL.md and describe clearly when to read them, to ensure the reader of the skill knows they exist and when to use them.
-
-**Key principle:** When a skill supports multiple variations, frameworks, or options, keep only the core workflow and selection guidance in SKILL.md. Move variant-specific details (patterns, examples, configuration) into separate reference files.
-
-**Pattern 1: High-level guide with references**
-
-```markdown
-# PDF Processing
-
-## Quick start
-
-Extract text with pdfplumber:
-[code example]
-
-## Advanced features
-
-- **Form filling**: See [FORMS.md](FORMS.md) for complete guide
-- **API reference**: See [REFERENCE.md](REFERENCE.md) for all methods
-- **Examples**: See [EXAMPLES.md](EXAMPLES.md) for common patterns
-```
-
-Claude loads FORMS.md, REFERENCE.md, or EXAMPLES.md only when needed.
-
-**Pattern 2: Domain-specific organization**
-
-For Skills with multiple domains, organize content by domain to avoid loading irrelevant context:
-
-```
-bigquery-skill/
-├── SKILL.md (overview and navigation)
-└── references/
-    ├── finance.md (revenue, billing metrics)
-    ├── sales.md (opportunities, pipeline)
-    ├── product.md (API usage, features)
-    └── marketing.md (campaigns, attribution)
-```
-
-When a user asks about sales metrics, Claude only reads sales.md.
-
-Similarly, for skills supporting multiple frameworks or variants, organize by variant:
-
-```
-cloud-deploy/
-├── SKILL.md (workflow + provider selection)
-└── references/
-    ├── aws.md (AWS deployment patterns)
-    ├── gcp.md (GCP deployment patterns)
-    └── azure.md (Azure deployment patterns)
-```
-
-When the user chooses AWS, Claude only reads aws.md.
-
-**Pattern 3: Conditional details**
-
-Show basic content, link to advanced content:
-
-```markdown
-# DOCX Processing
-
-## Creating documents
-
-Use docx-js for new documents. See [DOCX-JS.md](DOCX-JS.md).
-
-## Editing documents
-
-For simple edits, modify the XML directly.
-
-**For tracked changes**: See [REDLINING.md](REDLINING.md)
-**For OOXML details**: See [OOXML.md](OOXML.md)
-```
-
-Claude reads REDLINING.md or OOXML.md only when the user needs those features.
-
-**Important guidelines:**
-
-- **Avoid deeply nested references** - Keep references one level deep from SKILL.md. All reference files should link directly from SKILL.md.
-- **Structure longer reference files** - For files longer than 100 lines, include a table of contents at the top so Claude can see the full scope when previewing.
+**For detailed patterns and examples:** See [reference/PROGRESSIVE_DISCLOSURE.md](reference/PROGRESSIVE_DISCLOSURE.md), which covers:
+- Pattern 1: High-level guide with references
+- Pattern 2: Domain-specific organization
+- Pattern 3: Conditional details
+- Important guidelines (flat structure, TOC for long files, avoid duplication)
 
 ## Skill Creation Process
 
@@ -254,7 +182,7 @@ Example: When designing a `frontend-webapp-builder` skill for queries like "Buil
 Example: When building a `big-query` skill to handle queries like "How many users have logged in today?" the analysis shows:
 
 1. Querying BigQuery requires re-discovering the table schemas and relationships each time
-2. A `references/schema.md` file documenting the table schemas would be helpful to store in the skill
+2. A `reference/schema.md` file documenting the table schemas would be helpful to store in the skill
 
 To establish the skill's contents, analyze each concrete example to create a list of the reusable resources to include: scripts, references, and assets.
 
@@ -276,7 +204,7 @@ The script:
 
 - Creates the skill directory at the specified path
 - Generates a SKILL.md template with proper frontmatter and TODO placeholders
-- Creates example resource directories: `scripts/`, `references/`, and `assets/`
+- Creates example resource directories: `scripts/`, `reference/`, and `assets/`
 - Adds example files in each directory that can be customized or deleted
 
 After initialization, customize or remove the generated SKILL.md and example files as needed.
@@ -289,18 +217,18 @@ When editing the (newly-generated or existing) skill, remember that the skill is
 
 Consult these helpful guides based on your skill's needs:
 
-- **Multi-step processes**: See references/workflows.md for sequential workflows and conditional logic
-- **Specific output formats or quality standards**: See references/output-patterns.md for template and example patterns
+- **Multi-step processes**: See reference/workflows.md for sequential workflows and conditional logic
+- **Specific output formats or quality standards**: See reference/output-patterns.md for template and example patterns
 
 These files contain established best practices for effective skill design.
 
 #### Start with Reusable Skill Contents
 
-To begin implementation, start with the reusable resources identified above: `scripts/`, `references/`, and `assets/` files. Note that this step may require user input. For example, when implementing a `brand-guidelines` skill, the user may need to provide brand assets or templates to store in `assets/`, or documentation to store in `references/`.
+To begin implementation, start with the reusable resources identified above: `scripts/`, `reference/`, and `assets/` files. Note that this step may require user input. For example, when implementing a `brand-guidelines` skill, the user may need to provide brand assets or templates to store in `assets/`, or documentation to store in `reference/`.
 
 Added scripts must be tested by actually running them to ensure there are no bugs and that the output matches what is expected. If there are many similar scripts, only a representative sample needs to be tested to ensure confidence that they all work while balancing time to completion.
 
-Any example files and directories not needed for the skill should be deleted. The initialization script creates example files in `scripts/`, `references/`, and `assets/` to demonstrate structure, but most skills won't need all of them.
+Any example files and directories not needed for the skill should be deleted. The initialization script creates example files in `scripts/`, `reference/`, and `assets/` to demonstrate structure, but most skills won't need all of them.
 
 #### Update SKILL.md
 
