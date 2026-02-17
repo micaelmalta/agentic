@@ -117,6 +117,17 @@ Creates detailed plan in `context/plans/YYYY-MM-DD-<task>.md`. For technical des
 
 **Jira Epic/Initiative input:** When given a Jira Epic or Initiative, Phase 1 breaks it down into Stories and Tasks (Epic → Stories + Tasks; Initiative → Backend Epic + Frontend Epic → Stories + Tasks). Dependencies are explicitly identified with parallel-work patterns (backend API contract + mocks first). See [PHASES.md](PHASES.md#jira-epicinitiative-breakdown) for full breakdown rules.
 
+**⛔ MANDATORY APPROVAL GATE:** After creating the plan, you MUST:
+- Present the plan to the user clearly
+- STOP and WAIT for explicit user approval
+- Do NOT proceed to Phase 2 without approval
+
+**Post-Approval Actions:** After user approves:
+- Add plan as comment to Jira ticket (if Jira key provided)
+- Create Jira tickets from plan (if Epic/Initiative breakdown performed)
+
+See [GATES.md](GATES.md#phase-1-plan-approval-gate-enforcement) for complete approval gate protocol.
+
 ### 2. Execute All Phases
 
 After plan approval, phases 2-8 execute **autonomously**:
@@ -207,7 +218,10 @@ See [PARALLEL.md](PARALLEL.md) for complete parallel execution patterns.
 
 ## Workflow Checklist
 
-- [ ] Phase 1: Plan created and approved (para skill)
+- [ ] Phase 1: Plan created (para skill)
+- [ ] **⛔ APPROVAL GATE: User explicitly approved the plan** (BLOCKING - do not proceed without this)
+- [ ] Post-approval: Plan added as comment to Jira ticket (if Jira key provided)
+- [ ] Post-approval: Jira tickets created from plan (if Epic/Initiative breakdown performed)
 - [ ] Phase 2: Git worktree created and initialized
 - [ ] Phase 3: Implementation complete (developer skill, TDD)
 - [ ] Phase 4: Test validation complete (all tests pass, build succeeds)
@@ -220,13 +234,20 @@ See [PARALLEL.md](PARALLEL.md) for complete parallel execution patterns.
 
 ## Output
 
-When complete (ONLY after all gates pass):
+**At the end of Phase 1 (BEFORE proceeding to Phase 2):**
 
+- Display complete plan in conversation
+- Wait for explicit user approval
+- Do NOT proceed without approval
+
+**When complete (ONLY after all phases and gates pass):**
+
+- Display complete summary in conversation (read from `context/summaries/YYYY-MM-DD-<task>.md`)
 - Merged PR URL
-- Summary of what was accomplished
-- Link to summary document in `context/summaries/`
 - Confirmation that all tests pass
 - Confirmation that build succeeds
+- Worktree path for cleanup
+- Link to summary document in `context/summaries/`
 
 ---
 

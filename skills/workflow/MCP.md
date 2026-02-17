@@ -43,17 +43,38 @@ After setup, the MCPs will be available for use in workflow phases.
 **Atlassian MCP:**
 - Fetch Jira ticket details for context
 - Search related Confluence pages for documentation
-- Link ticket to plan document
+- **After approval:** Add plan as comment to Jira ticket
 
 **Example:**
 ```
-# If Jira ticket key is provided (e.g., PROJ-123)
+# During planning: Get Jira ticket context
 mcp__jira__jira_get_issue(issue_key="PROJ-123")
 # Get acceptance criteria, description, comments
 
-# Search Confluence for related docs
+# During planning: Search Confluence for related docs
 mcp__confluence__confluence_search(query="authentication flow", limit=5)
+
+# AFTER USER APPROVES PLAN: Add plan to Jira ticket
+# Read plan file
+plan_content = read_file("context/plans/2026-02-17-implement-auth.md")
+
+# Add plan as comment
+mcp__jira__jira_add_comment(
+  issue_key="PROJ-123",
+  comment=f"""📋 Implementation Plan
+
+{plan_content}
+
+---
+*Plan created on 2026-02-17 and approved*"""
+)
 ```
+
+**Why add plan to Jira:**
+- Provides technical context to team members viewing the ticket
+- Creates audit trail of planning decisions in project management system
+- Links detailed implementation approach to ticket without requiring code access
+- Enables stakeholders to review and understand the approach
 
 ---
 

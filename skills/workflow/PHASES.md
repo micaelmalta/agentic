@@ -142,17 +142,73 @@ All titles and descriptions must be **clear, concrete, and ready to create in Ji
 4. Add dependencies: `jira_create_issue_link` with `link_type: "Blocks"` for blocking dependencies
 5. Batch creation: Use `jira_batch_create_issues` for efficiency when creating multiple stories/tasks
 
-**Approval Gate (ONE-TIME APPROVAL):**
+**Approval Gate (ONE-TIME APPROVAL) ⛔ BLOCKING GATE:**
 
-- Present plan to user for **one-time review and approval**
-- User can approve, request changes, or provide clarification
-- **IMPORTANT: Approval of the plan = approval to execute ALL phases 2-8 autonomously**
-- Do NOT proceed to execution without this one-time approval
-- After approval, do NOT stop between phases to ask permission
+**⛔ CRITICAL: This is a MANDATORY BLOCKING GATE. You MUST stop here and wait for user approval.**
+
+**How to enforce this gate:**
+
+1. **Display the plan** - Read the plan file and display its full contents in the conversation
+   - Read: `context/plans/YYYY-MM-DD-<task-name>.md`
+   - Display the complete plan with clear formatting
+   - Include: objectives, approach, affected files, implementation steps, testing strategy, risks
+
+2. **STOP EXECUTION** - Do NOT continue to Phase 2 automatically
+   - No automatic progression after displaying the plan
+   - No silent proceeding without user response
+
+3. **Ask for explicit approval** - Use this exact pattern:
+   ```
+   📋 Plan created and displayed above.
+
+   Please review the plan carefully.
+
+   Reply with one of:
+   ✅ "approved" or "looks good" to proceed to Phase 2-8 (autonomous execution)
+   ✏️  Request specific changes if you want modifications
+   ❓ Ask questions if anything is unclear
+   ```
+
+4. **Wait for user response** - Do NOT proceed until user explicitly responds
+
+**What happens at this gate:**
+- User says **"approved"** / "looks good" / "proceed" → Proceed to Phase 2
+- User **requests changes** → Modify plan, re-display, wait for approval again
+- User **asks questions** → Answer clearly, then re-ask for approval
+
+**IMPORTANT: Approval of the plan = approval to execute ALL phases 2-8 autonomously**
+- Do NOT proceed to Phase 2 without this one-time approval
+- After approval, phases 2-8 run autonomously (no stopping between phases)
+- Only stop if: gate failure, critical blocker, or user interrupts
+
+**Post-Approval Actions (Before Phase 2):**
+
+After the user approves the plan, perform these actions BEFORE starting Phase 2:
+
+1. **Add plan to Jira ticket (if Jira key provided):**
+   - Check if a Jira ticket key was provided (e.g., in task description, branch name, or explicit parameter)
+   - If Jira key exists and Atlassian MCP is configured:
+     - Read the complete plan from `context/plans/YYYY-MM-DD-<task-name>.md`
+     - Add the plan as a comment to the Jira ticket using `jira_add_comment`
+     - Comment format:
+       ```
+       📋 Implementation Plan
+
+       [Full plan contents here]
+
+       ---
+       *Plan created on [date] and approved*
+       ```
+   - If no Jira key or MCP not configured: Skip (graceful degradation)
+
+2. **Create Jira tickets from plan (if Epic/Initiative breakdown was performed):**
+   - Only if Phase 1 included Epic/Initiative breakdown (see [Jira Epic/Initiative Breakdown](#jira-epicinitiative-breakdown))
+   - Create Epics, Stories, and Tasks in Jira as outlined in the breakdown
+   - Link dependencies using `jira_create_issue_link`
 
 **Autonomous Execution After Approval:**
 
-Once the plan is approved, phases 2-8 execute **fully autonomously** without stopping to ask permission between phases:
+Once the plan is approved AND post-approval actions complete, phases 2-8 execute **fully autonomously** without stopping to ask permission between phases:
 
 - **Phases run sequentially:** 2 → 3 → 4 → 5 → 6 → 7 → 8
 - **No "should I proceed?" questions** between phases
@@ -605,6 +661,32 @@ Creates `context/summaries/YYYY-MM-DD-<task-name>.md` documenting:
 - CI/bot issues encountered and resolution
 - Lessons learned, limitations, future improvements
 - Link to PR, commits, and worktree path
+
+**⛔ CRITICAL: Display the Summary to User**
+
+After creating the summary file, you MUST display it to the user:
+
+1. **Read the summary file:** `context/summaries/YYYY-MM-DD-<task-name>.md`
+2. **Display the complete summary** in the conversation with clear formatting
+3. **Present as final output** of the workflow
+
+**Why display the summary:**
+- User sees complete record of what was accomplished
+- Provides closure to the workflow
+- Highlights key decisions and learnings
+- Shows PR link and next steps
+- Ensures user is aware of any Phase 8 fixes applied
+
+**Example presentation:**
+```
+✅ Workflow Complete!
+
+[Display full summary contents here]
+
+📎 Pull Request: [URL]
+📂 Summary saved to: context/summaries/YYYY-MM-DD-<task-name>.md
+🧹 Worktree path for cleanup: [path]
+```
 
 ---
 

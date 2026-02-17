@@ -6,6 +6,7 @@ This document contains all gate checklists and retry loop protocols for the work
 
 - [Feedback Loops (MANDATORY)](#feedback-loops-mandatory)
 - [Escalation Rules](#escalation-rules)
+- [Phase 1: Plan Approval Gate Enforcement](#phase-1-plan-approval-gate-enforcement)
 - [Phase 3: TDD Gate Enforcement](#phase-3-tdd-gate-enforcement)
 - [Phase 4: Testing Gate Enforcement](#phase-4-testing-gate-enforcement)
 - [Phase 5: Validation Gate Enforcement](#phase-5-validation-gate-enforcement)
@@ -37,6 +38,106 @@ This document contains all gate checklists and retry loop protocols for the work
 | Flaky test detected                 | Fix flakiness before proceeding      |
 
 **Enforcement:** Track retry count for each gate. Log each failure and fix attempt. Never proceed with failing checks. Document retries in commit message or summary.
+
+---
+
+## Phase 1: Plan Approval Gate Enforcement
+
+**⛔ PHASE 1 PLAN APPROVAL GATE:**
+
+This is the **FIRST and MOST CRITICAL gate** in the workflow. You MUST NOT proceed to Phase 2 without explicit user approval of the plan.
+
+```
+PHASE 1 PLAN APPROVAL GATE CHECKLIST:
+✓ [ ] Plan document created in context/plans/YYYY-MM-DD-<task>.md
+✓ [ ] Plan presented to user clearly and completely
+✓ [ ] User explicitly approved the plan
+✓ [ ] User did NOT request changes or clarifications
+
+IF user requests changes:
+  → Update the plan based on feedback
+  → Re-present the updated plan
+  → Wait for approval again
+  → DO NOT proceed until explicitly approved
+
+IF user asks questions:
+  → Answer the questions clearly
+  → Clarify any ambiguities
+  → Re-ask for approval after answering
+  → DO NOT proceed until explicitly approved
+
+⛔ CRITICAL: DO NOT assume approval
+⛔ CRITICAL: DO NOT proceed automatically to Phase 2
+⛔ CRITICAL: WAIT for explicit approval (e.g., user says "approved", "looks good", "proceed", "go ahead")
+```
+
+**How to enforce this gate:**
+
+1. **Display the plan** - Read and display the complete plan in the conversation:
+   - Read the plan file: `context/plans/YYYY-MM-DD-<task-name>.md`
+   - Display full contents with clear formatting
+   - Highlight: objectives, approach, files to modify, implementation steps, testing strategy, risks
+
+2. **STOP EXECUTION** - Do NOT continue automatically
+   - No automatic progression to Phase 2
+   - No silent proceeding without user response
+
+3. **Ask for approval explicitly using this pattern:**
+   ```
+   📋 Plan created and displayed above.
+
+   Please review the plan carefully.
+
+   Reply with one of:
+   ✅ "approved" or "looks good" to proceed to Phase 2-8 (autonomous execution)
+   ✏️  Request specific changes if you want modifications
+   ❓ Ask questions if anything is unclear
+   ```
+
+4. **Wait for user response** - Do not proceed until user explicitly approves
+
+5. **Handle responses:**
+   - **If approved** ("approved" / "looks good" / "proceed") → Proceed to Phase 2 (all subsequent phases run autonomously)
+   - **If changes requested** → Update plan, re-display complete plan, wait for approval again
+   - **If questions asked** → Answer questions clearly, then re-ask for approval
+
+**IMPORTANT: Approval of the plan = approval to execute ALL phases 2-8 autonomously**
+
+Once the plan is approved:
+- Phases 2-8 execute sequentially without stopping for permission
+- No "should I proceed?" questions between phases
+- Only stop if: gate failure, critical blocker, or user interrupts
+
+**Post-Approval Actions (Execute BEFORE Phase 2):**
+
+After user approves the plan, complete these actions before proceeding to Phase 2:
+
+```
+POST-APPROVAL CHECKLIST:
+✓ [ ] User has explicitly approved the plan
+✓ [ ] Check if Jira ticket key provided (in task description, branch name, etc.)
+✓ [ ] If Jira key exists AND Atlassian MCP configured:
+      → Read plan file: context/plans/YYYY-MM-DD-<task-name>.md
+      → Add plan as comment to Jira ticket (jira_add_comment)
+      → Format: "📋 Implementation Plan\n\n[plan contents]\n\n---\n*Plan created and approved*"
+✓ [ ] If Epic/Initiative breakdown was performed:
+      → Create Jira tickets (Epics, Stories, Tasks) as outlined in plan
+      → Link dependencies using jira_create_issue_link
+✓ [ ] Log any Jira integration failures (graceful degradation)
+✓ [ ] Proceed to Phase 2 (worktree creation)
+```
+
+**Why add plan to Jira:**
+- Provides context to team members viewing the ticket
+- Creates audit trail of planning decisions
+- Links technical plan to project management system
+- Enables stakeholders to review approach without accessing code
+
+**⛔ CRITICAL ENFORCEMENT:** DO NOT proceed to Phase 2 until:
+1. Plan is complete and clearly presented
+2. User has reviewed the plan
+3. User explicitly approved the plan (not just silence or implicit approval)
+4. Post-approval actions completed (Jira comment added if applicable)
 
 ---
 
@@ -341,7 +442,7 @@ AskUserQuestion(
 
 ### Summary Requirements
 
-After CI/bot monitoring (and after PR merge), create summary:
+After CI/bot monitoring (and after PR merge), create and display summary:
 
 ```
 PHASE 8 SUMMARY CHECKLIST:
@@ -356,7 +457,12 @@ PHASE 8 SUMMARY CHECKLIST:
 ✓ [ ] Suggest future improvements
 ✓ [ ] Link to merged PR and commits
 ✓ [ ] Record worktree path used
+✓ [ ] **Display complete summary to user** (read file and show in conversation)
 ```
+
+**⛔ CRITICAL: Display the Summary**
+
+After creating the summary file, you MUST display it to the user in the conversation. This is the final output of the workflow and provides closure with a complete record of what was accomplished.
 
 ### Cleanup Requirements
 
