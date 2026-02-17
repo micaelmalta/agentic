@@ -54,27 +54,34 @@ mcp__jira__jira_get_issue(issue_key="PROJ-123")
 # During planning: Search Confluence for related docs
 mcp__confluence__confluence_search(query="authentication flow", limit=5)
 
-# AFTER USER APPROVES PLAN: Add plan to Jira ticket
-# Read plan file
-plan_content = read_file("context/plans/2026-02-17-implement-auth.md")
+# AFTER USER APPROVES PLAN: Add FULL plan to Jira ticket
+# ⛔ CRITICAL: Read COMPLETE plan file (not a summary!)
+with open("context/plans/2026-02-17-implement-auth.md", "r", encoding="utf-8") as f:
+  full_plan_content = f.read()
 
-# Add plan as comment
+# Add ENTIRE plan as comment (all sections verbatim)
 mcp__jira__jira_add_comment(
   issue_key="PROJ-123",
   comment=f"""📋 Implementation Plan
 
-{plan_content}
+{full_plan_content}
 
 ---
 *Plan created on 2026-02-17 and approved*"""
 )
+
+# ⛔ DO NOT create a summary or abbreviated version
+# ⛔ DO include: objectives, approach, affected files, implementation steps, testing strategy, risks, edge cases
+# ⛔ The plan_content variable should contain the ENTIRE plan file contents
 ```
 
-**Why add plan to Jira:**
-- Provides technical context to team members viewing the ticket
-- Creates audit trail of planning decisions in project management system
-- Links detailed implementation approach to ticket without requiring code access
-- Enables stakeholders to review and understand the approach
+**Why add FULL plan (not summary) to Jira:**
+- Provides **complete** technical context to team members viewing the ticket
+- Creates **detailed** audit trail of planning decisions in project management system
+- Links **full** implementation approach to ticket without requiring code access
+- Enables stakeholders to review and understand the **entire** approach including edge cases and risks
+- **Team members need all details** - implementation steps, affected files, testing strategy, etc.
+- **No information should be lost** between plan creation and Jira posting
 
 ---
 

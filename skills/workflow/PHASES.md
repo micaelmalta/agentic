@@ -185,16 +185,17 @@ All titles and descriptions must be **clear, concrete, and ready to create in Ji
 
 After the user approves the plan, perform these actions BEFORE starting Phase 2:
 
-1. **Add plan to Jira ticket (if Jira key provided):**
+1. **Add FULL plan to Jira ticket (if Jira key provided):**
    - Check if a Jira ticket key was provided (e.g., in task description, branch name, or explicit parameter)
    - If Jira key exists and Atlassian MCP is configured:
-     - Read the complete plan from `context/plans/YYYY-MM-DD-<task-name>.md`
-     - Add the plan as a comment to the Jira ticket using `jira_add_comment`
+     - Read the **COMPLETE** plan file from `context/plans/YYYY-MM-DD-<task-name>.md`
+     - Add the **ENTIRE** plan contents as a comment to the Jira ticket using `jira_add_comment`
+     - **⛔ CRITICAL:** Post the FULL plan, not a summary - include all sections (objectives, approach, affected files, implementation steps, testing strategy, risks, edge cases)
      - Comment format:
        ```
        📋 Implementation Plan
 
-       [Full plan contents here]
+       [COMPLETE plan contents - all sections verbatim]
 
        ---
        *Plan created on [date] and approved*

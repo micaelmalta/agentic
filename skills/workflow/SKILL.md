@@ -123,7 +123,7 @@ Creates detailed plan in `context/plans/YYYY-MM-DD-<task>.md`. For technical des
 - Do NOT proceed to Phase 2 without approval
 
 **Post-Approval Actions:** After user approves:
-- Add plan as comment to Jira ticket (if Jira key provided)
+- Add **FULL plan** as comment to Jira ticket (if Jira key provided) - includes all sections verbatim, not a summary
 - Create Jira tickets from plan (if Epic/Initiative breakdown performed)
 
 See [GATES.md](GATES.md#phase-1-plan-approval-gate-enforcement) for complete approval gate protocol.
@@ -220,7 +220,7 @@ See [PARALLEL.md](PARALLEL.md) for complete parallel execution patterns.
 
 - [ ] Phase 1: Plan created (para skill)
 - [ ] **⛔ APPROVAL GATE: User explicitly approved the plan** (BLOCKING - do not proceed without this)
-- [ ] Post-approval: Plan added as comment to Jira ticket (if Jira key provided)
+- [ ] Post-approval: **FULL plan** added as comment to Jira ticket (complete contents, not summary) - if Jira key provided
 - [ ] Post-approval: Jira tickets created from plan (if Epic/Initiative breakdown performed)
 - [ ] Phase 2: Git worktree created and initialized
 - [ ] Phase 3: Implementation complete (developer skill, TDD)

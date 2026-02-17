@@ -117,9 +117,11 @@ POST-APPROVAL CHECKLIST:
 ✓ [ ] User has explicitly approved the plan
 ✓ [ ] Check if Jira ticket key provided (in task description, branch name, etc.)
 ✓ [ ] If Jira key exists AND Atlassian MCP configured:
-      → Read plan file: context/plans/YYYY-MM-DD-<task-name>.md
-      → Add plan as comment to Jira ticket (jira_add_comment)
-      → Format: "📋 Implementation Plan\n\n[plan contents]\n\n---\n*Plan created and approved*"
+      → Read COMPLETE plan file: context/plans/YYYY-MM-DD-<task-name>.md
+      → Add FULL plan as comment to Jira ticket (jira_add_comment)
+      → ⛔ CRITICAL: Post ENTIRE plan contents, NOT a summary
+      → Include ALL sections: objectives, approach, files, steps, testing, risks
+      → Format: "📋 Implementation Plan\n\n[COMPLETE plan contents - all sections verbatim]\n\n---\n*Plan created and approved*"
 ✓ [ ] If Epic/Initiative breakdown was performed:
       → Create Jira tickets (Epics, Stories, Tasks) as outlined in plan
       → Link dependencies using jira_create_issue_link
