@@ -364,83 +364,61 @@ IF Jira integration fails but PR succeeds:
 
 ---
 
-## Phase 8: One-Pass Monitoring (No Traditional Gate)
+## Phase 8: CI Checks + Automated Reviews
 
 **ℹ️ PHASE 8 APPROACH:**
 
-Phase 8 does **NOT** have a traditional blocking gate or retry loop. Instead, it uses a **one-pass monitoring + escalation** pattern.
+Phase 8 has **two sub-steps**: (A) wait for all CI checks to pass with a fix+retry loop, and (B) a single-pass check for automated PR reviews.
 
-**Philosophy:** Phase 5 validation catches 90%+ of issues BEFORE the PR. Phase 8 monitors CI/bot feedback and makes simple fixes ONCE, then escalates complex issues to the user.
+**Philosophy:** Phase 5 validation catches 90%+ of issues BEFORE the PR. Phase 8 ensures CI is green and addresses automated review feedback before moving to summary.
 
-### One-Pass Monitoring Checklist
+### Sub-step A: CI Checks (blocking, retry loop up to 3)
 
 ```
-PHASE 8 ONE-PASS MONITORING:
-✓ [ ] Check CI status (gh pr checks <pr-number>)
-✓ [ ] Check bot comments (gh pr view <pr-number> --comments)
-✓ [ ] Classify issues as simple or complex
-✓ [ ] Apply simple fixes if any (format, lint, trivial config)
-✓ [ ] Push fixes if applied
-✓ [ ] Escalate complex issues to user with AskUserQuestion
+PHASE 8 CI CHECKS:
+✓ [ ] Run: gh pr checks <pr-number> --watch
+✓ [ ] All checks green?
+      → YES: proceed to Sub-step B
+      → NO:  fetch logs (gh run view <run-id> --log-failed)
+             classify failure (simple vs complex)
+             if simple: fix, push, re-watch (attempt N of 3)
+             if complex OR attempt > 3: escalate to user
+```
+
+**Max retry attempts:** 3. After 3 failed fix attempts, escalate to user via AskUserQuestion.
+
+### Sub-step B: Automated PR Reviews (one pass)
+
+```
+PHASE 8 AUTOMATED REVIEWS (one pass only):
+✓ [ ] Run: gh pr view <pr-number> --comments
+✓ [ ] Run: gh pr reviews <pr-number>
+✓ [ ] Identify automated bot comments (Claude Code, Copilot, etc.)
+✓ [ ] Address actionable/simple comments (concrete bugs, null checks)
+✓ [ ] Mark addressed threads as resolved (GraphQL resolveReviewThread mutation)
+✓ [ ] Escalate design/complex comments to user
+✓ [ ] After user decision, mark those threads as resolved too
+✓ [ ] DO NOT wait for more reviews to appear
+✓ [ ] Human reviews are for the human — skip them
+✓ [ ] Only resolve threads you have acted on — leave others open
 ```
 
 ### Decision Criteria
 
-**✅ Simple/Automatable (fix once, no retry):**
+**✅ Simple/Automatable:**
 - Format issues (run formatter)
 - Lint errors with auto-fix capability
 - Missing imports/exports
 - Trivial type annotations
-- Test timeout config changes
-- Dependency lockfile updates
+- Concrete bug in automated review (null check, missing validation)
 
 **❌ Complex (escalate to user):**
 - Logic errors in implementation
 - Failing unit/integration tests
 - Security vulnerabilities
-- Design feedback from reviewers
+- Design/pattern suggestions from bots
 - Performance issues
-- Breaking API changes
-- Contradictory bot comments
-
-### User Escalation Pattern
-
-When complex issues are detected:
-
-```python
-AskUserQuestion(
-  questions=[{
-    question: "PR has [issue type]: [details]. How should we proceed?",
-    header: "CI/Bot Feedback",
-    options: [
-      {
-        label: "Continue auto-fixing",
-        description: "I'll attempt to resolve the issues"
-      },
-      {
-        label: "Manual control",
-        description: "Stop here, I'll handle it manually"
-      },
-      {
-        label: "Skip for now",
-        description: "Acceptable for draft PR, address later"
-      }
-    ]
-  }]
-)
-```
-
-### One-Pass Rule
-
-**⛔ CRITICAL:** Make fixes ONCE. If CI still fails after the one-pass fixes, escalate to user. **DO NOT loop.**
-
-**Why no retry loop:**
-1. ❌ Infinite loop risk with complex/contradictory feedback
-2. ❌ Over-correction without user oversight
-3. ❌ Wasted CI resources for human judgment issues
-4. ✅ Phase 5 caught issues upfront - PR starts near-green
-5. ✅ Human judgment faster for complex issues
-6. ✅ Clear audit trail with one attempt + decision point
+- Contradictory feedback
 
 ### Summary Requirements
 

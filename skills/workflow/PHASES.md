@@ -30,11 +30,14 @@ This document contains the detailed protocol for all 8 phases of the workflow sk
 
 **Actions:**
 
-1. Understand the requirements and task scope
-2. Explore affected code sections using parallel subagents
-3. Identify implementation approach and files to modify
-4. If tech design is needed: read architect skill and tech_proposal_template.md; produce structured plan or tech spec using the template
-5. Create plan via PARA `/plan`: document in `context/plans/YYYY-MM-DD-<task-name>.md`
+1. **If a Jira ticket key is provided:** Transition it to **In Progress** immediately — planning has started.
+   - Call `jira_get_transitions` with the issue key, find the transition matching "In Progress" (names vary by project), then call `jira_transition_issue` with that transition ID.
+   - If Atlassian MCP is not configured: skip (graceful degradation).
+2. Understand the requirements and task scope
+3. Explore affected code sections using parallel subagents
+4. Identify implementation approach and files to modify
+5. If tech design is needed: read architect skill and tech_proposal_template.md; produce structured plan or tech spec using the template
+6. Create plan via PARA `/plan`: document in `context/plans/YYYY-MM-DD-<task-name>.md`
 
 **⚡ PARALLEL SUBAGENTS for exploration (launch in single message):**
 
@@ -241,19 +244,18 @@ Once the plan is approved AND post-approval actions complete, phases 2-8 execute
 
 **Actions:**
 
-1. **If a Jira ticket key is provided:** Use **Atlassian MCP** to transition the issue to **In Progress**. Call `jira_get_transitions` with the issue key, find the transition whose name matches "In Progress" (or "In progress"; names vary by project), then call `jira_transition_issue` with that transition ID. This marks the ticket as in progress before implementation starts.
-2. **Determine main branch name:**
+1. **Determine main branch name:**
    - Auto-detect: `git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@'`
    - Or use common convention: `main` or `master`
-3. **Fetch latest changes from remote:**
+2. **Fetch latest changes from remote:**
    ```bash
    git fetch origin main  # or master
    ```
    This ensures your new branch will be based on the absolute latest code.
-4. **Determine repo and branch names:**
+3. **Determine repo and branch names:**
    - Get current repo directory name: `REPO_NAME=$(basename $(git rev-parse --show-toplevel))`
    - Create branch name: `feature/<description>` or `fix/<description>`
-5. **Create unified worktrees directory (if it doesn't exist):**
+4. **Create unified worktrees directory (if it doesn't exist):**
    ```bash
    # Create hidden directory for all worktrees (shared across all repos)
    mkdir -p ../.worktrees
@@ -262,7 +264,7 @@ Once the plan is approved AND post-approval actions complete, phases 2-8 execute
 
    **Example:** Creates `../.worktrees/` which will contain subdirectories for each repo
 
-6. **Create worktree inside unified directory based on latest remote main:**
+5. **Create worktree inside unified directory based on latest remote main:**
    ```bash
    # IMPORTANT: Use origin/main (not just HEAD) to ensure up-to-date base
    git worktree add ../.worktrees/${REPO_NAME}/feature-implement-auth -b feature/implement-auth origin/main
@@ -274,21 +276,21 @@ Once the plan is approved AND post-approval actions complete, phases 2-8 execute
    - Worktree path: `../.worktrees/agentic/feature-implement-auth/`
    - Full path: `/Users/mmalta/projects/poc/.worktrees/agentic/feature-implement-auth/`
 
-7. **Navigate to worktree directory:**
+6. **Navigate to worktree directory:**
    ```bash
    cd ../.worktrees/${REPO_NAME}/feature-implement-auth
    ```
-8. **Initialize development environment** (if needed):
+7. **Initialize development environment** (if needed):
    - JavaScript/TypeScript: `npm install` or `yarn`
    - Python: Setup virtual environment or run package manager
    - Other languages: Follow project setup process
-9. **Confirm worktree setup:**
+8. **Confirm worktree setup:**
    ```bash
    git worktree list  # Shows all worktrees
    git status         # Confirms current branch
    pwd                # Confirms working directory
    ```
-10. **Record worktree path** for cleanup in Phase 8
+9. **Record worktree path** for cleanup in Phase 8
 
 **Note:** All subsequent phases (3-8) operate within this worktree directory. The main repo remains untouched.
 
@@ -625,26 +627,41 @@ Task(
 
 ---
 
-### Step 1: One-Pass CI/Bot Monitoring
+### Step 1: CI Checks + Automated PR Reviews
 
-**Execute ONCE after PR creation:**
+**Two sub-steps after PR creation:**
+
+#### Sub-step A: Wait for CI checks to pass
 
 ```bash
-# Check CI status and bot comments
+# Block until all checks complete
 gh pr checks <pr-number> --watch
-gh pr view <pr-number> --comments
 ```
 
-**Process:**
-1. **CI all green + no bot comments:** Skip to Step 2 (Summary)
-2. **Simple/automatable issues** (format, lint, missing imports, trivial type errors): Auto-fix locally, push, report
-3. **Complex issues** (logic errors, design feedback, security, performance): Escalate to user via AskUserQuestion
+- **All green:** proceed to Sub-step B.
+- **Any failing:** fetch GitHub Actions logs, analyze, fix, push, re-run. Repeat up to **3 attempts**, then escalate to user.
 
-**One-Pass Rule:** Make fixes ONCE. If CI still fails after fixes, escalate to user. DO NOT loop.
+```bash
+# Fetch logs for failing run
+gh run list --branch <branch-name> --limit 5
+gh run view <run-id> --log-failed
+```
 
-**For detailed decision trees, auto-fix guidelines, and examples:** See [PHASE_8_MONITORING.md](PHASE_8_MONITORING.md)
+#### Sub-step B: Check automated PR reviews (one pass)
 
-**Rationale:** Phase 5 validation catches 90%+ of issues BEFORE PR. Phase 8 does one pass only—complex issues need human judgment.
+After CI passes (or in parallel), check **once** for automated review comments from Claude Code, Copilot, or other bots:
+
+```bash
+gh pr view <pr-number> --comments
+gh pr reviews <pr-number>
+```
+
+- Address **actionable/simple** bot comments (concrete bugs, null checks, missing validations).
+- Escalate **design/complex** bot comments to user via AskUserQuestion.
+- **Do NOT wait for more reviews to appear.** Check once, address what's present, move on.
+- Human reviews are for the human to handle; only automated bot reviews are addressed here.
+
+**For detailed decision trees, log fetching, auto-fix guidelines, and examples:** See [PHASE_8_MONITORING.md](PHASE_8_MONITORING.md)
 
 ---
 
