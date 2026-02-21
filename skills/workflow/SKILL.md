@@ -37,6 +37,7 @@ Each phase invokes one or more specialized skills. The workflow ensures proper s
 ## When to Use This Workflow
 
 Use the workflow skill when you need to:
+
 - Implement a feature end-to-end (plan → code → test → PR)
 - Fix a bug with full TDD cycle
 - Refactor code with complete validation
@@ -44,6 +45,7 @@ Use the workflow skill when you need to:
 - Ensure quality gates are enforced (tests, code review, security)
 
 **Skip this workflow for:**
+
 - Read-only queries or explanations
 - Quick fixes without tests
 - Simple documentation updates
@@ -52,16 +54,17 @@ Use the workflow skill when you need to:
 
 ## The 8 Phases (Overview)
 
-| Phase | Goal | Skill Used | Details |
-|-------|------|------------|---------|
-| **1. Plan** | Create implementation plan | para, architect | [PHASES.md](PHASES.md#phase-1-plan) |
-| **2. Worktree** | Set up isolated workspace | - | [PHASES.md](PHASES.md#phase-2-create-git-worktree) |
-| **3. Execute** | Implement using TDD | developer | [PHASES.md](PHASES.md#phase-3-execute-implementation) |
-| **4. Test** | Validate all tests pass | phase-testing-agent | [PHASES.md](PHASES.md#phase-4-testing-validation-mandatory) |
-| **5. Validate** | Quality + security review | phase-validation-agent | [PHASES.md](PHASES.md#phase-5-validation-mandatory) |
-| **6. Commit** | Stage work for PR | git-commits | [PHASES.md](PHASES.md#phase-6-commit--push) |
-| **7. PR** | Create GitHub pull request | phase-pr-agent | [PHASES.md](PHASES.md#phase-7-create-github-pr) |
-| **8. Monitor** | Document and clean up | para, documentation | [PHASES.md](PHASES.md#phase-8-monitor-summarize--cleanup) |
+| Phase               | Goal                                                                    | Skill Used             | Details                                                     |
+| ------------------- | ----------------------------------------------------------------------- | ---------------------- | ----------------------------------------------------------- |
+| **1. Plan**         | Create implementation plan with Design Ownership + Readiness checklists | para, architect        | [PHASES.md](PHASES.md#phase-1-plan)                         |
+| **2. Worktree**     | Set up isolated workspace                                               | -                      | [PHASES.md](PHASES.md#phase-2-create-git-worktree)          |
+| **3. Execute**      | Implement using TDD                                                     | developer              | [PHASES.md](PHASES.md#phase-3-execute-implementation)       |
+| **4. Test**         | Validate all tests pass                                                 | phase-testing-agent    | [PHASES.md](PHASES.md#phase-4-testing-validation-mandatory) |
+| **5. Validate**     | Quality + security review                                               | phase-validation-agent | [PHASES.md](PHASES.md#phase-5-validation-mandatory)         |
+| **5.5 Diff Review** | Human approval of diff before commit                                    | -                      | [PHASES.md](PHASES.md#phase-55-diff-review-gate)            |
+| **6. Commit**       | Stage work for PR                                                       | git-commits            | [PHASES.md](PHASES.md#phase-6-commit--push)                 |
+| **7. PR**           | Create GitHub pull request                                              | phase-pr-agent         | [PHASES.md](PHASES.md#phase-7-create-github-pr)             |
+| **8. Monitor**      | Document and clean up                                                   | para, documentation    | [PHASES.md](PHASES.md#phase-8-monitor-summarize--cleanup)   |
 
 **Detailed phase protocols:** See [PHASES.md](PHASES.md) for complete phase-by-phase instructions.
 
@@ -102,6 +105,7 @@ For detailed information, see these reference files:
 - **[AGENTS.md](AGENTS.md)** - Phase agent specifications (testing, validation, PR)
 - **[PARALLEL.md](PARALLEL.md)** - Parallel execution patterns
 - **[ENFORCEMENT.md](ENFORCEMENT.md)** - Gate enforcement mechanisms and scripts
+- **[context/data/DRIVERS_SEAT.md](DRIVERS_SEAT.md)** - Design ownership protocol (deep plans, readiness requirements, diff review gate)
 
 ---
 
@@ -118,11 +122,13 @@ Creates detailed plan in `context/plans/YYYY-MM-DD-<task>.md`. For technical des
 **Jira Epic/Initiative input:** When given a Jira Epic or Initiative, Phase 1 breaks it down into Stories and Tasks (Epic → Stories + Tasks; Initiative → Backend Epic + Frontend Epic → Stories + Tasks). Dependencies are explicitly identified with parallel-work patterns (backend API contract + mocks first). See [PHASES.md](PHASES.md#jira-epicinitiative-breakdown) for full breakdown rules.
 
 **⛔ MANDATORY APPROVAL GATE:** After creating the plan, you MUST:
+
 - Present the plan to the user clearly
 - STOP and WAIT for explicit user approval
 - Do NOT proceed to Phase 2 without approval
 
 **Post-Approval Actions:** After user approves:
+
 - Add **FULL plan** as comment to Jira ticket (if Jira key provided) - includes all sections verbatim, not a summary
 - Create Jira tickets from plan (if Epic/Initiative breakdown performed)
 
@@ -131,6 +137,7 @@ See [GATES.md](GATES.md#phase-1-plan-approval-gate-enforcement) for complete app
 ### 2. Execute All Phases
 
 After plan approval, phases 2-8 execute **autonomously**:
+
 - No stopping between phases
 - Automatic gate enforcement
 - Progress tracking with TodoWrite
@@ -139,8 +146,10 @@ After plan approval, phases 2-8 execute **autonomously**:
 ### 3. Monitor Gates
 
 Watch for these critical gates:
+
 - **Phase 4:** All tests must pass
 - **Phase 5:** Code review + security review (MANDATORY)
+- **Phase 5.5:** Diff Review Gate — human approval of diff before commit (BLOCKING)
 - **Phase 7:** PR created successfully
 
 See [GATES.md](GATES.md) for complete gate checklists.
@@ -187,6 +196,7 @@ The workflow enforces retry loops at each gate:
 3. **Validation Loop (Phase 5):** Run 6 checks → If fail, fix issues → Re-run checks
 
 **Escalation Rules:**
+
 - Test fails 3+ times: Ask user for guidance
 - Security vulnerability: STOP workflow, require user decision
 - Conflicting requirements: Ask user to clarify
@@ -200,6 +210,7 @@ See [GATES.md](GATES.md) for complete feedback loop protocols.
 Launch independent subagents in parallel for efficiency:
 
 **Phase 1 (Exploration):**
+
 ```
 Task(Explore, "Find affected files...")
 Task(Explore, "Check existing patterns...")
@@ -207,6 +218,7 @@ Task(Bash, "Review git history...")
 ```
 
 **Phase 5 (Validation):**
+
 ```
 # phase-validation-agent runs all checks internally in parallel
 Task(general-purpose, "Read skills/agents/phase-validation-agent/AGENT.md...")
@@ -218,7 +230,7 @@ See [PARALLEL.md](PARALLEL.md) for complete parallel execution patterns.
 
 ## Workflow Checklist
 
-- [ ] Phase 1: Plan created (para skill)
+- [ ] Phase 1: Plan created (para skill) with Design Ownership Checklist and Readiness Checklist
 - [ ] **⛔ APPROVAL GATE: User explicitly approved the plan** (BLOCKING - do not proceed without this)
 - [ ] Post-approval: **FULL plan** added as comment to Jira ticket (complete contents, not summary) - if Jira key provided
 - [ ] Post-approval: Jira tickets created from plan (if Epic/Initiative breakdown performed)
@@ -226,6 +238,7 @@ See [PARALLEL.md](PARALLEL.md) for complete parallel execution patterns.
 - [ ] Phase 3: Implementation complete (developer skill, TDD)
 - [ ] Phase 4: Test validation complete (all tests pass, build succeeds)
 - [ ] Phase 5: Validation complete (formatter, linter, build, tests, code review, security review)
+- [ ] **⛔ DIFF REVIEW GATE: User explicitly approved the diff** (BLOCKING - do not commit without this)
 - [ ] Phase 6: Changes committed and pushed
 - [ ] Phase 7: PR created as draft; marked ready after all commits
 - [ ] Phase 8: CI/bot monitoring complete (one-pass), summary documented, worktree cleaned up
@@ -253,13 +266,13 @@ See [PARALLEL.md](PARALLEL.md) for complete parallel execution patterns.
 
 ## Cross-Skill Integration
 
-| Situation | Skill to invoke | How |
-|-----------|----------------|-----|
-| Phase 1 needs technical architecture | **architect** skill | Read `skills/architect/SKILL.md` |
-| Phase 3 implementation uses TDD | **developer** skill | Read `skills/developer/SKILL.md` |
-| Phase 4 testing details | **testing** skill | Read `skills/testing/SKILL.md` |
-| Phase 5 code review | **code-reviewer** skill | Read `skills/code-reviewer/SKILL.md` |
-| Phase 5 security review | **security-reviewer** skill | Read `skills/security-reviewer/SKILL.md` |
-| Phase 6 commit messages | **git-commits** skill | Read `skills/git-commits/SKILL.md` |
-| Phase 8 documentation | **documentation** skill | Read `skills/documentation/SKILL.md` |
-| Large codebase in any phase | **rlm** skill | Read `skills/rlm/SKILL.md` |
+| Situation                            | Skill to invoke             | How                                      |
+| ------------------------------------ | --------------------------- | ---------------------------------------- |
+| Phase 1 needs technical architecture | **architect** skill         | Read `skills/architect/SKILL.md`         |
+| Phase 3 implementation uses TDD      | **developer** skill         | Read `skills/developer/SKILL.md`         |
+| Phase 4 testing details              | **testing** skill           | Read `skills/testing/SKILL.md`           |
+| Phase 5 code review                  | **code-reviewer** skill     | Read `skills/code-reviewer/SKILL.md`     |
+| Phase 5 security review              | **security-reviewer** skill | Read `skills/security-reviewer/SKILL.md` |
+| Phase 6 commit messages              | **git-commits** skill       | Read `skills/git-commits/SKILL.md`       |
+| Phase 8 documentation                | **documentation** skill     | Read `skills/documentation/SKILL.md`     |
+| Large codebase in any phase          | **rlm** skill               | Read `skills/rlm/SKILL.md`               |

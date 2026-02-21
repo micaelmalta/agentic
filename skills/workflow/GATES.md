@@ -10,6 +10,7 @@ This document contains all gate checklists and retry loop protocols for the work
 - [Phase 3: TDD Gate Enforcement](#phase-3-tdd-gate-enforcement)
 - [Phase 4: Testing Gate Enforcement](#phase-4-testing-gate-enforcement)
 - [Phase 5: Validation Gate Enforcement](#phase-5-validation-gate-enforcement)
+- [Phase 5.5: Diff Review Gate Enforcement](#phase-55-diff-review-gate-enforcement)
 - [Phase 6: Commit Gate Enforcement](#phase-6-commit-gate-enforcement)
 - [Phase 7: PR Creation Gate Enforcement](#phase-7-pr-creation-gate-enforcement)
 
@@ -135,11 +136,47 @@ POST-APPROVAL CHECKLIST:
 - Links technical plan to project management system
 - Enables stakeholders to review approach without accessing code
 
+**Design Ownership Checklist (required before plan approval):**
+
+The plan must constrain implementation. Before approving, verify:
+
+```
+DESIGN OWNERSHIP CHECKLIST:
+✓ [ ] Module boundaries defined (what goes where)
+✓ [ ] Interfaces/types specified (function signatures, data shapes)
+✓ [ ] Key design decisions documented (token format, error strategy, security model)
+✓ [ ] Test scenarios specified (Given/When/Then for each behavior)
+✓ [ ] Edge cases and error handling strategy defined
+✓ [ ] Migration/schema defined (if applicable)
+
+Depth scales with scope:
+  - Bug fix: edge cases + test scenarios may suffice
+  - New feature: all items required
+  - Refactor: module boundaries + test scenarios required
+```
+
+If the plan leaves significant design decisions to the AI, it's too shallow. Push decision-making into the plan before approving. See [PHASES.md](PHASES.md#design-ownership) for details and examples.
+
+**Readiness Checklist (required before plan approval):**
+
+```
+READINESS CHECKLIST:
+✓ [ ] Support plan documented (or N/A with reason)
+✓ [ ] Operations plan documented (or N/A with reason)
+✓ [ ] Release communication documented (or N/A with reason)
+✓ [ ] Success metrics defined (or N/A with reason)
+✓ [ ] Monitoring & alerting defined (or N/A with reason)
+```
+
+Sections can be marked N/A with a brief reason (e.g., "N/A — internal refactor, no behavior change"). The point is to force the question, not generate paperwork. See [PHASES.md](PHASES.md#readiness-requirements) for templates and guidance on when to go deeper vs keep light.
+
 **⛔ CRITICAL ENFORCEMENT:** DO NOT proceed to Phase 2 until:
 1. Plan is complete and clearly presented
-2. User has reviewed the plan
-3. User explicitly approved the plan (not just silence or implicit approval)
-4. Post-approval actions completed (Jira comment added if applicable)
+2. Plan meets Design Ownership Checklist (depth appropriate to scope)
+3. Plan meets Readiness Checklist (all sections documented or N/A with reason)
+4. User has reviewed the plan
+5. User explicitly approved the plan (not just silence or implicit approval)
+6. Post-approval actions completed (Jira comment added if applicable)
 
 ---
 
@@ -293,7 +330,7 @@ WHILE validation not complete:
 END WHILE
 ```
 
-**⛔ CRITICAL ENFORCEMENT:** DO NOT proceed to Phase 6 until:
+**⛔ CRITICAL ENFORCEMENT:** DO NOT proceed to Phase 5.5 (Diff Review Gate) until:
 1. phase-validation-agent returns status "pass"
 2. critical_security_issue = false (or not present)
 3. All 6 checks show status "pass" in agent output
@@ -301,11 +338,78 @@ END WHILE
 
 ---
 
+## Phase 5.5: Diff Review Gate Enforcement
+
+**⛔ PHASE 5.5 DIFF REVIEW GATE:**
+
+This is a **BLOCKING human approval gate**. You MUST NOT proceed to Phase 6 (commit) without explicit human sign-off on the implementation diff.
+
+```
+PHASE 5.5 DIFF REVIEW GATE CHECKLIST:
+✓ [ ] Diff summary generated (files changed, line counts)
+✓ [ ] New dependencies identified (or confirmed "none")
+✓ [ ] Plan deviations identified (or confirmed "none")
+✓ [ ] Test coverage compared against planned scenarios
+✓ [ ] Diff summary presented to user
+✓ [ ] User explicitly approved the diff
+
+IF user requests to see a specific file:
+  → Show the requested file diff
+  → Re-present summary and ask for approval again
+  → DO NOT proceed until explicitly approved
+
+IF user requests changes:
+  → Make the requested changes
+  → Re-run Phase 5 validation (phase-validation-agent)
+  → Re-generate and present diff summary
+  → Wait for approval again
+  → DO NOT proceed until explicitly approved
+```
+
+**Diff Summary Format:**
+
+Present this to the user:
+
+```
+── Diff Review ──────────────────────────────────
+
+Files changed:
+  <file>    (+N lines)
+  ...
+
+New dependencies: [list or "none"]
+Deviations from plan: [list or "none"]
+Test coverage: [X/Y planned scenarios covered]
+
+→ approve / see specific file / request changes
+```
+
+**What to check before presenting:**
+
+- **Unexpected files** — compare changed files against plan's module boundaries
+- **Unexpected scale** — significantly more or fewer lines than the design implies
+- **New dependencies** — packages or services not mentioned in the plan
+- **Missing coverage** — fewer test scenarios implemented than specified in plan
+- **Plan deviations** — any structural departure from the approved design
+
+**Approval handling:**
+
+- **"approve"** / "looks good" / "proceed" → proceed to Phase 6
+- **"show me <file>"** → display file diff, re-ask for approval
+- **"change X"** → make changes, re-validate (Phase 5), re-present diff, re-ask
+
+**⛔ CRITICAL ENFORCEMENT:** DO NOT proceed to Phase 6 until:
+1. Diff summary has been presented to the user
+2. User has explicitly approved (not silence or implicit approval)
+3. Any requested changes have been made, re-validated, and re-approved
+
+---
+
 ## Phase 6: Commit Gate Enforcement
 
-**⛔ PHASE 5 GATE ENFORCEMENT:**
+**⛔ PHASE 5 + DIFF REVIEW GATE ENFORCEMENT:**
 
-Before executing ANY action in Phase 6, you MUST verify Phase 5 completion:
+Before executing ANY action in Phase 6, you MUST verify Phase 5 completion AND Diff Review Gate approval:
 
 ```
 PHASE 5 COMPLETION CHECKLIST:
@@ -318,9 +422,14 @@ PHASE 5 COMPLETION CHECKLIST:
 ✓ [ ] All findings from reviews addressed
 ✓ [ ] Re-validation completed after fixes
 
+DIFF REVIEW GATE CHECKLIST:
+✓ [ ] Diff summary presented to user
+✓ [ ] User explicitly approved the diff
+✓ [ ] Any requested changes made, re-validated, and re-approved
+
 IF ANY item above is unchecked:
   → STOP immediately
-  → Go back to Phase 5
+  → Go back to Phase 5 or Phase 5.5 as needed
   → Complete missing steps
   → Do NOT commit until ALL checks pass
 ```

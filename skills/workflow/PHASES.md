@@ -9,6 +9,7 @@ This document contains the detailed protocol for all 8 phases of the workflow sk
 - [Phase 3: Execute Implementation](#phase-3-execute-implementation)
 - [Phase 4: Testing Validation](#phase-4-testing-validation-mandatory)
 - [Phase 5: Validation](#phase-5-validation-mandatory)
+- [Phase 5.5: Diff Review Gate](#phase-55-diff-review-gate)
 - [Phase 6: Commit & Push](#phase-6-commit--push)
 - [Phase 7: Create GitHub PR](#phase-7-create-github-pr)
 - [Phase 8: Monitor, Summarize & Cleanup](#phase-8-monitor-summarize--cleanup)
@@ -61,11 +62,139 @@ For large codebases (100+ files), use **RLM skill** instead of multiple Explore 
 
 When the plan involves architecture or tech design, also structure content using **tech_proposal_template.md** (Metadata, Architecture Considerations, API Changes, Data Models, Domain Architecture, Additional Considerations, Estimation & Implementation Plan)—either inline in the plan or in a separate tech spec file referenced from the plan.
 
+### Design Ownership
+
+The primary control mechanism is a Phase 1 plan detailed enough to **constrain implementation**. When the plan defines interfaces, test scenarios, error strategies, and module boundaries, Phase 3 becomes mechanical translation — there are few decisions left for the AI to make autonomously. A shallow plan (listing files and vague testing strategies) leaves the AI to make dozens of implementation decisions you never approved. A constraining plan minimizes autonomous decisions.
+
+**For examples of shallow vs constraining plans:** See [context/data/DRIVERS_SEAT.md](DRIVERS_SEAT.md).
+
+Before approving a plan, verify it constrains implementation:
+
+```
+DESIGN OWNERSHIP CHECKLIST:
+[ ] Module boundaries defined (what goes where)
+[ ] Interfaces/types specified (function signatures, data shapes)
+[ ] Key design decisions documented (token format, error strategy, security model)
+[ ] Test scenarios specified (Given/When/Then for each behavior)
+[ ] Edge cases and error handling strategy defined
+[ ] Migration/schema defined (if applicable)
+```
+
+**Checklist depth scales with scope:** Simple bug fixes need less detail than new features. A typo fix doesn't need interface definitions. A new service needs all items. Use judgment — the goal is to ensure all significant design decisions are made by the human, not to generate paperwork.
+
+### Readiness Requirements
+
+Design ownership controls the implementation. Readiness requirements ensure you've thought through everything _around_ the implementation — support, operations, impact, monitoring. These sections must be present in the Phase 1 plan. Depth scales with scope, but they cannot be omitted.
+
+#### 1. Support
+
+```
+## Support
+
+- Troubleshooting: [what to check when things go wrong]
+- Known limitations: [what this doesn't handle]
+- User-facing docs: [what needs updating — help docs, FAQ, tooltips]
+- Escalation: [who to contact beyond the troubleshooting guide]
+```
+
+**Go deeper for:** User-facing features, new integrations, behavior changes.
+**Keep light for:** Internal tooling, refactors with no behavior change.
+
+#### 2. Operations
+
+```
+## Operations
+
+- Failure modes: [what can go wrong, how the system behaves]
+- Recovery: [how to recover from each failure mode]
+- Rollback: [how to revert safely]
+- Runbook: [what operational docs need updating]
+```
+
+**Go deeper for:** New services, infrastructure changes, data migrations.
+**Keep light for:** Feature additions to existing stable services.
+
+#### 3. Release Communication
+
+```
+## Release Communication
+
+- Changelog entry: [one-line description for release notes]
+- Who needs to know: [product, marketing, support, customers]
+- Announcement: [yes/no, and where — blog, email, in-app]
+```
+
+**Go deeper for:** New features, breaking changes, pricing-related changes.
+**Keep light for:** Bug fixes, performance improvements, internal changes.
+
+#### 4. Success Metrics
+
+```
+## Success Metrics
+
+- Primary metric: [what number tells us this worked]
+- Baseline: [current value]
+- Target: [expected value after rollout]
+- How to measure: [dashboard, query, tool]
+- When to check: [1 day, 1 week, 1 month]
+```
+
+**Go deeper for:** New features, optimization work, anything with a business case.
+**Keep light for:** Bug fixes (metric = bug gone), refactors (metric = no regression).
+
+#### 5. Monitoring & Alerting
+
+```
+## Monitoring & Alerting
+
+- Metrics: [latency, error rate, throughput, etc.]
+- Dashboards: [which to update or create]
+- Alerts: [conditions, thresholds, who gets paged]
+- Log queries: [key searches for debugging]
+```
+
+**Go deeper for:** New services, new integrations, critical path changes.
+**Keep light for:** Non-critical code with existing monitoring.
+
+#### Readiness Checklist
+
+```
+READINESS CHECKLIST:
+[ ] Support plan documented (or N/A with reason)
+[ ] Operations plan documented (or N/A with reason)
+[ ] Release communication documented (or N/A with reason)
+[ ] Success metrics defined (or N/A with reason)
+[ ] Monitoring & alerting defined (or N/A with reason)
+```
+
+Sections can be marked N/A with a brief reason (e.g., "N/A — internal refactor, no behavior change"). The point is to force the question, not generate paperwork.
+
+### Collaborative Design
+
+When you can't design up front — unfamiliar codebase, unclear requirements, exploratory work — use **collaborative design** to discover the right design before committing to implementation.
+
+**Protocol:**
+
+1. AI explores the codebase and presents findings (existing patterns, relevant modules, dependencies, constraints)
+2. Together, iterate on the design (AI proposes interface options → you choose; AI identifies edge cases → you decide handling strategy; AI suggests module boundaries → you approve or adjust)
+3. Once the design is solid, write it into the plan (interfaces, types, test scenarios, module structure — back to the standard deep Phase 1)
+4. Implementation runs autonomously within the agreed design
+
+**When to use which approach:**
+
+| Signal                                   | Approach                                    |
+| ---------------------------------------- | ------------------------------------------- |
+| You know the domain and patterns         | Deep Phase 1 directly                       |
+| You know the domain but not the codebase | AI explores, you design based on findings   |
+| You don't know the domain well           | Collaborative design — iterate together     |
+| Pure exploration / spike                 | Skip workflow, use ad-hoc exploration first |
+
 ### Product Proposal Validation
 
 When the input to Phase 1 is a **product proposal** (high-level feature description without concrete user stories), apply the **Product Proposal Validation Protocol** before creating the implementation plan.
 
 **See [PRODUCT_PROPOSALS.md](PRODUCT_PROPOSALS.md) for the complete protocol,** which covers:
+
 - User Stories Validation (identify all implied stories, generate missing stories with clear Title/Description/Acceptance Criteria)
 - E2E Test Coverage (MANDATORY - at least one E2E test per story, using Playwright MCP for UI)
 - Structured Output (proposal summary, stories with E2E tests, coverage gaps, dependencies)
@@ -92,6 +221,7 @@ Break the Epic into **User Stories** and **Tasks** (implementation-level):
 #### If the input is an Initiative
 
 Create:
+
 - **1 Backend Epic** — with clear Title and Description (scope and goals)
 - **1 Frontend Epic** — with clear Title and Description (scope and goals)
 
@@ -106,6 +236,7 @@ Explicitly identify dependencies between tickets:
 - Design work to **minimize blocking**
 
 **Frontend/Backend dependency pattern:** If frontend depends on backend, create a backend story to:
+
 1. Define the API contract
 2. Provide mock responses
 3. Publish schema/documentation
@@ -161,6 +292,7 @@ All titles and descriptions must be **clear, concrete, and ready to create in Ji
    - No silent proceeding without user response
 
 3. **Ask for explicit approval** - Use this exact pattern:
+
    ```
    📋 Plan created and displayed above.
 
@@ -175,11 +307,13 @@ All titles and descriptions must be **clear, concrete, and ready to create in Ji
 4. **Wait for user response** - Do NOT proceed until user explicitly responds
 
 **What happens at this gate:**
+
 - User says **"approved"** / "looks good" / "proceed" → Proceed to Phase 2
 - User **requests changes** → Modify plan, re-display, wait for approval again
 - User **asks questions** → Answer clearly, then re-ask for approval
 
 **IMPORTANT: Approval of the plan = approval to execute ALL phases 2-8 autonomously**
+
 - Do NOT proceed to Phase 2 without this one-time approval
 - After approval, phases 2-8 run autonomously (no stopping between phases)
 - Only stop if: gate failure, critical blocker, or user interrupts
@@ -195,6 +329,7 @@ After the user approves the plan, perform these actions BEFORE starting Phase 2:
      - Add the **ENTIRE** plan contents as a comment to the Jira ticket using `jira_add_comment`
      - **⛔ CRITICAL:** Post the FULL plan, not a summary - include all sections (objectives, approach, affected files, implementation steps, testing strategy, risks, edge cases)
      - Comment format:
+
        ```
        📋 Implementation Plan
 
@@ -203,6 +338,7 @@ After the user approves the plan, perform these actions BEFORE starting Phase 2:
        ---
        *Plan created on [date] and approved*
        ```
+
    - If no Jira key or MCP not configured: Skip (graceful degradation)
 
 2. **Create Jira tickets from plan (if Epic/Initiative breakdown was performed):**
@@ -256,15 +392,18 @@ Once the plan is approved AND post-approval actions complete, phases 2-8 execute
    - Get current repo directory name: `REPO_NAME=$(basename $(git rev-parse --show-toplevel))`
    - Create branch name: `feature/<description>` or `fix/<description>`
 4. **Create unified worktrees directory (if it doesn't exist):**
+
    ```bash
    # Create hidden directory for all worktrees (shared across all repos)
    mkdir -p ../.worktrees
    ```
+
    This one-time setup creates a single unified directory to contain worktrees for ALL repositories in the parent directory. The dot-prefix keeps it hidden and clean.
 
    **Example:** Creates `../.worktrees/` which will contain subdirectories for each repo
 
 5. **Create worktree inside unified directory based on latest remote main:**
+
    ```bash
    # IMPORTANT: Use origin/main (not just HEAD) to ensure up-to-date base
    git worktree add ../.worktrees/${REPO_NAME}/feature-implement-auth -b feature/implement-auth origin/main
@@ -338,6 +477,7 @@ Each behavior/requirement MUST complete the full TDD cycle (RED → GREEN → RE
 **⛔ CRITICAL: Tool Usage for File Modifications**
 
 See [TOOLS.md](TOOLS.md) for complete file modification guidelines. Key rules:
+
 - ✅ ALWAYS use Edit tool for modifying existing files
 - ✅ ALWAYS use Write tool for creating new files
 - ❌ NEVER create temporary bash scripts for file modifications
@@ -393,6 +533,7 @@ These gates MUST be met before proceeding to Phase 4:
 - [ ] **Commits are atomic** - One commit per behavior or logical unit
 
 **⛔ CRITICAL ENFORCEMENT:** DO NOT proceed to Phase 4 until:
+
 1. All behaviors completed with full TDD cycle (RED → GREEN → REFACTOR)
 2. All tests pass (verify manually if needed)
 3. All quality gates above are verified
@@ -411,6 +552,7 @@ These gates MUST be met before proceeding to Phase 4:
 **⛔ CRITICAL: DO NOT BYPASS THIS GATE**
 
 You MUST use the **phase-testing-agent**. DO NOT manually run test commands:
+
 - ❌ DO NOT manually run `npm test`, `pytest`, `go test`, `cargo test`, etc.
 - ❌ DO NOT manually run build commands
 - ❌ DO NOT manually check test output and assume it's okay
@@ -434,6 +576,7 @@ Task(
 ```
 
 The agent will:
+
 1. **Auto-detect language** from project files (package.json, go.mod, etc.)
 2. **Auto-detect test command** (npm test, pytest, go test, etc.)
 3. **Auto-detect build requirements** (for frontend/compiled languages)
@@ -486,6 +629,7 @@ Each test type is a blocking gate that must pass:
 **⛔ CRITICAL: DO NOT BYPASS THIS GATE**
 
 You MUST use the **phase-validation-agent**. DO NOT manually run validation commands:
+
 - ❌ DO NOT manually run formatter (prettier, gofumpt, black, etc.)
 - ❌ DO NOT manually run linter (eslint, golangci-lint, pylint, etc.)
 - ❌ DO NOT manually run build (npm run build, go build, etc.)
@@ -554,6 +698,60 @@ Each check is a blocking gate that must pass:
 
 ---
 
+## Phase 5.5: Diff Review Gate
+
+**Goal:** Human approval of the implementation before commit. This is a BLOCKING gate — cannot commit without human sign-off.
+
+**Why:** Even with deep design ownership, a diff review before commit serves as a safety net. It catches scope violations, not design decisions. When the plan is deep enough, this review is fast — you're checking translation accuracy, not reverse-engineering intent.
+
+**For rationale and examples:** See [context/data/DRIVERS_SEAT.md](DRIVERS_SEAT.md#part-3-the-diff-review-gate).
+
+**Actions:**
+
+1. **Generate diff summary** from the worktree:
+
+   ```bash
+   # Files changed with line counts
+   git diff --stat origin/main
+   # New dependencies (package.json, go.mod, requirements.txt, etc.)
+   git diff origin/main -- package.json go.mod requirements.txt Cargo.toml pyproject.toml
+   ```
+
+2. **Present diff summary to user:**
+
+   ```
+   ── Diff Review ──────────────────────────────────
+
+   Files changed:
+     <file>    (+N lines)
+     ...
+
+   New dependencies: [list or "none"]
+   Deviations from plan: [list or "none"]
+   Test coverage: [X/Y planned scenarios covered]
+
+   → approve / see specific file / request changes
+   ```
+
+3. **Compare against plan:** Check files changed vs plan's module boundaries, identify any deviations from the approved design.
+
+4. **Wait for human approval** using AskUserQuestion:
+   - **Approve** → proceed to Phase 6
+   - **See specific file** → show the requested file diff, then re-ask
+   - **Request changes** → make changes, re-run validation (Phase 5), then re-present diff
+
+**What to look for:**
+
+- **Unexpected files** — touches something outside the plan's module boundaries
+- **Unexpected scale** — significantly more or fewer lines than the design implies
+- **New dependencies** — packages or services not in the plan
+- **Missing coverage** — fewer test scenarios than specified
+- **Plan deviations** — any structural departure from the approved design
+
+**Gate enforcement:** See [GATES.md](GATES.md#phase-55-diff-review-gate-enforcement) for the complete gate checklist.
+
+---
+
 ## Phase 6: Commit & Push
 
 **Goal:** Stage work for PR creation.
@@ -562,7 +760,7 @@ Each check is a blocking gate that must pass:
 
 **Actions:**
 
-1. **FIRST:** Verify Phase 5 gate checklist in [GATES.md](GATES.md) is complete
+1. **FIRST:** Verify Phase 5 gate checklist AND Diff Review Gate in [GATES.md](GATES.md) are complete
 2. Stage all relevant files: `git add <files>`
 3. Create commit with clear message (follow git-commits skill / project conventions)
 4. Push to remote: `git push -u origin <branch-name>`
@@ -674,6 +872,7 @@ Once work is complete (after PR merge), run `/summarize`:
 ```
 
 Creates `context/summaries/YYYY-MM-DD-<task-name>.md` documenting:
+
 - What was built/fixed and files modified
 - Key decisions and Phase 8 fixes applied
 - CI/bot issues encountered and resolution
@@ -689,6 +888,7 @@ After creating the summary file, you MUST display it to the user:
 3. **Present as final output** of the workflow
 
 **Why display the summary:**
+
 - User sees complete record of what was accomplished
 - Provides closure to the workflow
 - Highlights key decisions and learnings
@@ -696,6 +896,7 @@ After creating the summary file, you MUST display it to the user:
 - Ensures user is aware of any Phase 8 fixes applied
 
 **Example presentation:**
+
 ```
 ✅ Workflow Complete!
 
