@@ -88,6 +88,66 @@ skills/workflow/
 - **GitHub CLI (`gh`)** — Required for Phase 7 (PR creation) in workflow skill
 - **Git** — Required for branch management, commits, and all version control operations
 
+## Development Commands
+
+### Setup
+
+```bash
+pip install -r requirements-dev.txt
+```
+
+### Tests
+
+```bash
+# Run all tests (excluding E2E)
+pytest tests/ -v --tb=short --ignore=tests/e2e/
+
+# Run a specific test file
+pytest tests/scenario/test_workflow.py -v
+
+# Run a specific test by name
+pytest tests/ -k "test_name" -v
+
+# Run only agent protocol tests
+pytest tests/agents/ -v
+
+# Run structural/format tests
+pytest tests/structural/ -v
+
+# Run E2E tests (requires Claude Code CLI)
+pytest tests/e2e/ -v -m e2e
+```
+
+### Code Quality
+
+```bash
+# Format code
+black .
+
+# Lint
+flake8 .
+
+# Type checking
+mypy .
+
+# Validate YAML frontmatter in all SKILL.md files
+python -c "
+import re, yaml
+from pathlib import Path
+for f in Path('skills').rglob('SKILL.md'):
+    m = re.match(r'^---\n(.*?)\n---\n', f.read_text(), re.DOTALL)
+    if m: yaml.safe_load(m.group(1))
+    print(f'OK: {f}')
+"
+
+# Pre-commit validation
+bash skills/workflow/scripts/pre-commit-validation.sh
+```
+
+### CI Pipeline
+
+CI runs 5 jobs on push to main and PRs: **test**, **markdown-lint**, **validate-yaml**, **check-cross-references**, **quality-checks**. The markdown-lint job is warnings-only. See `.github/workflows/ci.yml`.
+
 ## Workflow Methodology
 
 ### PARA-Programming
@@ -181,28 +241,9 @@ cd ../.worktrees/${REPO_NAME}/feature-name
 
 **For complete worktree documentation:** See `skills/workflow/PHASES.md` (Phase 2).
 
-### Tool Usage for File Modifications (CRITICAL)
+### Tool Usage for File Modifications
 
-**⛔ NEVER create temporary bash scripts for file modifications**
-
-| Operation | Correct Tool | WRONG Approach |
-|-----------|--------------|----------------|
-| Modify existing file | **Edit tool** | ❌ sed, awk, bash scripts |
-| Create new file | **Write tool** | ❌ echo >, cat <<EOF |
-| Read file | **Read tool** | ❌ cat, head, tail |
-| Search content | **Grep tool** | ❌ grep command |
-| Find files | **Glob tool** | ❌ find, ls |
-| Git operations | **Bash tool** | ✅ Correct |
-| Run tests | **Bash tool** | ✅ Correct |
-| Build commands | **Bash tool** | ✅ Correct |
-
-**Why this matters:**
-- Edit tool provides explicit, reviewable changes (old → new)
-- No temporary files or artifacts left in repository
-- Atomic operations with clear intent
-- Prevents accidental commits of temporary scripts
-
-**For complete tool usage guidelines:** See `skills/workflow/TOOLS.md` and `skills/developer/TOOLS.md`.
+**⛔ NEVER create temporary bash scripts for file modifications.** Always use Edit/Write/Read/Grep/Glob tools for file operations. Reserve Bash for git, tests, and build commands only. See `skills/workflow/TOOLS.md` for details.
 
 ### Starting New Work
 
